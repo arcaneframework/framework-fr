@@ -1,0 +1,29 @@
+set( ARCANE_SOURCES
+  AcceleratorCoreGlobal.h
+  AcceleratorRuntimeInitialisationInfo.cc
+  AcceleratorRuntimeInitialisationInfo.h
+  IAcceleratorMng.h
+  DeviceId.h
+  DeviceInfo.h
+  DeviceInfoList.h
+  DeviceMemoryInfo.h
+  IReduceMemoryImpl.h
+  IDeviceInfoList.h
+  KernelLaunchArgs.h
+  NativeStream.h
+  Memory.h
+  PointerAttribute.h
+  ProfileRegion.h
+  Runner.h
+  RunCommand.h
+  RunCommandImpl.h
+  RunCommandLaunchInfo.h
+  RunQueue.h
+  RunQueueBuildInfo.h
+  RunQueueEvent.h
+  RunQueueImpl.h
+  RunQueuePool.h
+  ViewBuildInfo.h
+
+  internal/AcceleratorRuntimeInitialisationInfoProperties.h
+)

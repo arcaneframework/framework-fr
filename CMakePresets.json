@@ -1,0 +1,81 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "ArcaneCommonBase",
+            "hidden" : true,
+            "displayName": "ArcaneCommandBase",
+            "description": "Default build using Arcane",
+            "cacheVariables": {
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arcane",
+                "CMAKE_BUILD_TYPE" : "Release",
+                "ARCANE_DISABLE_DEPRECATED_WARNINGS" : "TRUE",
+                "BUILD_SHARED_LIBS" : "TRUE",
+                "ARCANE_ENABLE_TESTS" : "FALSE",
+                "NEO_BUILD_TEST" : "FALSE",
+                "ARCCORE_ENABLE_TESTS" : "FALSE"
+            }
+        },
+        {
+            "name": "Arcane",
+            "displayName": "Arcane",
+            "description": "Default build using Arcane",
+            "inherits" : "ArcaneCommonBase",
+            "cacheVariables": {
+                "ARCCORE_CXX_STANDARD" : "20"
+            }
+        },
+        {
+            "name": "Arccore",
+            "displayName": "Arccore",
+            "description": "Default build compiling only Arccore",
+            "inherits" : "ArcaneCommonBase",
+            "cacheVariables": {
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arccore"
+            }
+        },
+        {
+            "name": "ArccoreCuda",
+            "displayName": "Arccore",
+            "description": "Default build compiling only Arccore with CUDA support",
+            "inherits" : "ArcaneCommonBase",
+            "cacheVariables": {
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arccore",
+                "ARCCORE_ACCELERATOR_MODE" : "CUDA"
+            }
+        },
+        {
+            "name": "ArccoreHip",
+            "displayName": "Arccore",
+            "description": "Default build compiling only Arccore with HIP support",
+            "inherits" : "ArcaneCommonBase",
+            "cacheVariables": {
+                "ARCANEFRAMEWORK_BUILD_COMPONENTS" : "Arccore",
+                "ARCCORE_ACCELERATOR_MODE" : "HIP"
+            }
+        },
+        {
+            "name": "ArcaneCuda",
+            "displayName": "ArcaneCuda",
+            "description": "Default build using Arcane with CUDA support",
+            "inherits" : "Arcane",
+            "cacheVariables": {
+                "ARCANE_ACCELERATOR_MODE" : "CUDA"
+            }
+        },
+        {
+            "name": "ArcaneHip",
+            "displayName": "ArcaneCuda",
+            "description": "Default build using Arcane with HIP support",
+            "inherits" : "Arcane",
+            "cacheVariables": {
+                "ARCANE_ACCELERATOR_MODE" : "HIP"
+            }
+        }
+    ]
+}

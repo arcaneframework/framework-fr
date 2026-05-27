@@ -1,0 +1,16 @@
+<Project>
+  <!--
+      Positionne les propriétés communes aux projets C# qui génèrent une DLL.
+
+      Actuellement, on force l'utilisation de 'netstandard2.0' car cela permet
+      d'être compatible avec les projets utilisant '.Net framework'. Une fois
+      que des projets utilisants les versions récentes de '.Net' (6.0 ou plus),
+      on pourra utiliser la version courante de '.Net'.
+
+      Il est toujours possible de spécifier explicitement le `TargetFramework` en ligne de commande si
+      nécessaire
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+</Project>

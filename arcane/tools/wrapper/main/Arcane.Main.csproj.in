@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../CommonExe.props" />
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Needed with .Net 8 to prevent FPE in garbage collection -->
+    <ServerGarbageCollection Condition="'$(TargetFramework)'=='net8' or $(TargetFramework)=='netcoreapp8.0'">true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <!-- Infos pour NuGet -->
+  <PropertyGroup>
+    <PackageVersion>@ARCANE_VERSION@</PackageVersion>
+    <Copyright>CEA/IFPEN</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Arcane.Launcher/Arcane.Launcher.csproj" />
+    <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
+  </ItemGroup>
+  @ARCANE_CSHARP_ITEM_GROUP_FILES@
+</Project>

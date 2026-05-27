@@ -1,0 +1,94 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* PostProcessorWriterBase.h                                   (C) 2000-2026 */
+/*                                                                           */
+/* Classe de base d'un écrivain pour les informations de post-traitement.    */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_POSTPROCESSORWRITERBASE_H
+#define ARCANE_CORE_POSTPROCESSORWRITERBASE_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/core/BasicService.h"
+#include "arcane/core/IPostProcessorWriter.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class PostProcessorWriterBasePrivate;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base d'un écrivain pour les informations de post-traitement.
+ */
+class ARCANE_CORE_EXPORT PostProcessorWriterCommonBase
+: public IPostProcessorWriter
+{
+ public:
+
+  PostProcessorWriterCommonBase();
+  ~PostProcessorWriterCommonBase() override;
+
+ public:
+
+  void setBaseDirectoryName(const String& dirname) override;
+  const String& baseDirectoryName() override;
+
+  void setBaseFileName(const String& filename) override;
+  const String& baseFileName() override;
+
+  void setTimes(ConstArrayView<Real> times) override;
+  ConstArrayView<Real> times() override;
+
+  void setVariables(VariableCollection variables) override;
+  VariableCollection variables() override;
+
+  void setGroups(ItemGroupCollection groups) override;
+  ItemGroupCollection groups() override;
+
+ private:
+
+  PostProcessorWriterBasePrivate* m_p = nullptr; //! Implémentation
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup StandardService
+ * \brief Classe de base d'un service écrivain pour les informations de post-traitement.
+ */
+class ARCANE_CORE_EXPORT PostProcessorWriterBase
+: public BasicService
+, public PostProcessorWriterCommonBase
+{
+ public:
+
+  explicit PostProcessorWriterBase(const ServiceBuildInfo& sbi);
+
+ public:
+
+  void build() override {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  
+

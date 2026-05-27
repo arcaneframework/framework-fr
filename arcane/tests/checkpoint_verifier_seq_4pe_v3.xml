@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-m 5 @ARCANE_TEST_CASEPATH@/testCheckpoint-verifier-write.arc</test>
+  <test>-n 4 -m 5 @ARCANE_TEST_CASEPATH@/testCheckpoint-verifier-read.arc</test>
+  <driver>compare test_output_checkpoint_verifier_seq_4pe_v3/checkpoint-test-verifier-file test_output_checkpoint_verifier_seq_4pe_v3/checkpoint-test-verifier-file
+  </driver>
+</commands>

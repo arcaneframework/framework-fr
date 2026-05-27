@@ -1,0 +1,457 @@
+﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+
+# ----------------------------------------------------------------------------
+# Récupère numéro de version de Arccore à partir du fichier 'version' et
+# génère un fichier 'arcane_version.h' contenant ces informations.
+
+file(READ "version" ARCCORE_VERSION_STR_FULL)
+string(REPLACE "_dev" "" ARCCORE_VERSION ${ARCCORE_VERSION_STR_FULL})
+message(STATUS "ArccoreVersion = ${ARCCORE_VERSION}")
+project(Arccore VERSION ${ARCCORE_VERSION} LANGUAGES CXX)
+
+math(EXPR ARCCORE_VERSION_NUMERIC "((10000 * ${Arccore_VERSION_MAJOR}) + 100 * ${Arccore_VERSION_MINOR}) + ${Arccore_VERSION_PATCH}")
+configure_file(arccore_version.h.in ${CMAKE_BINARY_DIR}/arccore_version.h @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/arccore_version.h DESTINATION include)
+
+# ----------------------------------------------------------------------------
+
+if (NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "Arccore has to be compiled with BUILD_SHARED_LIBS=TRUE. Static linking does not work.")
+endif()
+
+# ----------------------------------------------------------------------------
+
+if (NOT ARCCORE_EXPORT_TARGET)
+  set(ARCCORE_EXPORT_TARGET ArccoreTargets)
+endif()
+
+# ----------------------------------------------------------------------------
+
+# Use Arccon functions and macros
+find_package(Arccon REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+include(${ARCCON_CMAKE_COMMANDS})
+include(LoadBuildSystem)
+include(ArcconSetInstallDirs)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Positionne les variables 'ARCCORE_DEBUG' et 'ARCCORE_CHECK'.
+# en fonction des valeurs de 'CMAKE_BUILD_TYPE' ou 'ARCCORE_BUILD_MODE'
+
+message(STATUS "[arccore] CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+message(STATUS "[arccore] ARCCORE_BUILD_MODE (initial) = ${ARCCORE_BUILD_MODE}")
+
+# Si ARCCORE_BUILD_MODE n'est pas défini, positionne sa valeur en fonction
+# de la valeur de 'CMAKE_BUILD_TYPE'
+if (NOT ARCCORE_BUILD_MODE)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(ARCCORE_BUILD_MODE Debug)
+  else()
+    set(ARCCORE_BUILD_MODE Release)
+  endif()
+  message(STATUS "Forcing 'ARCCORE_BUILD_MODE' to '${ARCCORE_BUILD_MODE}' from value of 'CMAKE_BUILD_TYPE'")
+endif()
+
+if(ARCCORE_BUILD_MODE STREQUAL "Debug")
+  set(ARCCORE_DEBUG YES)
+  set(ARCCORE_CHECK YES)
+elseif(ARCCORE_BUILD_MODE STREQUAL "Check")
+  set(ARCCORE_DEBUG NO)
+  set(ARCCORE_CHECK YES)
+elseif(ARCCORE_BUILD_MODE STREQUAL "Release")
+  set(ARCCORE_DEBUG NO)
+  set(ARCCORE_CHECK NO)
+else()
+  message(FATAL_ERROR "Invalid value '${ARCCORE_BUILD_MODE}' for 'ARCCORE_BUILD_MODE'. Valid values are 'Debug', 'Check' or 'Release'")
+endif()
+
+# S'assure que le mode debug contient le mode check
+if(ARCCORE_DEBUG)
+  set(ARCCORE_CHECK YES)
+endif(ARCCORE_DEBUG)
+
+set(ARCCORE_BUILD_MODE ${ARCCORE_BUILD_MODE} CACHE STRING "Arccore build type (debug,check,release)" FORCE)
+set(ARCCORE_DEBUG ${ARCCORE_DEBUG} CACHE BOOL "Is Arccore in debug mode ?" FORCE)
+set(ARCCORE_CHECK ${ARCCORE_CHECK} CACHE BOOL "Is Arccore in check mode ?" FORCE)
+
+message(STATUS "[arccore] CMAKE_BUILD_TYPE (final) = ${CMAKE_BUILD_TYPE}")
+message(STATUS "[arccore] ARCCORE_BUILD_MODE (final) = ${ARCCORE_BUILD_MODE}")
+message(STATUS "[arccore] Is Check mode enabled (final) ? ${ARCCORE_CHECK}")
+message(STATUS "[arccore] Is Debug mode enabled (final) ? ${ARCCORE_DEBUG}")
+
+# ----------------------------------------------------------------------------
+
+option(ARCCORE_ENABLE_DEPRECATED_WARNINGS "Are deprecated warnings enabled?" OFF)
+
+# Avant novembre 2025, on utilisait l'option 'ARCCORE_USE_MPI'.
+# Pour être compatible avec l'existant on la prend en compte si elle est spécifiée
+if (DEFINED ARCCORE_USE_MPI AND NOT DEFINED ARCCORE_ENABLE_MPI)
+  option(ARCCORE_ENABLE_MPI "Whether or not MPI support is enabled" ${ARCCORE_USE_MPI})
+else()
+  option(ARCCORE_ENABLE_MPI "Whether or not MPI support is enabled" ON)
+  set(ARCCORE_USE_MPI "${ARCCORE_ENABLE_MPI}")
+endif()
+
+option(ARCCORE_ENABLE_CODE_COVERAGE "Whether we use compiler option for code coverage" OFF)
+
+option(ARCCORE_ENABLE_TBB "Is Arccore has support for OneTBB" ON)
+
+# Pour l'instant c'est obligatoire d'avoir la GLIB.
+set(ARCCORE_ENABLE_GLIB TRUE CACHE BOOL "Is Glib enabled in Arccore ?" FORCE)
+
+# ----------------------------------------------------------------------------
+# Il ne faut surtout pas inclure le répertoire courante automatiquement
+# car cela pose des problèmes avec certains fichiers tels que 'String.h' qui
+# peut être inclus à la place de 'string.h' sous windows par exemple.
+
+set(CMAKE_INCLUDE_CURRENT_DIR FALSE)
+
+# ----------------------------------------------------------------------------
+
+set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED FALSE)
+if (
+    (CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
+  )
+  set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED TRUE)
+endif()
+set(ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED ${ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED} CACHE BOOL "Is GNU/GCC Compatible compiler" FORCE)
+
+# ----------------------------------------------------------------------------
+# Il faut au moins GCC 11 ou Clang 15 pour le support du C++20 dans Arccore/Arcane
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+    message(FATAL_ERROR "Your version of GNU Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 11+ is required")
+  endif()
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+    message(FATAL_ERROR "Your version of Clang Compiler (${CMAKE_CXX_COMPILER_VERSION}) is too old for C++20. Version 16+ is required")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Version du standard C++ qu'on souhaite utiliser.
+# Les valeurs valides sont 20, 23 ou 26
+if (NOT DEFINED ARCCORE_CXX_STANDARD)
+  set(ARCCORE_CXX_STANDARD 20)
+endif()
+set (ARCCORE_CXX_STANDARD_LIST 20 23 26)
+if (NOT ${ARCCORE_CXX_STANDARD} IN_LIST ARCCORE_CXX_STANDARD_LIST)
+  message(FATAL_ERROR "Invalid value for '${ARCCORE_CXX_STANDARD}' for ARCCORE_CXX_STANDARD."
+    " Valid values are '${ARCCORE_CXX_STANDARD_LIST}'")
+endif()
+message(STATUS "Compiling with C++ standard: ${ARCCORE_CXX_STANDARD}")
+set(ARCCORE_CXX_STANDARD ${ARCCORE_CXX_STANDARD} CACHE BOOL "C++ standard used for Arccore" FORCE)
+
+# ----------------------------------------------------------------------------
+# Définit une cible fictive 'arccore_build_compile_flags' et qui contient les
+# options de compilation internes aux cibles de Arccore. Ce sont par exemple
+# les avertissements de compilation ou les options sur la visibilité des symboles.
+
+add_library(arccore_build_compile_flags INTERFACE)
+install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
+
+add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
+
+# ----------------------------------------------------------------------------
+# N'exporte pas par défaut les symboles
+if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
+  target_compile_options(arccore_build_compile_flags INTERFACE -fvisibility-inlines-hidden -fvisibility=hidden)
+  if (ARCCORE_ENABLE_DEPRECATED_WARNINGS)
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wdeprecated)
+  else()
+    target_compile_options(arccore_build_compile_flags INTERFACE -Wno-deprecated -Wno-deprecated-declarations)
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Meme si on n'est pas en mode verif, il faut toujours avoir les symboles de debug
+# pour le profiling ou pour les debuggers
+if (UNIX)
+  target_compile_options(arccore_build_compile_flags INTERFACE -g)
+endif ()
+if (MSVC)
+  # '/Zi' permet de créér des fichiers '.pdb' mais n'est pas compatible avec 'ccache'.
+  # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
+  target_compile_options(arccore_build_compile_flags INTERFACE /Z7)
+  target_link_options(arccore_build_compile_flags INTERFACE /debug)
+  # Indique que les fichiers ont l'encodage UTF-8
+  # Sans cela, Visual Studio 2022 considère qu'ils ont l'encodage courant (current code page)
+  target_compile_options(arccore_build_compile_flags INTERFACE "/utf-8")
+  # Pour pouvoir utiliser la macro '__VA_OPT__' permettant d'avoir un
+  # nombre variable d'arguments dans les macros
+  target_compile_options(arccore_build_compile_flags INTERFACE "/Zc:preprocessor")
+endif()
+
+# ----------------------------------------------------------------------------
+# Create an interface library 'arccore_full' that groups all Arccore components.
+add_library(arccore_full INTERFACE)
+install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
+# FIXME: whether or not arccore_build_compile_flags has to be added to arccore_full.
+
+# ----------------------------------------------------------------------------
+# Les symboles des bibliothèques ne sont pas visibles sauf si demandé
+# explicitement
+
+# ----------------------------------------------------------------------------
+# Options pour la couverture de test
+
+if (ARCCORE_ENABLE_CODE_COVERAGE)
+  message(STATUS "Code coverage is enabled")
+  if (CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+    target_link_options(arccore_build_compile_flags INTERFACE --coverage -fprofile-abs-path -ftest-coverage)
+  else()
+    message(FATAL_ERROR "Code coverage is only enabled for GCC compiler")
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckCompileFlags.cmake)
+
+# ----------------------------------------------------------------------------
+# Fonctions utilitaires diverses
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Functions.cmake)
+
+# ----------------------------------------------------------------------------
+# Regarde la taille des différents types (short,int,long,long long) du C++
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckArccoreTypeSize.cmake)
+
+# ----------------------------------------------------------------------------
+# Ajoute support des tests. Il faut le faire avant d'ajouter les composants
+# car ces derniers en ont besoin.
+
+# Avant 02/2026, les tests sont activés via la variable ARCCORE_WANT_TEST qui est
+# vrai par défaut. Dans ce cas, les tests ne sont réellement actifs que si google-test
+# est installé. Si ce n'est pas le cas on les désactive silencieusement.
+# Maintenant, on utilise ARCCORE_ENABLE_TESTS et s'il est
+# explicitement positionné alors il faut que google-test soit installé.
+# Par compatibilité avec l'existant, on supporte encore ARCCORE_WANT_TEST si
+# ARCCORE_ENABLE_TESTS n'est pas défini.
+if (DEFINED ARCCORE_ENABLE_TESTS)
+  message(STATUS "ARCCORE_ENABLE_TESTS = '${ARCCORE_ENABLE_TESTS}'")
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST TRUE)
+  endif ()
+else()
+  if (NOT DEFINED ARCCORE_WANT_TEST)
+    set(ARCCORE_WANT_TEST TRUE)
+  endif()
+  message(STATUS "Setting ARCCORE_ENABLE_TESTS from ARCCORE_WANT_TEST = ${ARCCORE_WANT_TEST}")
+  set(ARCCORE_ENABLE_TESTS "${ARCCORE_WANT_TEST}")
+  if (NOT DEFINED ARCCORE_NEED_INSTALLED_GTEST)
+    set(ARCCORE_NEED_INSTALLED_GTEST FALSE)
+  endif ()
+endif()
+
+set(ARCCORE_ENABLE_TESTS ${ARCCORE_ENABLE_TESTS} CACHE BOOL "Are Arccore test enabled ?" FORCE)
+set(ARCCORE_NEED_INSTALLED_GTEST ${ARCCORE_NEED_INSTALLED_GTEST} CACHE BOOL "Are GTest force needed?" FORCE)
+
+if (ARCCORE_ENABLE_TESTS)
+  enable_testing()
+  find_package(GTest)
+  if (GTEST_FOUND)
+    include(GoogleTest)
+  else()
+    if (ARCCORE_NEED_INSTALLED_GTEST)
+      message(FATAL_ERROR
+        "Tests for Arccore are enabled but google-test is not found. "
+        "Install google-test or disable tests using -DARCCORE_ENABLE_TESTS=FALSE when running cmake command"
+      )
+    else ()
+      message(STATUS
+        "Tests for Arccore are enabled but google-test is not found."
+      )
+    endif()
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Configure installation layout.
+# Layout. This works for all platforms:
+#   * <prefix>/lib*/cmake/<PROJECT-NAME>
+#   * <prefix>/lib*/
+#   * <prefix>/include/
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Configuration
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(namespace "Arccore::")
+
+# ----------------------------------------------------------------------------
+
+arccore_add_component_directory(base)
+arccore_add_component_directory(common)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Gestion du support des accélérateurs.
+# Les modes supportés sont 'CUDA', 'HIP' (ou 'ROCM') et 'SYCL'
+# NOTE: (2025/11) Pour l'instant pour des raisons de compatibilité
+# on laisse les macros préfixées par ARCANE
+
+# Pour des raisons de compatibilité avec les configurations 2021, on
+# regarde d'abord si ARCANE_WANT_CUDA est défini
+if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
+  set (ARCANE_ACCELERATOR_MODE "CUDA")
+endif()
+
+# Pour compatibilité avec les versions d'Arcane avant la 4.0 où
+# on utilisait ARCANE_ACCELERATOR_MODE.
+if (DEFINED ARCANE_ACCELERATOR_MODE AND NOT DEFINED ARCCORE_ACCELERATOR_MODE)
+  set(ARCCORE_ACCELERATOR_MODE "${ARCANE_ACCELERATOR_MODE}")
+endif()
+
+# Renomme 'CUDANVCC' en 'CUDA', 'ROCMHIP' en 'ROCM' et 'SYCLDPCPP' en 'SYCL'
+# Cela est fait pour compatibilité avec les versions antérieures à la 3.14.
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set (ARCCORE_ACCELERATOR_MODE "CUDA" )
+endif()
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCM" )
+  set (ARCCORE_ACCELERATOR_MODE "HIP" )
+endif()
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set (ARCCORE_ACCELERATOR_MODE "HIP" )
+endif()
+if (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCLDPCPP" )
+  set (ARCCORE_ACCELERATOR_MODE "SYCL" )
+endif()
+
+set (ARCCORE_HAS_CUDA FALSE)
+set (ARCCORE_HAS_HIP FALSE)
+set (ARCCORE_HAS_SYCL FALSE)
+if (DEFINED ARCCORE_ACCELERATOR_MODE)
+  set(ARCANE_ACCELERATOR_MODE "${ARCCORE_ACCELERATOR_MODE}")
+  if (ARCCORE_ACCELERATOR_MODE STREQUAL "CUDA" )
+    set (ARCCORE_HAS_CUDA TRUE)
+    set (ARCCORE_ACCELERATOR_RUNTIME cuda)
+    # Pour le support du C++20 avec NVCC, il faut au moins cmake 3.26
+    message(STATUS "CMake 3.26 is required for CUDA C++20 support in Arcane. Checking it")
+    cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+
+    # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+    if (NOT CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_ARCHITECTURES 75 80)
+    endif()
+    if (NOT CMAKE_CUDA_HOST_COMPILER)
+      set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}")
+    endif()
+    set(CMAKE_CUDA_ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES} CACHE STRING "CMake architectures" FORCE)
+    enable_language(CUDA)
+    message(STATUS "CMAKE_CUDA_COMPILER      = ${CMAKE_CUDA_COMPILER}")
+    message(STATUS "CMAKE_CUDA_COMPILER_ID   = ${CMAKE_CUDA_COMPILER_ID}")
+    message(STATUS "CMAKE_CUDA_HOST_COMPILER = ${CMAKE_CUDA_HOST_COMPILER}")
+    message(STATUS "CMAKE_CUDA_FLAGS         = ${CMAKE_CUDA_FLAGS}")
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES = ${CMAKE_CUDA_ARCHITECTURES}")
+  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "HIP" )
+    set (ARCCORE_HAS_HIP TRUE)
+    set (ARCCORE_ACCELERATOR_RUNTIME hip)
+    # Il faut au moins CMake 3.21 pour qu'il reconnaisse langage HIP
+    enable_language(HIP)
+    message(STATUS "CMAKE_HIP_COMPILER      = ${CMAKE_HIP_COMPILER}")
+    message(STATUS "CMAKE_HIP_COMPILER_ID   = ${CMAKE_HIP_COMPILER_ID}")
+    message(STATUS "CMAKE_HIP_HOST_COMPILER = ${CMAKE_HIP_HOST_COMPILER}")
+    message(STATUS "CMAKE_HIP_FLAGS         = ${CMAKE_HIP_FLAGS}")
+    message(STATUS "CMAKE_HIP_ARCHITECTURES = ${CMAKE_HIP_ARCHITECTURES}")
+  elseif (ARCCORE_ACCELERATOR_MODE STREQUAL "SYCL" )
+    set (ARCCORE_HAS_SYCL TRUE)
+    set (ARCCORE_ACCELERATOR_RUNTIME sycl)
+    if (DEFINED ARCANE_CXX_SYCL_FLAGS AND (NOT DEFINED ARCCORE_CXX_SYCL_FLAGS))
+      set (ARCCORE_CXX_SYCL_FLAGS "${ARCANE_CXX_SYCL_FLAGS}")
+    endif()
+    set (ARCCORE_CXX_SYCL_FLAGS "${ARCCORE_CXX_SYCL_FLAGS}" CACHE STRING "Compilation flags for Sycl source files" FORCE)
+  else()
+    message(FATAL_ERROR "Unsupported ARCCORE_ACCELERATOR_MODE '${ARCCORE_ACCELERATOR_MODE}'."
+      "Valid values are 'CUDA', 'HIP'/'ROCM' or 'SYCL")
+  endif()
+
+  set (ARCCORE_ACCELERATOR_MODE ${ARCCORE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCCORE_ACCELERATOR_RUNTIME ${ARCCORE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCCORE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
+
+  # Macro pour compatibilité avec les versions où l'API accélérateur
+  # était dans Arcane (versions 3.*)
+  set (ARCANE_ACCELERATOR_MODE ${ARCCORE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_ACCELERATOR_RUNTIME ${ARCCORE_ACCELERATOR_RUNTIME} CACHE STRING "Accelerator runtime" FORCE)
+  set (ARCANE_HAS_ACCELERATOR TRUE CACHE STRING "Is Accelerator Enabled" FORCE)
+
+  message(STATUS "Arccore has accelerator mode enabled : ${ARCCORE_ACCELERATOR_MODE}")
+
+  arccore_add_component_directory(accelerator_native)
+endif()
+
+set (ARCCORE_HAS_CUDA ${ARCCORE_HAS_CUDA} CACHE STRING "Is Arccore using CUDA for accelerator backend" FORCE)
+set (ARCCORE_HAS_HIP ${ARCCORE_HAS_HIP} CACHE STRING "Is Arccore using ROCM/HIP for accelerator backend" FORCE)
+set (ARCCORE_HAS_SYCL ${ARCCORE_HAS_SYCL} CACHE STRING "Is Arccore using SYCL for accelerator backend" FORCE)
+
+arccore_add_component_directory(trace)
+arccore_add_component_directory(concurrency)
+arccore_add_component_directory(accelerator)
+arccore_add_component_directory(collections)
+arccore_add_component_directory(serialize)
+arccore_add_component_directory(message_passing)
+if (ARCCORE_ENABLE_MPI)
+  arccore_add_component_directory(message_passing_mpi)
+endif()
+
+# ----------------------------------------------------------------------------
+# Génère le fichier de configuration.
+# Il faut le faire après la détection de toutes les options pour que les '#define'
+# soient bien positionnés
+configure_file(${CMAKE_CURRENT_LIST_DIR}/arccore_config.h.in ${CMAKE_BINARY_DIR}/arccore/arccore_config.h)
+install(FILES ${CMAKE_BINARY_DIR}/arccore/arccore_config.h DESTINATION include/arccore)
+
+# ----------------------------------------------------------------------------
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Use:
+#   * PROJECT_VERSION
+write_basic_package_version_file(
+  "${version_config}" COMPATIBILITY AnyNewerVersion
+)
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * TARGETS_EXPORT_NAME
+#   * PROJECT_NAME
+configure_package_config_file(
+  "cmake/ArccoreConfig.cmake.in"
+  "${project_config}"
+  INSTALL_DESTINATION "${config_install_dir}"
+  )
+
+set(Arccore_project_config "${project_config}" CACHE FILEPATH "Arccore project config" FORCE)
+get_filename_component(Arccore_config_build_dir "${project_config}" DIRECTORY CACHE)
+set(Arccore_config_install_dir "${config_install_dir}" CACHE STRING "Arccore config install dir" FORCE)
+set(Arccore_VERSION "${Arccore_VERSION}" CACHE STRING "Arccore version" FORCE)
+
+install(FILES "${project_config}" "${version_config}"
+  DESTINATION "${config_install_dir}"
+)
+
+install(EXPORT ${ARCCORE_EXPORT_TARGET}
+  DESTINATION ${config_install_dir}
+  NAMESPACE "${namespace}")
+
+if (ARCCORE_EXPORT_TARGET STREQUAL ArccoreTargets)
+  message(STATUS "Exporting 'ArccoreTargets'")
+  export(EXPORT ${ARCCORE_EXPORT_TARGET} FILE ${Arccore_config_install_dir}/ArccoreTargets.cmake)
+endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

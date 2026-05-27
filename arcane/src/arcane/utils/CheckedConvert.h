@@ -1,0 +1,6 @@
+﻿#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/BadCastException.h"
+#include "arcane/utils/String.h"
+#include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/Convert.h"
+#include "arccore/base/CheckedConvert.h"

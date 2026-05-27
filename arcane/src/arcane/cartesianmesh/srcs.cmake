@@ -1,0 +1,68 @@
+set(ARCANE_SOURCES
+  CartesianMesh.cc
+  CartesianConnectivity.cc
+  CartesianConnectivity.h
+  CellDirectionMng.cc
+  CellDirectionMng.h
+  FaceDirectionMng.cc
+  FaceDirectionMng.h
+  NodeDirectionMng.cc
+  NodeDirectionMng.h
+  CartesianConnectivity.h
+  CartesianMeshRenumberingInfo.h
+  CartesianItemDirectionInfo.h
+  CellDirectionMng.h
+  FaceDirectionMng.h
+  NodeDirectionMng.h
+  ICartesianMesh.h
+  ICartesianMeshPatch.h
+  CartesianPatch.h
+  CartesianPatch.cc
+  CartesianMeshCoarsening.cc
+  CartesianMeshCoarsening.h
+  CartesianMeshCoarsening2.cc
+  CartesianMeshCoarsening2.h
+  CartesianMeshGlobal.h
+  CartesianMeshUtils.h
+  CartesianMeshUtils.cc
+  CartesianMeshPatchListView.h
+  CartesianMeshPatch.cc
+  SimpleHTMLMeshAMRPatchExporter.cc
+  SimpleHTMLMeshAMRPatchExporter.h
+
+  v2/CartesianGrid.h
+  v2/CartesianNumbering.h
+  v2/CartesianTypes.h
+  v2/CartesianMeshUniqueIdRenumberingV2.h
+  v2/CartesianMeshUniqueIdRenumberingV2.cc
+
+  CartesianMeshAMRMng.cc
+  CartesianMeshAMRMng.h
+
+  CartesianMeshNumberingMng.cc
+  CartesianMeshNumberingMng.h
+  AMRZonePosition.cc
+  AMRZonePosition.h
+  AMRPatchPosition.h
+  AMRPatchPosition.cc
+
+  internal/AMRPatchPositionLevelGroup.h
+  internal/AMRPatchPositionLevelGroup.cc
+  internal/AMRPatchPositionSignature.h
+  internal/AMRPatchPositionSignature.cc
+  internal/AMRPatchPositionSignatureCut.h
+  internal/AMRPatchPositionSignatureCut.cc
+  internal/CartesianMeshNumberingMngInternal.cc
+  internal/CartesianMeshNumberingMngInternal.h
+  internal/CartesianMeshPatch.h
+  internal/CartesianMeshUniqueIdRenumbering.h
+  internal/CartesianMeshUniqueIdRenumbering.cc
+  internal/CartesianPatchGroup.h
+  internal/CartesianPatchGroup.cc
+  internal/ICartesianMeshInternal.h
+  internal/ICartesianMeshPatchInternal.h
+  internal/ICartesianMeshAMRPatchMng.h
+  internal/CartesianMeshAMRPatchMng.cc
+  internal/CartesianMeshAMRPatchMng.h
+  internal/ICartesianMeshNumberingMngInternal.h
+)

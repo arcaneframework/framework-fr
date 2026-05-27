@@ -1,0 +1,5 @@
+﻿#include "arcane/utils/MDSpan.h"
+#include "arcane/utils/MDDim.h"
+#include "arcane/utils/NumArrayContainer.h"
+#include "arcane/utils/String.h"
+#include "arccore/common/NumArray.h"

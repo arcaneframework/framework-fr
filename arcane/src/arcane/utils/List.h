@@ -1,0 +1,6 @@
+﻿#include "arcane/utils/ListImpl.h"
+#include "arcane/utils/Enumerator.h"
+#include "arcane/utils/Ptr.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/Iostream.h"
+#include "arccore/common/List.h"

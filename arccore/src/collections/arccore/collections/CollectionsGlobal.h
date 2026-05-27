@@ -1,0 +1,102 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* CollectionsGlobal.h                                         (C) 2000-2025 */
+/*                                                                           */
+/* Définitions globales de la composante 'Collections' de 'Arccore'.         */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_COLLECTIONS_COLLECTIONSGLOBAL_H
+#define ARCCORE_COLLECTIONS_COLLECTIONSGLOBAL_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/common/CommonGlobal.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCCORE_COMPONENT_arccore_collections)
+#define ARCCORE_COLLECTIONS_EXPORT ARCCORE_EXPORT
+#define ARCCORE_COLLECTIONS_EXTERN_TPL
+#else
+#define ARCCORE_COLLECTIONS_EXPORT ARCCORE_IMPORT
+#define ARCCORE_COLLECTIONS_EXTERN_TPL extern
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+template <typename DataType> class Array2;
+template <typename DataType> class UniqueArray2;
+template <typename DataType> class SharedArray2;
+
+// Les trois types suivants sont conservés pour compatibilité avec l'existant.
+// Il faudra les rendre optionnels mi-2025 et les supprimer en 2026
+using IMemoryAllocator3 = IMemoryAllocator;
+using AlignedMemoryAllocator3 = AlignedMemoryAllocator;
+using DefaultMemoryAllocator3 = DefaultMemoryAllocator;
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arcane::eMemoryResource;
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arccore
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using Arcane::AbstractArray;
+using Arcane::AlignedMemoryAllocator;
+using Arcane::AlignedMemoryAllocator3;
+using Arcane::AllocatedMemoryInfo;
+using Arcane::ARCCORE_NB_MEMORY_RESOURCE;
+using Arcane::Array;
+using Arcane::Array2;
+using Arcane::ArrayMetaData;
+using Arcane::DefaultMemoryAllocator;
+using Arcane::DefaultMemoryAllocator3;
+using Arcane::eHostDeviceMemoryLocation;
+using Arcane::eMemoryLocationHint;
+using Arcane::eMemoryResource;
+using Arcane::IMemoryAllocator;
+using Arcane::IMemoryAllocator3;
+using Arcane::MemoryAllocationArgs;
+using Arcane::MemoryAllocationOptions;
+using Arcane::PrintableMemoryAllocator;
+using Arcane::SharedArray;
+using Arcane::SharedArray2;
+using Arcane::UniqueArray;
+using Arcane::UniqueArray2;
+
+//! Typedef pour la version Arcane historique (avec 2's')
+// TODO: A rendre obsolète (juin 2025)
+using eMemoryRessource = Arcane::eMemoryResource;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  
+

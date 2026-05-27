@@ -1,0 +1,55 @@
+set(ARCANE_SOURCES
+  Geometry.cc
+  impl/GeometryServiceBase.cc
+  impl/GeometryServiceBase.h
+  impl/ItemGroupGeometryProperty.cc
+  impl/ItemGroupGeometryProperty.h
+  euclidian/Euclidian3Geometry.cc
+  euclidian/Euclidian3Geometry.h
+  euclidian/Euclidian3GeometryService.cc
+  euclidian/Euclidian3GeometryService.h
+  IGeometry.h
+  IGeometryMng.h
+  ItemGroupBuilder.h
+  impl/GeometryServiceBase.h
+  impl/ItemGroupGeometryProperty.h
+  impl/GeometryServiceBaseT.h
+  impl/GeometryTemplatesT.h
+  euclidian/Euclidian3Geometry.h
+  euclidian/Euclidian3GeometryService.h
+
+  BarycentricGeomShapeComputer.cc
+  BarycentricGeomShapeComputer.h
+  GeometricGlobal.cc
+  GeometricGlobal.h
+  GeomElementView.cc
+  GeomElementView.h
+  GeomShapeView.cc
+  GeomShapeView.h
+  CellConnectivity.cc
+  CellConnectivity.h
+  GeomShapeMng.cc
+  GeomShapeMng.h
+  BarycentricGeomShapeComputer.h
+  GeometricGlobal.h
+  GeomElementView.h
+  GeomShapeView.h
+  CellConnectivity.h
+  GeomShapeMng.h
+  GeneratedConnectivity.h
+  GeneratedGeomElement.h
+  GeneratedGeomShapeView.h
+  GeneratedGeomShapeViewDeclarations.h
+  GeneratedGeomElementView.h
+  GeomType.h
+  GeomElement.h
+  GeomShape.h
+  GeomShapeMutableView.h
+  GeometricConnectic.h
+  GeomShapeOperation.h
+  ItemStaticInfo.h
+)
+
+set(AXL_FILES 
+  euclidian/Euclidian3Geometry
+)

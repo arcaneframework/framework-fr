@@ -1,0 +1,26 @@
+set(ARCANE_SOURCES
+  BarycentricGeomShapeComputer.h
+  GeometricGlobal.h
+  GeomElementView.h
+  GeomShapeView.h
+  CellConnectivity.h
+  GeomShapeMng.h
+  BarycentricGeomShapeComputer.h
+  GeometricGlobal.h
+  GeomElementView.h
+  GeomShapeView.h
+  CellConnectivity.h
+  GeomShapeMng.h
+  GeneratedConnectivity.h
+  GeneratedGeomElement.h
+  GeneratedGeomShapeView.h
+  GeneratedGeomShapeViewDeclarations.h
+  GeneratedGeomElementView.h
+  GeomType.h
+  GeomElement.h
+  GeomShape.h
+  GeomShapeMutableView.h
+  GeometricConnectic.h
+  GeomShapeOperation.h
+  ItemStaticInfo.h
+)

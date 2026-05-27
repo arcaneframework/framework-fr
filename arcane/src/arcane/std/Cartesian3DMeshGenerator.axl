@@ -1,0 +1,99 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="Cartesian3DMeshGenerator" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Générateur de maillage cartésien 3D
+  </description>
+    
+  <interface name="Arcane::IMeshBuilder" />
+
+  <options>
+    <simple name="origin" type="real3" >
+      <description>Origine du maillage</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-x" type="integer" >
+      <description>Nombre de sous-domaine en X</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-y" type="integer" >
+      <description>Nombre de sous-domaine en Y</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="nb-part-z" type="integer" >
+      <description>Nombre de sous-domaine en Z</description>
+      <userclass>User</userclass>
+    </simple>
+    <simple name="generate-sod-groups" type="bool" default="false">
+      <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
+    </simple>
+
+    <simple name="face-numbering-version" type="integer" default="4">
+      <description>
+        Version de l'algorithme pour la numérotation des faces. La
+        version 1 correspond à la numérotation non structurée. La
+        version 4 correspond à la numérotation cartésienne.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
+    <simple name="edge-numbering-version" type="integer" default="2">
+      <description>
+        Version de l'algorithme pour la numérotation des arêtes. Seule
+        la valeur 2 est valide actuellement. Dans ce cas si les arêtes
+        sont activées alors le nombre maximum des noeuds est limité à 2^31.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
+    <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+    <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+    <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
+      <simple name="n" type="integer" >
+        <description>Nombre de mailles</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="length" type="real" >
+        <description>Longueur</description>
+        <userclass>User</userclass>
+      </simple>
+      <simple name="progression" type="real" default="1.0">
+        <description>Progression</description>
+        <userclass>User</userclass>
+      </simple>
+    </complex>
+
+  </options>
+
+</service>

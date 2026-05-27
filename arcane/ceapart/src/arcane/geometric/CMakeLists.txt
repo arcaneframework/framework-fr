@@ -1,0 +1,10 @@
+include(srcs.cmake)
+
+foreach (isource ${ARCANE_SOURCES})
+  set(_FILE ${ARCANECEA_SRC_PATH}/arcane/geometric/${isource})
+  string(REGEX MATCH "\.(h|H)$" _OUT_HEADER ${isource})
+  if (_OUT_HEADER)
+    get_filename_component(_HEADER_RELATIVE_PATH ${isource} DIRECTORY)
+    install(FILES ${_FILE} DESTINATION include/arcane/geometric/${_HEADER_RELATIVE_PATH})
+  endif ()
+endforeach ()

@@ -1,0 +1,140 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* IParallelMngInternal.h                                      (C) 2000-2026 */
+/*                                                                           */
+/* Partie interne à Arcane de IParallelMng.                                  */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_IPARALLELMNGINTERNAL_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/core/ArcaneTypes.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace MessagePassing
+{
+  class IContigMachineShMemWinBaseInternal;
+  class IMachineShMemWinBaseInternal;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Partie interne de IParallelMng.
+ */
+class ARCANE_CORE_EXPORT IParallelMngInternal
+{
+ public:
+
+  virtual ~IParallelMngInternal() = default;
+
+ public:
+
+  //! Runner par défaut. Peut être nul
+  virtual Runner runner() const = 0;
+
+  //! File par défaut pour les messages. Peut être nul
+  virtual RunQueue queue() const = 0;
+
+  /*!
+   * \brief Indique si l'implémentation gère les accélérateurs.
+   *
+   * Si c'est le cas on peut utiliser directement la mémoire de l'accélérateur
+   * dans les appels MPI ce qui permet d'éviter d'éventuelles recopies.
+   */
+  virtual bool isAcceleratorAware() const = 0;
+
+  //! Créé un sous IParallelMng de manière similaire à MPI_Comm_split.
+  virtual Ref<IParallelMng> createSubParallelMngRef(Int32 color, Int32 key) = 0;
+
+  virtual void setDefaultRunner(const Runner& runner) = 0;
+
+  //! Donne l'écrivain dans le cas où l'on peut écrire en parallèle (avec
+  //! MPI-IO par exemple).
+  virtual Int32 masterParallelIORank() const = 0;
+
+  //! Donne le nombre de proc qui vont envoyer des données à
+  //! masterParallelIORank().
+  virtual Int32 nbSendersToMasterParallelIO() const = 0;
+
+  /*!
+   * \brief Méthode permettant d'initialiser le windowCreator spécifique à
+   * l'implémentation.
+   *
+   * Appel collectif.
+   */
+  virtual void initializeWindowCreator() = 0;
+
+  /*!
+   * \brief Méthode permettant de savoir si le mode mémoire partagée est supporté.
+   *
+   * Appel collectif.
+   */
+  virtual bool isMachineShMemWinAvailable() = 0;
+
+  /*!
+   * \brief Méthode permettant de créer une fenêtre mémoire sur le noeud.
+   *
+   * Appel collectif.
+   *
+   * \param sizeof_segment La taille de notre segment (en octet).
+   * \param sizeof_type La taille d'un élément du segment (en octet).
+   * \return Une référence vers la nouvelle fenêtre.
+   */
+  virtual Ref<MessagePassing::IContigMachineShMemWinBaseInternal> createContigMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+
+  /*!
+   * \brief Méthode permettant de créer une fenêtre mémoire dynamique sur le noeud.
+   *
+   * Appel collectif.
+   *
+   * \param sizeof_segment La taille initiale de notre segment (en octet).
+   * \param sizeof_type La taille d'un élément du segment (en octet).
+   * \return Une référence vers la nouvelle fenêtre.
+   */
+  virtual Ref<MessagePassing::IMachineShMemWinBaseInternal> createMachineShMemWinBase(Int64 sizeof_segment, Int32 sizeof_type) = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer un allocateur en mémoire partagée.
+   */
+  virtual MemoryAllocationOptions machineShMemWinMemoryAllocator() = 0;
+
+  /*!
+   * \brief Méthode permettant de récupérer les rangs des sous-domaines du
+   * noeud de calcul.
+   *
+   * Appel non collectif.
+   */
+  virtual ConstArrayView<Int32> machineRanks() = 0;
+
+  /*!
+   * \brief Méthode permettant de faire une barrière pour les sous-domaines du
+   * noeud de calcul.
+   */
+  virtual void machineBarrier() = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
