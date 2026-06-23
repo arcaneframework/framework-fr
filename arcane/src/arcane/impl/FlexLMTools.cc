@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FlexLMTools.cc                                              (C) 2000-2025 */
+/* FlexLMTools.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation d'une interface pour les outils FlexLM.                    */
 /*---------------------------------------------------------------------------*/
@@ -149,13 +149,6 @@ init(IParallelSuperMng * parallel_super_mng)
 
   // Marque l'initialisation effective; on peut maintenant utiliser le système de licence
   m_parallel_super_mng = parallel_super_mng;
-
-  FlexLMTools<ArcaneFeatureModel> license_tool;
-#ifndef ARCANE_TEST_RLM
-  license_tool.checkLicense(ArcaneFeatureModel::ArcaneCore,true); // do_fatal=true
-#else
-  license_tool.checkLicense(ArcaneFeatureModel::Arcane,true); // do_fatal=true
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -312,18 +305,6 @@ featureInfo(const String name, const Real version) const
 
   return info;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-const String ArcaneFeatureModel::m_arcane_feature_name[] = 
-  {
-#ifndef ARCANE_TEST_RLM
-    "ArcaneCore",
-#else
-    "Arcane",
-#endif
-  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

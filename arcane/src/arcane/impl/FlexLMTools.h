@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FlexLMTools.h                                               (C) 2000-2025 */
+/* FlexLMTools.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des protections FlexLM.                .                          */
+/* Gestion des protections FlexLM.                                           */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCANE_UTILS_FLEXLMTOOLS_H_
@@ -189,42 +189,6 @@ class FlexLMTools
     return FlexLMMng::instance()->featureInfo(name, version);
   }
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ArcaneFeatureModel
-{
- public:
-
-  typedef enum
-  {
-#ifndef ARCANE_TEST_RLM
-    ArcaneCore = 0, //<! Fonctionnalité noyau (liée à l'exécution)
-#else
-    Arcane = 0, //<! Fonctionnalité noyau (liée à l'exécution)
-#endif
-  } eFeature;
-
-  static String getName(eFeature feature)
-  {
-    return m_arcane_feature_name[feature];
-  }
-
-  static Real getVersion(eFeature feature)
-  {
-    ARCANE_UNUSED(feature);
-    // Ecrit une version comparable numériquement; ex: 1.0610 (au lieu de 1.6.1)
-    return (Real)ARCANE_VERSION_MAJOR + (Real)ARCANE_VERSION_MINOR / 100 + (Real)ARCANE_VERSION_RELEASE / 1000 + (Real)ARCANE_VERSION_BETA / 10000;
-  }
-
- private:
-
-  static const String m_arcane_feature_name[];
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
