@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.h                                             (C) 2000-2025 */
+/* VariableViews.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des vues sur les variables pour les accélérateurs.                */
 /*---------------------------------------------------------------------------*/
@@ -16,16 +16,12 @@
 
 #include "arcane/core/ItemTypes.h"
 #include "arcane/core/SimdItem.h"
-#include "arcane/core/ItemLocalId.h"
 #include "arcane/core/VariableTypedef.h"
 #include "arcane/core/GroupIndexTable.h"
 
 #include "arcane/accelerator/core/ViewBuildInfo.h"
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/ViewsCommon.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -132,17 +128,17 @@ class View1DGetterSetter
 /*!
  * \brief Vue en écriture sur une variable scalaire du maillage.
  */
-template <typename _ItemType, typename _Accessor, typename _IndexerType, bool _HasSimd>
+template <typename ItemType_, typename Accessor_, typename IndexerType_, bool HasSimd_>
 class ItemVariableScalarOutViewBaseT
 : public VariableViewBase
 {
-  using Accessor = _Accessor;
+  using Accessor = Accessor_;
 
  public:
 
-  using ItemType = _ItemType;
-  using IndexerType = _IndexerType;
-  using DataType = typename _Accessor::ValueType;
+  using ItemType = ItemType_;
+  using IndexerType = IndexerType_;
+  using DataType = Accessor_::ValueType;
   using DataTypeReturnReference = DataType&;
 
  public:
@@ -154,13 +150,13 @@ class ItemVariableScalarOutViewBaseT
   {}
 
   //! Opérateur d'accès vectoriel avec indirection.
-  SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const requires(HasSimd_)
   {
     return SimdSetter<DataType>(m_values, simd_item.simdLocalIds());
   }
 
   //! Opérateur d'accès vectoriel sans indirection.
-  SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const requires(_HasSimd)
+  SimdDirectSetter<DataType> operator[](SimdItemDirectIndexT<ItemType> simd_item) const requires(HasSimd_)
   {
     return SimdDirectSetter<DataType>(m_values + simd_item.baseLocalId());
   }
@@ -195,8 +191,8 @@ class ItemVariableScalarOutViewBaseT
 
  private:
 
-  DataType* m_values;
-  Int32 m_size;
+  DataType* m_values = nullptr;
+  Int32 m_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -204,16 +200,16 @@ class ItemVariableScalarOutViewBaseT
 /*!
  * \brief Vue en écriture sur une variable scalaire du maillage.
  */
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemVariableScalarOutViewT
 : public VariableViewBase
 {
  public:
 
-  using DataType = typename _Accessor::ValueType;
-  using Accessor = _Accessor;
-  using ItemType = _ItemType;
-  using IndexerType = typename ItemLocalIdTraitsT<_ItemType>::LocalIdType;
+  using DataType = Accessor_::ValueType;
+  using Accessor = Accessor_;
+  using ItemType = ItemType_;
+  using IndexerType = ItemLocalIdTraitsT<ItemType_>::LocalIdType;
   using DataTypeReturnReference = DataType&;
 
  public:
@@ -266,8 +262,8 @@ class ItemVariableScalarOutViewT
 
  private:
 
-  DataType* m_values;
-  Int32 m_size;
+  DataType* m_values = nullptr;
+  Int32 m_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -275,18 +271,18 @@ class ItemVariableScalarOutViewT
 /*!
  * \brief Vue en écriture sur une variable partielle scalaire du maillage.
  */
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemPartialVariableScalarOutViewT
 : public VariableViewBase
 {
  public:
 
-  using DataType = typename _Accessor::ValueType;
-  using Accessor = _Accessor;
-  using ItemType = _ItemType;
-  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
+  using DataType = Accessor_::ValueType;
+  using Accessor = Accessor_;
+  using ItemType = ItemType_;
+  using IndexerType = ItemEnumeratorIndexT<ItemType_>;
   using DataTypeReturnReference = DataType&;
-  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using ItemLocalIdType = ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -369,28 +365,25 @@ class ItemPartialVariableScalarOutViewT
 
  private:
 
-  DataType* m_values;
-  Int32 m_size;
+  DataType* m_values = nullptr;
+  Int32 m_size = 0;
   GroupIndexTableView m_table_view;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en lecture sur une variable scalaire du maillage.
  */
-template <typename _ItemType, typename _DataType>
+template <typename ItemType_, typename DataType_>
 class ItemVariableScalarInViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using DataType = _DataType;
-  using IndexerType = typename ItemLocalIdTraitsT<_ItemType>::LocalIdType;
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using IndexerType = ItemLocalIdTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -446,16 +439,16 @@ class ItemVariableScalarInViewT
 /*!
  * \brief Vue en lecture sur une variable partielle scalaire du maillage.
  */
-template <typename _ItemType, typename _DataType>
+template <typename ItemType_, typename DataType_>
 class ItemPartialVariableScalarInViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using DataType = _DataType;
-  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
-  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using IndexerType = ItemEnumeratorIndexT<ItemType_>;
+  using ItemLocalIdType = ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -519,22 +512,19 @@ class ItemPartialVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en lecture sur une variable partielle tableau du maillage.
  */
-template <typename _ItemType, typename _DataType>
+template <typename ItemType_, typename DataType_>
 class ItemPartialVariableArrayInViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using DataType = _DataType;
-  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
-  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using IndexerType = ItemEnumeratorIndexT<ItemType_>;
+  using ItemLocalIdType = typename ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -599,17 +589,17 @@ class ItemPartialVariableArrayInViewT
 /*!
  * \brief Vue en lecture sur une variable tableau du maillage.
  */
-template <typename _ItemType, typename _DataType>
+template <typename ItemType_, typename DataType_>
 class ItemVariableArrayInViewT
 : public VariableViewBase
 {
  private:
 
-  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using IndexerType = ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
-  using DataType = _DataType;
+  using DataType = DataType_;
 
  public:
 
@@ -645,23 +635,20 @@ class ItemVariableArrayInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en écriture sur une variable tableau du maillage.
+ * \brief Vue en écriture seule sur une variable de tableau du maillage.
  */
-template <typename _ItemType, typename _Accessor, typename _Indexer>
+template <typename ItemType_, typename Accessor_, typename Indexer_>
 class ItemVariableArrayOutViewBaseT
 : public VariableViewBase
 {
  private:
 
-  using ItemType = _ItemType;
-  using Accessor = _Accessor;
-  using IndexerType = _Indexer;
-  using DataType = typename Accessor::ValueType;
-  using DataTypeReturnType = typename Accessor::DataTypeReturnReference;
+  using ItemType = ItemType_;
+  using Accessor = Accessor_;
+  using IndexerType = Indexer_;
+  using DataType = Accessor::ValueType;
+  using DataTypeReturnType = Accessor::DataTypeReturnReference;
 
  public:
 
@@ -676,7 +663,7 @@ class ItemVariableArrayOutViewBaseT
     return DataTypeReturnType(this->m_values[item.asInt32()]);
   }
 
-  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  //! Opérateur d'accès pour la \a i-ième valeur de l'entité \a item
   ARCCORE_HOST_DEVICE DataType& operator()(IndexerType item, Int32 i) const
   {
     return this->m_values[item.asInt32()][i];
@@ -698,17 +685,17 @@ class ItemVariableArrayOutViewBaseT
 /*!
  * \brief Vue en écriture sur une variable tableau du maillage.
  */
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemVariableArrayOutViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using Accessor = _Accessor;
-  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
-  using DataType = typename Accessor::ValueType;
-  using DataTypeReturnType = typename Accessor::DataTypeReturnReference;
+  using ItemType = ItemType_;
+  using Accessor = Accessor_;
+  using IndexerType = ItemTraitsT<ItemType_>::LocalIdType;
+  using DataType = Accessor::ValueType;
+  using DataTypeReturnType = Accessor::DataTypeReturnReference;
 
  public:
 
@@ -742,21 +729,22 @@ class ItemVariableArrayOutViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue en écriture sur une variable partielle tableau du maillage.
  */
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemPartialVariableArrayOutViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using Accessor = _Accessor;
-  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
-  using DataType = typename Accessor::ValueType;
-  using DataTypeReturnType = typename Accessor::DataTypeReturnReference;
-  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using ItemType = ItemType_;
+  using Accessor = Accessor_;
+  using IndexerType = ItemEnumeratorIndexT<ItemType_>;
+  using DataType = Accessor::ValueType;
+  using DataTypeReturnType = Accessor::DataTypeReturnReference;
+  using ItemLocalIdType = ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -841,16 +829,16 @@ class ItemPartialVariableArrayOutViewT
  *
  * \endcode
  */
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemVariableRealNScalarOutViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using Accessor = _Accessor;
-  using IndexerType = typename ItemTraitsT<_ItemType>::LocalIdType;
-  using DataType = typename _Accessor::ValueType;
+  using ItemType = ItemType_;
+  using Accessor = Accessor_;
+  using IndexerType = ItemTraitsT<ItemType_>::LocalIdType;
+  using DataType = Accessor_::ValueType;
   using DataTypeReturnReference = DataType&;
 
  public:
@@ -916,25 +904,25 @@ class ItemVariableRealNScalarOutViewT
 
  private:
 
-  DataType* m_values;
-  Int32 m_size;
+  DataType* m_values = nullptr;
+  Int32 m_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename _ItemType, typename _Accessor>
+template <typename ItemType_, typename Accessor_>
 class ItemPartialVariableRealNScalarOutViewT
 : public VariableViewBase
 {
  public:
 
-  using ItemType = _ItemType;
-  using Accessor = _Accessor;
-  using IndexerType = ItemEnumeratorIndexT<_ItemType>;
-  using DataType = typename _Accessor::ValueType;
+  using ItemType = ItemType_;
+  using Accessor = Accessor_;
+  using IndexerType = ItemEnumeratorIndexT<ItemType_>;
+  using DataType = typename Accessor_::ValueType;
   using DataTypeReturnReference = DataType&;
-  using ItemLocalIdType = typename ItemTraitsT<_ItemType>::LocalIdType;
+  using ItemLocalIdType = typename ItemTraitsT<ItemType_>::LocalIdType;
 
  public:
 
@@ -1126,6 +1114,7 @@ viewOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, Dat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue en lecture/écriture.
  */
@@ -1221,6 +1210,7 @@ viewInOut(const ViewBuildInfo& command, MeshPartialVariableArrayRefT<ItemType, D
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue en lecture.
  */

@@ -1,4 +1,4 @@
-name: Codecov Scan
+﻿name: Codecov Scan
 
 on:
   schedule:
@@ -40,8 +40,9 @@ env:
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe : true
+  PRTE_MCA_rmaps_default_mapping_policy : ':oversubscribe'
 
-  # Remove test output file after run to reduce disk usage
+  # Supprimer le fichier de sortie des tests après l'exécution pour réduire l'utilisation du disque
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
@@ -49,7 +50,7 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_full_stable
+      image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
 
     steps:
       - name: Display CPU infos
@@ -77,7 +78,7 @@ jobs:
         shell: bash
         run: |
           source /root/scripts/use_openmpi.sh
-          source /root/scripts/use_gcc-14.sh
+          source /root/scripts/use_gcc.sh
 
       - name: Get date
         shell: bash
@@ -117,8 +118,7 @@ jobs:
             -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
             -DALIEN_BUILD_COMPONENT=all
             -DALIEN_PLUGIN_HYPRE=ON
-            -DALIEN_PLUGIN_PETSC=ON
-            -DGFORTRAN_LIBRARY=/usr/lib/gcc/x86_64-linux-gnu/13/libgfortran.so'
+            -DALIEN_PLUGIN_PETSC=ON'
           type_build: 'Release'
           compilo: 'gcc'
           verbose: true
@@ -144,7 +144,7 @@ jobs:
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
-      - name: Edit results.xml for Codecov (need valid JUnit XML)
+      - name: Edit results.xml for Codecov (nécessite un XML JUnit valide)
         shell: bash
         run: |
           RESULT_ORI=${{ env.CT_RESULT_DIR }}/results.xml

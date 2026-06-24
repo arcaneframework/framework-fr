@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Maillage MED polygonal</titre>
@@ -13,6 +13,7 @@
  <module-test-unitaire>
    <test name="MeshUnitTest">
      <test-adjacence>0</test-adjacence>
+     <write-mesh-service-name>VtkLegacy</write-mesh-service-name>
    </test>
  </module-test-unitaire>
 

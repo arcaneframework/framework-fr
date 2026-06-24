@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironmentVariableRef.h                                (C) 2000-2024 */
+/* MeshEnvironmentVariableRef.h                                (C) 2000-2026 */
 /*                                                                           */
 /* Référence à une variable sur un milieu du maillage.                       */
 /*---------------------------------------------------------------------------*/
@@ -13,12 +13,14 @@
 #define ARCANE_MATERIALS_MESHENVIRONMENTVARIABLEREF_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MeshEnvironmentVariableRef.h
  *
  * Ce fichier contient les différents types gérant les références
  * sur les variables milieux.
  */
+
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 
 /*---------------------------------------------------------------------------*/
@@ -116,7 +118,7 @@ class CellEnvironmentVariableScalarRef
   ARCANE_CORE_EXPORT DataType envValue(AllEnvCell c,Int32 env_id) const;
 
  public:
-  
+
   ARCANE_CORE_EXPORT void fill(const DataType& value);
   ARCANE_CORE_EXPORT void fillPartialValues(const DataType& value);
 
@@ -135,7 +137,7 @@ class CellEnvironmentVariableScalarRef
 
  public:
 
-  // TODO: Temporaire. a supprimer.
+  // TODO: Temporaire. À supprimer.
   ArrayView<DataType>* _internalValue() const { return m_value; }
 
  private:
@@ -146,19 +148,20 @@ class CellEnvironmentVariableScalarRef
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
  * \brief Variable tableau sur les mailles d'un matériau du maillage.
  * Pour l'instant, cette classe n'est instanciée que pour les mailles
  */
-template<typename DataType_>
+template <typename DataType_>
 class CellEnvironmentVariableArrayRef
 : public MeshMaterialVariableRef
 {
  public:
 
   using DataType = DataType_;
-  using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
+  using PrivatePartType = IArrayMeshMaterialVariable<Cell, DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   using ThatClass = CellEnvironmentVariableArrayRef<DataType>;
@@ -242,6 +245,15 @@ class CellEnvironmentVariableArrayRef
     return m_value[0][c.localId()];
   }
 
+  MeshMaterialVariableArrayContainerView<DataType> containerView()
+  {
+    return MeshMaterialVariableArrayContainerView<DataType>(m_container_value);
+  }
+  MeshMaterialVariableArrayContainerView<const DataType> constContainerView() const
+  {
+    return MeshMaterialVariableArrayContainerView<const DataType>(m_container_value);
+  }
+
  private:
 
   PrivatePartType* m_private_part = nullptr;
@@ -322,5 +334,4 @@ typedef EnvironmentVariableCellInt32 EnvironmentVariableCellArrayInteger;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

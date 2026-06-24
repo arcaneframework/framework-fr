@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -17,9 +17,9 @@
 #include "arcane/core/materials/IMeshMaterialVariable.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
 #include "arcane/core/materials/MeshEnvironmentVariableRef.h"
-#include "arcane/core/materials/MatItem.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/VariableViews.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -175,13 +175,139 @@ class MatItemVariableScalarOutViewT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en écriture pour les variables materiaux scalaire.
+ * \brief Vue en lecture seule sur une variable constituante de tableau 1D.
+ */
+template <typename ItemType, typename DataType>
+class MatItemVariableArrayInViewT
+: public MatVariableViewBase
+{
+ private:
+
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
+
+ public:
+
+  using ContainerViewType = MeshMaterialVariableArrayContainerView<const DataType>;
+
+ public:
+
+  MatItemVariableArrayInViewT(const ViewBuildInfo& vbi, IMeshMaterialVariable* var,
+                              const ContainerViewType& v)
+  : MatVariableViewBase(vbi, var)
+  , m_value(v)
+  {}
+  MatItemVariableArrayInViewT() = default;
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<const DataType> operator[](ComponentItemLocalId lid) const
+  {
+    return m_value[lid];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<const DataType> operator[](PureMatVarIndex pmvi) const
+  {
+    return m_value[pmvi];
+  }
+
+  //! Surcharge pour accéder à la valeur globale à partir de l'identifiant de cellule
+  ARCCORE_HOST_DEVICE SmallSpan<const DataType> operator[](ItemIndexType item) const
+  {
+    return m_value[item];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE SmallSpan<const DataType> value(ComponentItemLocalId mvi) const
+  {
+    return m_value[mvi];
+  }
+
+  //! Surcharge pour accéder à la valeur globale à partir de l'identifiant de cellule
+  ARCCORE_HOST_DEVICE SmallSpan<const DataType> value(ItemIndexType item) const
+  {
+    return m_value[item];
+  }
+
+ private:
+
+  ContainerViewType m_value;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue d'écriture sur une variable constituante de tableau 1D.
+ */
+template <typename ItemType, typename Accessor>
+class MatItemVariableArrayOutViewT
+: public MatVariableViewBase
+{
+ private:
+
+  using DataType = typename Accessor::ValueType;
+  using DataTypeReturnType = DataType&;
+  using ItemIndexType = typename ItemTraitsT<ItemType>::LocalIdType;
+  using ContainerViewType = MeshMaterialVariableArrayContainerView<DataType>;
+
+ public:
+
+  MatItemVariableArrayOutViewT(const ViewBuildInfo& vbi, IMeshMaterialVariable* var, const ContainerViewType& v)
+  : MatVariableViewBase(vbi, var)
+  , m_value(v)
+  {}
+  MatItemVariableArrayOutViewT() = default;
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator[](ComponentItemLocalId lid) const
+  {
+    return Accessor(m_value[lid]);
+  }
+
+  ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
+  {
+    return Accessor(m_value[pmvi]);
+  }
+
+  //! Surcharge pour accéder à la valeur globale à partir de l'identifiant de cellule
+  ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
+  {
+    return Accessor(m_value[item]);
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(ComponentItemLocalId lid) const
+  {
+    return Accessor(m_value[lid]);
+  }
+
+ private:
+
+  ContainerViewType m_value;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en écriture pour les variables materiaux scalaires.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return MatItemVariableScalarOutViewT<Cell, Accessor>(vbi, var.materialVariable(), var._internalValue());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue de lecture/écriture pour les variables constituantes de tableau 1D
+ */
+template <typename DataType> auto
+viewOut(const ViewBuildInfo& vbi, CellMaterialVariableArrayRef<DataType>& var)
+{
+  using Accessor = View1DSetter<DataType>;
+  using ViewType = MatItemVariableArrayOutViewT<Cell, Accessor>;
+  return ViewType(vbi, var.materialVariable(), var.containerView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +325,22 @@ viewOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& va
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Vue de lecture/écriture pour les variables constituantes de tableau 1D
+ */
+template <typename DataType> auto
+viewOut(const ViewBuildInfo& vbi, CellEnvironmentVariableArrayRef<DataType>& var)
+{
+  using Accessor = View1DSetter<DataType>;
+  using ViewType = MatItemVariableArrayOutViewT<Cell, Accessor>;
+  return ViewType(vbi, var.materialVariable(), var.containerView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue en lecture/écriture pour les variables materiaux scalaire
  */
 template <typename DataType> auto
@@ -206,6 +348,19 @@ viewInOut(const ViewBuildInfo& vbi, CellMaterialVariableScalarRef<DataType>& var
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return MatItemVariableScalarOutViewT<Cell, Accessor>(vbi, var.materialVariable(), var._internalValue());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue de lecture/écriture pour les variables constituantes de tableau 1D
+ */
+template <typename DataType> auto
+viewInOut(const ViewBuildInfo& vbi, CellMaterialVariableArrayRef<DataType>& var)
+{
+  using Accessor = View1DGetterSetter<DataType>;
+  using ViewType = MatItemVariableArrayOutViewT<Cell, Accessor>;
+  return ViewType(vbi, var.materialVariable(), var.containerView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,7 +377,22 @@ viewInOut(const ViewBuildInfo& vbi, CellEnvironmentVariableScalarRef<DataType>& 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue de lecture/écriture pour les variables environnementales de tableau 1D
+ */
+template <typename DataType> auto
+viewInOut(const ViewBuildInfo& vbi, CellEnvironmentVariableArrayRef<DataType>& var)
+{
+  using Accessor = View1DGetterSetter<DataType>;
+  using ViewType = MatItemVariableArrayOutViewT<Cell, Accessor>;
+  return ViewType(vbi, var.materialVariable(), var.containerView());
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en lecture pour les variables materiaux scalaire
  */
@@ -234,9 +404,19 @@ viewIn(const ViewBuildInfo& vbi, const CellMaterialVariableScalarRef<DataType>& 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Vue en lecture pour les variables materiaux scalaire
+ * \brief Vue en lecture pour les variables materiaux de tableau 1D
+ */
+template <typename DataType> auto
+viewIn(const ViewBuildInfo& vbi, const CellMaterialVariableArrayRef<DataType>& var)
+{
+  return MatItemVariableArrayInViewT<Cell, DataType>(vbi, var.materialVariable(), var.constContainerView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture pour les variables materiaux scalaires
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& vbi, const CellEnvironmentVariableScalarRef<DataType>& var)
@@ -246,7 +426,21 @@ viewIn(const ViewBuildInfo& vbi, const CellEnvironmentVariableScalarRef<DataType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue en lecture pour les variables materiaux de tableau 1D
+ */
+template <typename DataType> auto
+viewIn(const ViewBuildInfo& vbi, const CellEnvironmentVariableArrayRef<DataType>& var)
+{
+  return MatItemVariableArrayInViewT<Cell, DataType>(vbi, var.materialVariable(), var.constContainerView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane::Accelerator
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif

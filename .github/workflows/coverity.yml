@@ -1,23 +1,23 @@
-name: Coverity Scan
-# Based on https://github.com/arcaneframework/alien/blob/main/.github/workflows/coverity.yml
+﻿name: Coverity Scan
+# Basé sur https://github.com/arcaneframework/alien/blob/main/.github/workflows/coverity.yml
 
 on:
   schedule:
     - cron: '12 0 * * *' # Tous les jours à 00:12.
-  # A executer lorsque l'on demande.
+  # À exécuter lorsque l'on demande.
   workflow_dispatch:
   
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    # Les commandes de configuration et de construction CMake sont agnostiques par rapport à la plateforme et devraient fonctionner de manière égale
+    # sur Windows ou Mac. Vous pouvez convertir cela en une construction matricielle si vous avez besoin
+    # d'une couverture multiplateforme.
+    # Voir : https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2404:gcc_full_stable
+      image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
     steps:
       - name: Display CPU Infos
         shell: bash
@@ -37,8 +37,8 @@ jobs:
 
       - name: Configure CMake
         shell: 'bash'
-        # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        # Configure CMake dans un sous-répertoire 'build'. `C MAKE_BUILD_TYPE` n'est requis que si vous utilisez un générateur à configuration unique tel que make.
+        # Voir https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: |
           cmake \
           -B build \
@@ -50,10 +50,10 @@ jobs:
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
           -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON
 
-      # Setting up ccache from github cached files
+      # Préparation de ccache à partir de fichiers mis en cache github
       - name: Prepare coverity
         id: coverity-hash
-        # Disabled for `act`
+        # Désactivé pour `act`
         if: ${{ !env.ACT }}
         env:
           COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
 
       - name: Restore cached files
         uses: actions/cache@v5
-        # Disabled for `act`
+        # Désactivé pour `act`
         if: ${{ !env.ACT }}
         with:
           path: coverity-tool
@@ -87,7 +87,7 @@ jobs:
 
       - name: Build with coverity
         shell: bash
-        # Build, using cov-build and cov-int directory as output (mandatory)
+        # Construction, en utilisant cov-build et le répertoire cov-int comme sortie (obligatoire)
         run: |
           export PATH="${PWD}/coverity-tool/bin:${PATH}"
           cov-build --dir cov-int make -C build -j $(nproc)

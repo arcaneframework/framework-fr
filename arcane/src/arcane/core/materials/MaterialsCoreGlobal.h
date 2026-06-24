@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialsCoreGlobal.h                                       (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* Déclarations générales pour les matériaux Arcane.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
 #define ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
@@ -39,7 +39,7 @@ namespace Arcane::Materials::matimpl
 {
 using ::Arcane::ItemBase;
 class ConstituentItemBase;
-}
+} // namespace Arcane::Materials::matimpl
 
 namespace Arcane::Materials
 {
@@ -163,7 +163,15 @@ using ComponentCellVectorView = ComponentItemVectorView;
 //! Liste de composants multi-matériaux du maillage.
 using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
-template <typename DataType> class CellMaterialVariableScalarRef;
+template <typename DataType>
+class CellMaterialVariableScalarRef;
+template <typename DataType>
+class CellEnvironmentVariableScalarRef;
+
+template <typename DataType_>
+class CellMaterialVariableArrayRef;
+template <typename DataType_>
+class CellEnvironmentVariableArrayRef;
 
 template <typename ItemType, typename DataType>
 class IScalarMeshMaterialVariable;
@@ -192,11 +200,11 @@ using EnvCellLocalId = EnvItemLocalId;
 /*---------------------------------------------------------------------------*/
 
 #if 0
-//! Selection sur un 'EvnCellVectorView'
+//! Sélection sur un 'EvnCellVectorView'
 using EnvCellVectorSelectionView = ConstituentItemIndexedSelectionView<EnvCellVectorView>;
-//! Selection sur un 'MatCellVectorView'
+//! Sélection sur un 'MatCellVectorView'
 using MatCellVectorSelectionView = ConstituentItemIndexedSelectionView<MatCellVectorView>;
-//! Selection sur un 'ComponentCellVectorView'
+//! Sélection sur un 'ComponentCellVectorView'
 using ComponentCellVectorSelectionView = ConstituentItemIndexedSelectionView<ComponentCellVectorView>;
 #endif
 class EnvCellVectorSelectionView;
@@ -255,4 +263,4 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::Materials::IConstituentItemVecto
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

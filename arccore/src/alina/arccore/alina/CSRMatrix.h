@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* CSRMatrix.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Sparse matrix stored in CSR (Compressed Sparse Row) format.               */
+/* Matrice creuse stockée au format CSR (Compressed Sparse Row).             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_CSRMATRIX_H
 #define ARCCORE_ALINA_CSRMATRIX_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -26,7 +26,7 @@
 #include "arccore/alina/AlinaGlobal.h"
 #include "arccore/alina/AlinaUtils.h"
 
-// A supprimer
+// À supprimer
 #include "arccore/alina/BackendInterface.h"
 
 #include <cstddef>
@@ -38,7 +38,7 @@
 namespace Arcane::Alina
 {
 
-//! Array for internal CSRMatrix fields
+//! Tableau pour les champs internes de CSRMatrix
 template <typename DataType>
 class CSRArray
 {
@@ -51,8 +51,8 @@ class CSRArray
   CSRArray& operator=(const CSRArray&) = delete;
   ~CSRArray()
   {
-    // Do not free memory here because we are not the owner
-    // if own_data is false. The CSRMatrix will handle that.
+    // Ne pas libérer la mémoire ici car nous ne sommes pas le propriétaire
+    // si own_data est faux. CSRMatrix s'en chargera.
   }
 
  public:
@@ -68,7 +68,7 @@ class CSRArray
 
  public:
 
-  //! Set the new size. WARNING: this method do not handle the delete of the current value
+  //! Définir la nouvelle taille. ATTENTION : cette méthode ne gère pas la suppression de la valeur actuelle
   void resize(size_t new_size)
   {
     ptr = new val_type[new_size];
@@ -91,7 +91,7 @@ class CSRArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sparse matrix stored in CSR (Compressed Sparse Row) format.
+ * \brief Matrice creuse stockée au format CSR (Compressed Sparse Row).
  */
 template <typename val_t, typename col_t, typename ptr_t>
 struct CSRMatrix
@@ -130,15 +130,15 @@ public:
   {
     ARCCORE_ALINA_TIC("CSR copy");
     precondition(static_cast<ptrdiff_t>(nrows + 1) == std::distance(std::begin(ptr_range), std::end(ptr_range)),
-                 "ptr_range has wrong size in crs constructor");
+                 "ptr_range a une taille incorrecte dans le constructeur crs");
 
     m_nb_non_zero = ptr_range[nrows];
 
     precondition(static_cast<ptrdiff_t>(m_nb_non_zero) == std::distance(std::begin(col_range), std::end(col_range)),
-                 "col_range has wrong size in crs constructor");
+                 "col_range a une taille incorrecte dans le constructeur crs");
 
     precondition(static_cast<ptrdiff_t>(m_nb_non_zero) == std::distance(std::begin(val_range), std::end(val_range)),
-                 "val_range has wrong size in crs constructor");
+                 "val_range a une taille incorrecte dans le constructeur crs");
 
     ptr.resize(nrows + 1);
     col.resize(m_nb_non_zero);
@@ -158,7 +158,7 @@ public:
     ARCCORE_ALINA_TOC("CSR copy");
   }
 
-  // TODO: A supprimer. Mettre cela dans une function externe pour ne pas dépendre de backend
+  // TODO: À supprimer. Placer ceci dans une fonction externe afin de ne pas dépendre du backend
   template <class Matrix>
   CSRMatrix(const Matrix& A)
   : m_nb_row(backend::nbRow(A))
@@ -227,7 +227,7 @@ public:
   , val(other.val)
   , own_data(other.own_data)
   {
-    other.m_nbRow = 0;
+    other.m_nb_row = 0;
     other.ncols = 0;
     other.m_nb_non_zero = 0;
     other.ptr = 0;
@@ -287,7 +287,7 @@ public:
 
   void set_size(size_t n, size_t m, bool clean_ptr = false)
   {
-    precondition(!ptr, "matrix data has already been allocated!");
+    precondition(!ptr, "les données de la matrice ont déjà été allouées !");
 
     m_nb_row = n;
     ncols = m;
@@ -328,7 +328,7 @@ public:
 
   void set_nonzeros(size_t n, bool need_values = true)
   {
-    precondition(!col && !val, "matrix data has already been allocated!");
+    precondition(!col && !val, "les données de la matrice ont déjà été allouées !");
 
     m_nb_non_zero = n;
 

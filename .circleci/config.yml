@@ -1,4 +1,4 @@
-version: 2.1
+﻿version: 2.1
 
 executors:
   # 4 CPU - 8Go RAM - 20c/min
@@ -54,7 +54,7 @@ jobs:
 
     executor: <<parameters.arch>>
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2404:gcc-14_<<parameters.image_version>>_20250830
+      - image: ghcr.io/arcaneframework/ubuntu-2604:gcc-15_<<parameters.image_version>>_20260619
 
     steps:
       - when:
@@ -107,7 +107,7 @@ jobs:
           name: "Set C++ compiler and default MPI"
           command: |
             source /root/scripts/use_openmpi.sh
-            source /root/scripts/use_gcc-14.sh
+            source /root/scripts/use_gcc.sh
 
       - run:
           name: Display set variables
@@ -248,7 +248,7 @@ workflows:
 
   # WFs exécutés tous les jours.
   every-day:
-    triggers: #use the triggers key to indicate a scheduled build
+    triggers: # Utiliser la clé triggers pour indiquer une construction planifiée
       - schedule:
           cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
           filters:
