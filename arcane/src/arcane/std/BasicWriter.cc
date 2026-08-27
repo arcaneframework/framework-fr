@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicWriter.cc                                              (C) 2000-2025 */
+/* BasicWriter.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Ecriture simple pour les protections/reprises.                            */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,8 @@
 #include "arcane/core/internal/IVariableInternal.h"
 
 #include "arcane/std/internal/ParallelDataWriter.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,7 +75,7 @@ initialize()
     if (!data_compressor_name.null()) {
       data_compressor_name = data_compressor_name + "DataCompressor";
       auto bc = _createDeflater(m_application, data_compressor_name);
-      info() << "Use data_compressor from environment variable ARCANE_DEFLATER name=" << data_compressor_name;
+      info() << "Utilisation du data_compressor de la variable d'environnement ARCANE_DEFLATER nom=" << data_compressor_name;
       m_data_compressor = bc;
       m_text_writer->setDataCompressor(bc);
     }
@@ -85,7 +87,7 @@ initialize()
     if (hash_algorithm_name.null())
       hash_algorithm_name = "SHA3_256";
     else
-      info() << "Use hash algorithm from environment variable ARCANE_HASHALGORITHM name=" << hash_algorithm_name;
+      info() << "Utilisation de l'algorithme de hachage de la variable d'environnement ARCANE_HASHALGORITHM nom=" << hash_algorithm_name;
     hash_algorithm_name = hash_algorithm_name + "HashAlgorithm";
     auto v = _createHashAlgorithm(m_application, hash_algorithm_name);
     m_hash_algorithm = v;
@@ -96,7 +98,7 @@ initialize()
   if (!m_compare_hash_algorithm.get()) {
     String algo_name = platform::getEnvironmentVariable("ARCANE_COMPAREHASHALGORITHM");
     if (!algo_name.empty()) {
-      info() << "Use global hash algorithm from environment variable ARCANE_COMPAREHASHALGORITHM name=" << algo_name;
+      info() << "Utilisation de l'algorithme de hachage global de la variable d'environnement ARCANE_COMPAREHASHALGORITHM nom=" << algo_name;
       algo_name = algo_name + "HashAlgorithm";
       auto v = _createHashAlgorithm(m_application, algo_name);
       m_compare_hash_algorithm = v;
@@ -105,7 +107,7 @@ initialize()
 
   m_global_writer = new BasicGenericWriter(m_application, m_version, m_text_writer);
   if (m_verbose_level > 0)
-    info() << "** OPEN MODE = " << m_open_mode;
+    info() << "** MODE D'OUVERTURE = " << m_open_mode;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,7 +117,7 @@ void BasicWriter::
 _checkNoInit()
 {
   if (m_is_init)
-    ARCANE_FATAL("initialize() has already been called");
+    ARCANE_FATAL("initialize() a déjà été appelé");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,7 +135,7 @@ _getWriter(IVariable* var)
 void BasicWriter::
 _directWriteVal(IVariable* var, IData* data)
 {
-  info(4) << "DIRECT WRITE VAL v=" << var->fullName();
+  info(4) << "ÉCRITURE DIRECTE VAL v=" << var->fullName();
 
   IData* write_data = data;
   Int64ConstArrayView written_unique_ids;
@@ -158,7 +160,7 @@ _directWriteVal(IVariable* var, IData* data)
     }
     // Ecrit les informations du groupe si c'est la première fois qu'on accède à ce groupe.
     if (m_written_groups.find(group) == m_written_groups.end()) {
-      info(5) << "WRITE GROUP " << group.name();
+      info(5) << "GROUPE D'ÉCRITURE " << group.name();
       const IItemFamily* item_family = group.itemFamily();
       const String& gname = group.name();
       String group_full_name = item_family->fullName() + "_" + gname;
@@ -207,7 +209,7 @@ void BasicWriter::
 write(IVariable* var, IData* data)
 {
   if (var->isPartial()) {
-    info() << "** WARNING: partial variable not implemented in BasicWriter";
+    info() << "** AVERTISSEMENT : variable partielle non implémentée dans BasicWriter";
     return;
   }
   _directWriteVal(var, data);

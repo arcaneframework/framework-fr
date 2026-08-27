@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONUnitTest.cc                                             (C) 2000-2025 */
+/* JSONUnitTest.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Test du lecteur/ecrivain JSON.                                            */
 /*---------------------------------------------------------------------------*/
@@ -17,9 +17,9 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/JSONReader.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IIOMng.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IIOMng.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -27,6 +27,8 @@
 #include "arccore/common/internal/json/rapidjson/writer.h"
 #include "arccore/common/internal/json/rapidjson/document.h"
 #include "arccore/common/internal/json/rapidjson/stringbuffer.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,6 +39,7 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Service de test du lecteur/ecrivain JSON.
  */
@@ -63,7 +66,7 @@ class JSONUnitTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(JSONUnitTest,IUnitTest,JSONUnitTest);
+ARCANE_REGISTER_CASE_OPTIONS_NOAXL_FACTORY(JSONUnitTest, IUnitTest, JSONUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -101,27 +104,26 @@ _testJSON_1()
 {
   info() << "TEST_JSON 1!";
   //using namespace rapidjson;
-  // 1. Parse a JSON string into DOM.
+  // 1. Analyse une chaîne JSON en DOM.
   const char* json = "{\"project\":\"rapidjson\",\"stars\":10, \"double\":\"0x1.999999999999ap-4\"}";
   rapidjson::Document d;
   d.Parse(json);
-  if (d.HasParseError()){
+  if (d.HasParseError()) {
     info() << "ERROR: " << d.GetParseError();
   }
 
-  // 2. Modify it by DOM.
+  // 2. Le modifie via le DOM.
   rapidjson::Value& s = d["stars"];
   s.SetInt(s.GetInt() + 1);
   //Value& s2 = d["double"];
   //info() << "JSON: Double" << s2.GetDouble();
   s.SetInt(s.GetInt() + 1);
-  // 3. Stringify the DOM
+  // 3. Transforme le DOM en chaîne.
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   d.Accept(writer);
-  // Output {"project":"rapidjson","stars":11}
+  // Sortie {"project":"rapidjson","stars":11}
   info() << "JSON: " << buffer.GetString();
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -139,14 +141,14 @@ _testJSON_2()
   String str1("test1");
   String null_str;
   serializer.beginObject();
-  serializer.write("int_values",int_values);
-  serializer.write("real_values",real_values);
-  serializer.write("int64_value",(Int64)-25424);
-  serializer.write("uint64_value",(UInt64)-3131);
-  serializer.write("string_value",str1);
-  serializer.write("null_string_value",null_str);
-  serializer.write("real_hex_value",real_value);
-  serializer.write("real_value",real_value);
+  serializer.write("int_values", int_values);
+  serializer.write("real_values", real_values);
+  serializer.write("int64_value", (Int64)-25424);
+  serializer.write("uint64_value", (UInt64)-3131);
+  serializer.write("string_value", str1);
+  serializer.write("null_string_value", null_str);
+  serializer.write("real_hex_value", real_value);
+  serializer.write("real_value", real_value);
   serializer.endObject();
   StringView buf = serializer.getBuffer();
   info() << "BUF=" << buf;
@@ -154,7 +156,6 @@ _testJSON_2()
     std::ofstream ofile("test1.json");
     ofile << buf;
   }
-  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,9 +169,9 @@ _testJSON_Read_1()
 
   IIOMng* io_mng = subDomain()->ioMng();
   UniqueArray<Byte> bytes;
-  bool is_bad = io_mng->localRead("test1.json",bytes,false);
+  bool is_bad = io_mng->localRead("test1.json", bytes, false);
   if (is_bad)
-    ARCANE_FATAL("Can not read file");
+    ARCANE_FATAL("Impossible de lire le fichier");
 
   JSONDocument document;
   document.parse(bytes);
@@ -181,53 +182,53 @@ _testJSON_Read_1()
   {
     String strv = v1.value().value();
     if (!strv.null())
-      ARCANE_FATAL("Value 'v1'  should be null (v={0})", strv);
+      ARCANE_FATAL("La valeur 'v1' doit être nulle (v={0})", strv);
     String strview = v1.value().valueAsStringView();
     if (!strview.empty())
-      ARCANE_FATAL("Value 'v1' should be empty (v={0})", strview);
+      ARCANE_FATAL("La valeur 'v1' doit être vide (v={0})", strview);
   }
   JSONKeyValue v2 = doc_root.keyValueChild("real_values");
   info() << "IS_V2?=" << v2.null() << " name=" << v2.name() << " values=" << v2.value().valueAsStringView();
   {
     String strv = v2.value().value();
     if (strv.null())
-      ARCANE_FATAL("Value 'v2' should not be null (v={0})", strv);
+      ARCANE_FATAL("La valeur 'v2' ne doit pas être nulle (v={0})", strv);
     String strview = v2.value().valueAsStringView();
     if (strview.empty())
-      ARCANE_FATAL("Value 'v2' should not be empty (v={0})", strview);
+      ARCANE_FATAL("La valeur 'v2' ne doit pas être vide (v={0})", strview);
   }
   {
     JSONValue json_str = doc_root.expectedChild("string_value");
     String strv = json_str.value();
-    if (strv!=str1)
-      ARCANE_FATAL("Bad value for 'strv' v='{0}' expected='{1}'", strv, str1);
+    if (strv != str1)
+      ARCANE_FATAL("Mauvaise valeur pour 'strv' v='{0}' attendue='{1}'", strv, str1);
     String strview = json_str.valueAsStringView();
-    if (strview!=str1)
-      ARCANE_FATAL("Bad value for 'strview' v='{0}' expected='{1}'", strview, str1);
+    if (strview != str1)
+      ARCANE_FATAL("Mauvaise valeur pour 'strview' v='{0}' attendue='{1}'", strview, str1);
   }
   {
     JSONValue v3 = doc_root.child("int64_value");
     Int64 v = v3.valueAsInt64();
-    if (v!=(-25424))
-      ARCANE_FATAL("Bad value for Int64 = {0}",v);
+    if (v != (-25424))
+      ARCANE_FATAL("Mauvaise valeur pour Int64 = {0}", v);
   }
   {
     JSONValue v4 = doc_root.child("real_value");
     Real v = v4.valueAsReal();
     Real expected_value = -2.3e-5;
-    if (v!=expected_value)
-      ARCANE_FATAL("Bad value for Real v={0} expected={1}",v, expected_value);
+    if (v != expected_value)
+      ARCANE_FATAL("Mauvaise valeur pour Real v={0} attendue={1}", v, expected_value);
   }
 
-  for( auto& x : doc_root.keyValueChildren() ){
-    info() << "CHILD NAME=" << x.name();
+  for (auto& x : doc_root.keyValueChildren()) {
+    info() << "NOM DE L'ENFANT=" << x.name();
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

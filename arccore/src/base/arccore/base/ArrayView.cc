@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.cc                                                (C) 2000-2025 */
+/* ArrayView.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -27,30 +27,37 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file Span.h
- * \brief Types et fonctions associés aux classes SpanImpl, SmallSpan and Span.
+ * \brief Types et fonctions associés aux classes SpanImpl, SmallSpan et Span.
  */
+
 /*!
  * \file Span2.h
- * \brief Types et fonctions associés aux classes Span2Impl, Small2Span and Span2.
+ * \brief Types et fonctions associés aux classes Span2Impl, Small2Span et Span2.
  */
+
 /*!
  * \file ArrayView.h
  * \brief Types et fonctions associés aux classes ArrayView et ConstArrayView.
  */
+
 /*!
  * \file Array2View.h
  * \brief Types et fonctions associés aux classes Array2View et ConstArray2View.
  */
+
 /*!
  * \file Array3View.h
  * \brief Types et fonctions associés aux classes Array3View et ConstArray3View.
  */
+
 /*!
  * \file Array4View.h
  * \brief Types et fonctions associés aux classes Array4View et ConstArray4View.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,43 +68,41 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 //! Lance une exception 'ArgumentException'
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowTooBigInteger [[noreturn]] (std::size_t size)
 {
-  ARCCORE_THROW(ArgumentException,"value '{0}' too big for Array size",size);
+  ARCCORE_THROW(ArgumentException, "value '{0}' too big for Array size", size);
 }
 
 //! Lance une exception 'ArgumentException'
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowTooBigInt64 [[noreturn]] (std::size_t size)
 {
-  ARCCORE_THROW(ArgumentException,"value '{0}' too big to fit in Int64",size);
+  ARCCORE_THROW(ArgumentException, "value '{0}' too big to fit in Int64", size);
 }
 
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowNegativeSize [[noreturn]] (Int64 size)
 {
-  ARCCORE_THROW(ArgumentException,"invalid negative value '{0}' for Array size",size);
+  ARCCORE_THROW(ArgumentException, "invalid negative value '{0}' for Array size", size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-binaryWrite(std::ostream& ostr,const Span<const std::byte>& bytes)
+void binaryWrite(std::ostream& ostr, const Span<const std::byte>& bytes)
 {
   auto* ptr = reinterpret_cast<const char*>(bytes.data());
-  ostr.write(ptr,bytes.size());
+  ostr.write(ptr, bytes.size());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-binaryRead(std::istream& istr,const Span<std::byte>& bytes)
+void binaryRead(std::istream& istr, const Span<std::byte>& bytes)
 {
   auto* ptr = reinterpret_cast<char*>(bytes.data());
-  istr.read(ptr,bytes.size());
+  istr.read(ptr, bytes.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,7 +117,7 @@ _throwBadSize(Int64 wanted_size, Int64 expected_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -41,10 +41,12 @@ add_subdirectory(honeycomb_heat)
 add_subdirectory(simple_csv_output)
 add_subdirectory(multiple_mesh)
 add_subdirectory(simple_heat)
+add_subdirectory(mixed_accelerator)
 if (ARCANE_HAS_DOTNET_WRAPPER)
   add_subdirectory(user_function)
 endif()
 add_subdirectory(simple_postprocessor)
+add_subdirectory(dofs_on_cells)
 
 # ----------------------------------------------------------------------------
 # Local Variables:

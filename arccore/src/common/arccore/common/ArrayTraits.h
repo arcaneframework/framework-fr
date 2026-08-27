@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayTraits.h                                               (C) 2000-2025 */
+/* ArrayTraits.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Caractéristiques d'un tableau 1D.                                         */
 /*---------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ class ArrayTraits
  */
 #define ARCCORE_DEFINE_ARRAY_PODTYPE(datatype) \
   template <> \
-  class ArrayTraits<datatype>           \
+  class ArrayTraits<datatype> \
   { \
    public: \
 \
@@ -71,6 +71,7 @@ class ArrayTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 //! Implémentation par défaut indiquant qu'un type n'est pas POD
 template <typename T>
 class ArrayTraits<T*>
@@ -111,6 +112,39 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
 ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::HPReal);
+
+// Pas POD par défaut pour la compatibilité héritée
+// mais cela peut améliorer les performances en les rendant POD.
+#if defined(ARCCORE_USE_POD_FOR_REALN_TYPE)
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real2);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real3);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real2x2);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real3x3);
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Spécialisation pour NumVector qui est considéré comme un type POD
+template <typename DataType, int Size>
+class ArrayTraits<Arcane::NumVector<DataType, Size>>
+{
+ public:
+
+  using ConstReferenceType = const Arcane::NumVector<DataType, Size>&;
+  using IsPODType = TrueType;
+};
+
+//! Spécialisation pour NumMatrix qui est considéré comme un type POD
+template <typename DataType, int Row, int Column>
+class ArrayTraits<Arcane::NumMatrix<DataType, Row, Column>>
+{
+ public:
+
+  using ConstReferenceType = const Arcane::NumMatrix<DataType, Row, Column>&;
+  using IsPODType = TrueType;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

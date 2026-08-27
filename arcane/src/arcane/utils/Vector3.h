@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Vector3.h                                                   (C) 2000-2023 */
+/* Vector3.h                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Vecteur à 3 dimensions.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/UtilsTypes.h"
 
 #include <iostream>
+#include <array>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,6 +27,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe gérant un vecteur de dimension 3 de type \a T
  *
@@ -130,6 +132,7 @@ class Vector3
     y += b;
     z += b;
   }
+
   //! Ajoute \a b à l'instance
   constexpr ARCCORE_HOST_DEVICE void operator+=(const ThatClass& b)
   {
@@ -137,27 +140,31 @@ class Vector3
     y += b.y;
     z += b.z;
   }
-  //! Soustrait \a b à l'instance
+
+  //! Soustrait \a b de l'instance
   constexpr ARCCORE_HOST_DEVICE void operator-=(const T& b)
   {
     x -= b;
     y -= b;
     z -= b;
   }
-  //! Soustrait \a b à l'instance
+
+  //! Soustrait \a b de l'instance
   constexpr ARCCORE_HOST_DEVICE void operator-=(const ThatClass& b)
   {
     x -= b.x;
     y -= b.y;
     z -= b.z;
   }
-  //! Multiple chaque composante de l'instance par \a b
+
+  //! Multiplie chaque composante de l'instance par \a b
   constexpr ARCCORE_HOST_DEVICE void operator*=(const T& b)
   {
     x *= b;
     y *= b;
     z *= b;
   }
+
   //! Divise chaque composante de l'instance par \a b
   constexpr ARCCORE_HOST_DEVICE void operator/=(const T& b)
   {
@@ -165,44 +172,53 @@ class Vector3
     y /= b;
     z /= b;
   }
-  //! Somme composante par composante de \a a et \a b
+
+  //! Additionne composante par composante \a a et \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
   {
     return ThatClass(a.x + b.x, a.y + b.y, a.z + b.z);
   }
+
   //! Retourne \a a en ajoutant \a b à chaque composante
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x + b, a.y + b, a.z + b);
   }
+
   //! Retourne \a b en ajoutant \a a à chaque composante
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const T& a, const ThatClass& b)
   {
     return ThatClass(a + b.x, a + b.y, a + b.z);
   }
+
   //! Soustrait chaque composante de \a a par chaque composante de \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
   {
     return ThatClass(a.x - b.x, a.y - b.y, a.z - b.z);
   }
+
   //! Soustrait chaque composante de \a a par \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x - b, a.y - b, a.z - b);
   }
+
   //! Retourne l'opposé de l'instance
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const { return ThatClass(-x, -y, -z); }
+
 
   //! Multiplie chaque composante de \a b par \a a
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const T& a, const ThatClass& b)
   {
     return ThatClass(b.x * a, b.y * a, b.z * a);
   }
+
   //! Multiplie chaque composante de \a a par \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& a, const T& b)
   {
     return ThatClass(a.x * b, a.y * b, a.z * b);
   }
+
   //! Divise chaque composante de \a a par \a b
   friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& a, const T& b)
   {

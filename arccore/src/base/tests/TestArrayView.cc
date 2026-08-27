@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,35 +11,45 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
+#include "arccore/base/MDSpan.h"
 
 #include <vector>
 #include <type_traits>
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Array2View,Misc)
+TEST(Array2View, Misc)
 {
   using namespace Arccore;
   int nb_x = 3;
   int nb_y = 4;
-  std::vector<Int32> buf(nb_x*nb_y);
-  for( size_t i=0, n=buf.size(); i<n; ++i )
-    buf[i] = (Int32)(i+1);
+  std::vector<Int32> buf(nb_x * nb_y);
+  for (size_t i = 0, n = buf.size(); i < n; ++i)
+    buf[i] = (Int32)(i + 1);
 
-  ConstArray2View<Int32> v(buf.data(),nb_x,nb_y);
+  Array2View<Int32> v0(buf.data(), nb_x, nb_y);
+  const Array2View<Int32> const_v0(v0);
+  ASSERT_EQ(v0.data(), buf.data());
+  ASSERT_EQ(const_v0.data(), v0.data());
+
+  ASSERT_EQ(v0.unguardedBasePointer(), buf.data());
+  ASSERT_EQ(const_v0.unguardedBasePointer(), v0.data());
+
+  ConstArray2View<Int32> v(buf.data(), nb_x, nb_y);
   Integer global_index = 0;
-  for( Integer x=0, xn=v.dim1Size(); x<xn; ++x ){
-    for( Integer y=0, yn=v.dim2Size(); y<yn; ++y ){
+  for (Integer x = 0, xn = v.dim1Size(); x < xn; ++x) {
+    for (Integer y = 0, yn = v.dim2Size(); y < yn; ++y) {
       ++global_index;
       Int32 val1 = v[x][y];
-      Int32 val2 = v.item(x,y);
-      std::cout  << " V=" << val1 << " x=" << x << " y=" << y;
-      ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
-      ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
-      ASSERT_EQ(v(x,y),val1);
+      Int32 val2 = v.item(x, y);
+      std::cout << " V=" << val1 << " x=" << x << " y=" << y;
+      ASSERT_TRUE(val1 == val2) << "Différence des valeurs v1=" << val1 << " v2=" << val2;
+      ASSERT_TRUE(val1 == global_index) << "Mauvaise valeur v1=" << val1 << " attendue=" << global_index;
+      ASSERT_EQ(v(x, y), val1);
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-      bool is_ok = v[x,y]==val1;
+      bool is_ok = v[x, y] == val1;
       ASSERT_TRUE(is_ok);
 #endif
     }
@@ -49,30 +59,30 @@ TEST(Array2View,Misc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Array3View,Misc)
+TEST(Array3View, Misc)
 {
   using namespace Arccore;
   int nb_x = 3;
   int nb_y = 4;
   int nb_z = 5;
-  std::vector<Int32> buf(nb_x*nb_y*nb_z);
-  for( size_t i=0, n=buf.size(); i<n; ++i )
-    buf[i] = (Int32)(i+1);
+  std::vector<Int32> buf(nb_x * nb_y * nb_z);
+  for (size_t i = 0, n = buf.size(); i < n; ++i)
+    buf[i] = (Int32)(i + 1);
 
-  ConstArray3View<Int32> v(buf.data(),nb_x,nb_y,nb_z);
+  ConstArray3View<Int32> v(buf.data(), nb_x, nb_y, nb_z);
   Integer global_index = 0;
-  for( Integer x=0, xn=v.dim1Size(); x<xn; ++x ){
-    for( Integer y=0, yn=v.dim2Size(); y<yn; ++y ){
-      for( Integer z=0, zn=v.dim3Size(); z<zn; ++z ){
+  for (Integer x = 0, xn = v.dim1Size(); x < xn; ++x) {
+    for (Integer y = 0, yn = v.dim2Size(); y < yn; ++y) {
+      for (Integer z = 0, zn = v.dim3Size(); z < zn; ++z) {
         ++global_index;
         Int32 val1 = v[x][y][z];
-        Int32 val2 = v.item(x,y,z);
-        std::cout  << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << '\n';
-        ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
-        ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
-        ASSERT_EQ(v(x,y,z),val1);
+        Int32 val2 = v.item(x, y, z);
+        std::cout << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << '\n';
+        ASSERT_TRUE(val1 == val2) << "Différence des valeurs v1=" << val1 << " v2=" << val2;
+        ASSERT_TRUE(val1 == global_index) << "Mauvaise valeur v1=" << val1 << " attendue=" << global_index;
+        ASSERT_EQ(v(x, y, z), val1);
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-        bool is_ok = v[x,y,z] == val1;
+        bool is_ok = v[x, y, z] == val1;
         ASSERT_TRUE(is_ok);
 #endif
       }
@@ -83,32 +93,32 @@ TEST(Array3View,Misc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Array4View,Misc)
+TEST(Array4View, Misc)
 {
   using namespace Arccore;
   int nb_x = 2;
   int nb_y = 3;
   int nb_z = 4;
   int nb_a = 5;
-  std::vector<Int32> buf(nb_x*nb_y*nb_z*nb_a);
-  for( size_t i=0, n=buf.size(); i<n; ++i )
-    buf[i] = (Int32)(i+1);
+  std::vector<Int32> buf(nb_x * nb_y * nb_z * nb_a);
+  for (size_t i = 0, n = buf.size(); i < n; ++i)
+    buf[i] = (Int32)(i + 1);
 
-  ConstArray4View<Int32> v(buf.data(),nb_x,nb_y,nb_z,nb_a);
+  ConstArray4View<Int32> v(buf.data(), nb_x, nb_y, nb_z, nb_a);
   Integer global_index = 0;
-  for( Integer x=0, xn=v.dim1Size(); x<xn; ++x ){
-    for( Integer y=0, yn=v.dim2Size(); y<yn; ++y ){
-      for( Integer z=0, zn=v.dim3Size(); z<zn; ++z ){
-        for( Integer a=0, an=v.dim4Size(); a<an; ++a ){
+  for (Integer x = 0, xn = v.dim1Size(); x < xn; ++x) {
+    for (Integer y = 0, yn = v.dim2Size(); y < yn; ++y) {
+      for (Integer z = 0, zn = v.dim3Size(); z < zn; ++z) {
+        for (Integer a = 0, an = v.dim4Size(); a < an; ++a) {
           ++global_index;
           Int32 val1 = v[x][y][z][a];
-          Int32 val2 = v.item(x,y,z,a);
+          Int32 val2 = v.item(x, y, z, a);
           std::cout << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << " a=" << a << '\n';
-          ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
-          ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
-          ASSERT_EQ(v(x,y,z,a),val1);
+          ASSERT_TRUE(val1 == val2) << "Différence des valeurs v1=" << val1 << " v2=" << val2;
+          ASSERT_TRUE(val1 == global_index) << "Mauvaise valeur v1=" << val1 << " attendue=" << global_index;
+          ASSERT_EQ(v(x, y, z, a), val1);
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-          bool is_ok = v[x,y,z,a] == val1;
+          bool is_ok = v[x, y, z, a] == val1;
           ASSERT_TRUE(is_ok);
 #endif
         }
@@ -122,90 +132,97 @@ TEST(Array4View,Misc)
 
 namespace
 {
-template<typename T> void
+template <typename T> void
 _testIterator(T values)
 {
   {
     auto r1 = std::make_reverse_iterator(values.end());
     auto r2 = std::make_reverse_iterator(values.begin());
-    for( ; r1!=r2; ++ r1 ){
+    for (; r1 != r2; ++r1) {
       std::cout << "RVALUE = " << *r1 << '\n';
     }
   }
   {
     auto r1 = values.rbegin();
-    ASSERT_EQ((*r1),7);
+    ASSERT_EQ((*r1), 7);
     ++r1;
-    ASSERT_EQ((*r1),9);
+    ASSERT_EQ((*r1), 9);
     ++r1;
-    ASSERT_EQ((*r1),4);
+    ASSERT_EQ((*r1), 4);
     ++r1;
-    ASSERT_TRUE((r1==values.rend()));
+    ASSERT_TRUE((r1 == values.rend()));
   }
 }
 
-}
+} // namespace
 
-TEST(ArrayView,Iterator)
+TEST(ArrayView, Iterator)
 {
   using namespace Arccore;
 
   std::vector<Arccore::Int32> vector_values = { 4, 9, 7 };
   Integer vec_size = arccoreCheckArraySize(vector_values.size());
 
-  ArrayView<Int32> values1(vec_size,vector_values.data());
+  ArrayView<Int32> values1(vec_size, vector_values.data());
   _testIterator(values1);
 
-  ConstArrayView<Int32> values2(vec_size,vector_values.data());
+  ConstArrayView<Int32> values2(vec_size, vector_values.data());
   _testIterator(values2);
 
-  Span<Int32> values3(vector_values.data(),vector_values.size());
+  Span<Int32> values3(vector_values.data(), vector_values.size());
   _testIterator(values3);
 
-  Span<const Int32> values4(vector_values.data(),vector_values.size());
+  Span<const Int32> values4(vector_values.data(), vector_values.size());
   _testIterator(values4);
+
+  // S'assurer que les itérateurs Array sont de type random_access_iterator
+  // De plus, la fonction std::sort nécessite un itérateur aléatoire afin que nous puissions
+  // la tester avec notre vue.
+  static_assert(std::random_access_iterator<ArrayView<Int32>::iterator>);
+  static_assert(std::random_access_iterator<ArrayView<Int32>::const_iterator>);
+  std::sort(values1.begin(),values1.end());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Span,Convert)
+TEST(Span, Convert)
 {
   using namespace Arccore;
   std::vector<Int64> vector_values = { 5, 7, 11 };
   Int32 vector_size = static_cast<Int32>(vector_values.size());
-  ArrayView<Int64> a_view(vector_size,vector_values.data());
-  ASSERT_EQ(a_view.size(),vector_size) << "Bad a_view size";
-  ASSERT_EQ(a_view[0],vector_values[0]) << "Bad a_view[0]";
-  ASSERT_EQ(a_view[1],vector_values[1]) << "Bad a_view[1]";
-  ASSERT_EQ(a_view[2],vector_values[2]) << "Bad a_view[2]";
+  ArrayView<Int64> a_view(vector_size, vector_values.data());
+  ASSERT_EQ(a_view.size(), vector_size) << "Taille incorrecte de a_view";
+  ASSERT_EQ(a_view[0], vector_values[0]) << "a_view[0] incorrect";
+  ASSERT_EQ(a_view[1], vector_values[1]) << "a_view[1] incorrect";
+  ASSERT_EQ(a_view[2], vector_values[2]) << "a_view[2] incorrect";
 
-  ConstArrayView<Int64> a_const_view(vector_size,vector_values.data());
-  ASSERT_EQ(a_const_view.size(),vector_size) << "Bad a_const_view size";
-  ASSERT_EQ(a_const_view[0],vector_values[0]) << "Bad a_const_view[0]";
-  ASSERT_EQ(a_const_view[1],vector_values[1]) << "Bad a_const_view[1]";
-  ASSERT_EQ(a_const_view[2],vector_values[2]) << "Bad a_const_view[2]";
+  ConstArrayView<Int64> a_const_view(vector_size, vector_values.data());
+  ASSERT_EQ(a_const_view.size(), vector_size) << "Taille incorrecte de a_const_view";
+  ASSERT_EQ(a_const_view[0], vector_values[0]) << "a_const_view[0] incorrect";
+  ASSERT_EQ(a_const_view[1], vector_values[1]) << "a_const_view[1] incorrect";
+  ASSERT_EQ(a_const_view[2], vector_values[2]) << "a_const_view[2] incorrect";
 
-  Span<const Int64> a_const_span(vector_values.data(),vector_values.size());
-  Span<Int64> a_span(vector_values.data(),vector_values.size());
+  Span<const Int64> a_const_span(vector_values.data(), vector_values.size());
+  Span<Int64> a_span(vector_values.data(), vector_values.size());
   ByteConstSpan a_const_bytes = asBytes(a_const_span);
   ByteSpan a_bytes = asWritableBytes(a_span);
   ByteConstSpan a_const_bytes2 = asBytes(a_span);
   //ByteSpan a_bytes2 = asWritableBytes(a_const_span);
-  ASSERT_EQ(a_const_bytes.size(),24) << "Bad a_const_bytes_size (1)";
-  ASSERT_EQ(a_const_bytes2.size(),24) << "Bad a_const_bytes2_size (1)";
-  ASSERT_EQ(a_bytes.size(),24) << "Bad a_bytes_size (2)";
+  ASSERT_EQ(a_const_bytes.size(), 24) << "Taille incorrecte de a_const_bytes (1)";
+  ASSERT_EQ(a_const_bytes2.size(), 24) << "Taille incorrecte de a_const_bytes2 (1)";
+  ASSERT_EQ(a_bytes.size(), 24) << "Taille incorrecte de a_bytes (2)";
   Span<Int64> span2(a_view);
   Span<const Int64> span3(a_view);
   Span<const Int64> span4(a_const_view);
-  ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 size";
-  ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 size";
-  ASSERT_EQ(span4.size(),a_const_view.size()) << "Bad span4 size";
+  ASSERT_EQ(span2.size(), a_view.size()) << "Taille incorrecte de span2";
+  ASSERT_EQ(span3.size(), a_view.size()) << "Taille incorrecte de span3";
+  ASSERT_EQ(span4.size(), a_const_view.size()) << "Taille incorrecte de span4";
   span3 = a_const_view;
   span3 = a_view;
   span2 = a_view;
-  ASSERT_EQ(span2.size(),a_view.size()) << "Bad span2 (2) size";
-  ASSERT_EQ(span3.size(),a_view.size()) << "Bad span3 (2) size";
+  ASSERT_EQ(span2.size(), a_view.size()) << "Taille incorrecte de span2 (2)";
+  ASSERT_EQ(span3.size(), a_view.size()) << "Taille incorrecte de span3 (2)";
   std::cout << "View=" << a_view << '\n';
   std::cout << "ConstView=" << a_const_view << '\n';
   std::cout << "Span3=" << span3 << '\n';
@@ -215,137 +232,137 @@ TEST(Span,Convert)
 /*---------------------------------------------------------------------------*/
 
 // Vérifie que \a a1 et \a a2 sont identiques
-template<typename A1,typename A2>
-void _checkSame(A1& a1,A2& a2,const char* message)
+template <typename A1, typename A2>
+void _checkSame(A1& a1, A2& a2, const char* message)
 {
   using namespace Arccore;
   using size_type = typename A1::size_type;
   Int64 s1 = a1.size();
   Int64 s2 = a2.size();
-  ASSERT_EQ(s1,s2) << "Bad size " << message;
-  for( size_type i=0, n=a1.size(); i<n; ++i )
-    ASSERT_EQ(a1[i],a2[i]) << "Bad value[" << i << "]" << message;
+  ASSERT_EQ(s1, s2) << "Taille incorrecte " << message;
+  for (size_type i = 0, n = a1.size(); i < n; ++i)
+    ASSERT_EQ(a1[i], a2[i]) << "Valeur incorrecte[" << i << "]" << message;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // Vérifie que \a a1 et \a a2 sont identiques
-template<typename A1,typename A2>
-void _checkSame2(A1& a1,A2& a2,const char* message)
+template <typename A1, typename A2>
+void _checkSame2(A1& a1, A2& a2, const char* message)
 {
   using namespace Arccore;
   using size_type = typename A1::size_type;
   const Int64 s1_dim1 = a1.dim1Size();
   const Int64 s2_dim1 = a2.dim1Size();
-  ASSERT_EQ(s1_dim1,s2_dim1) << "Bad size " << message;
+  ASSERT_EQ(s1_dim1, s2_dim1) << "Taille incorrecte " << message;
   const Int64 s1_dim2 = a1.dim2Size();
   const Int64 s2_dim2 = a2.dim2Size();
-  ASSERT_EQ(s1_dim2,s2_dim2) << "Bad size " << message;
-  for( size_type i=0; i<s1_dim1; ++i )
-    for( size_type j=0; j<s1_dim2; ++j )
-      ASSERT_EQ(a1[i][j],a2[i][j]) << "Bad value[" << i << ',' << j << "]" << message;
+  ASSERT_EQ(s1_dim2, s2_dim2) << "Taille incorrecte " << message;
+  for (size_type i = 0; i < s1_dim1; ++i)
+    for (size_type j = 0; j < s1_dim2; ++j)
+      ASSERT_EQ(a1[i][j], a2[i][j]) << "Valeur incorrecte[" << i << ',' << j << "]" << message;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(ArrayView,StdArray)
+TEST(ArrayView, StdArray)
 {
   using namespace Arccore;
-  std::array<Int64,0> v0;
-  std::array<Int64,2> v1 { 5, 7 };
-  std::array<Int64,3> v2 { 2, 4, -2 };
-  std::array<const Int64,4> v3 { 9, 13, 32, 27 };
+  std::array<Int64, 0> v0;
+  std::array<Int64, 2> v1{ 5, 7 };
+  std::array<Int64, 3> v2{ 2, 4, -2 };
+  std::array<const Int64, 4> v3{ 9, 13, 32, 27 };
 
   {
-    ArrayView<Int64> view0 { v0 };
-    _checkSame(view0,v0,"view0==v0");
+    ArrayView<Int64> view0{ v0 };
+    _checkSame(view0, v0, "view0==v0");
 
-    ArrayView<Int64> view1 { v1 };
-    _checkSame(view1,v1,"view1==v1");
+    ArrayView<Int64> view1{ v1 };
+    _checkSame(view1, v1, "view1==v1");
 
     view0 = v2;
-    _checkSame(view0,v2,"view0==v2");
+    _checkSame(view0, v2, "view0==v2");
   }
 
   {
-    ConstArrayView<Int64> view0 { v0 };
-    _checkSame(view0,v0,"const view0==v0");
+    ConstArrayView<Int64> view0{ v0 };
+    _checkSame(view0, v0, "const view0==v0");
 
-    ConstArrayView<Int64> view1 { v1 };
-    _checkSame(view1,v1,"const view1==v1");
+    ConstArrayView<Int64> view1{ v1 };
+    _checkSame(view1, v1, "const view1==v1");
 
     view0 = v2;
-    _checkSame(view0,v2,"const view0==v2");
+    _checkSame(view0, v2, "const view0==v2");
 
-    ConstArrayView<Int64> view2 { v3 };
-    _checkSame(view2,v3,"const view2==v3");
+    ConstArrayView<Int64> view2{ v3 };
+    _checkSame(view2, v3, "const view2==v3");
 
     view1 = v3;
-    _checkSame(view1,v3,"const view1==v3");
+    _checkSame(view1, v3, "const view1==v3");
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SpanType,typename ConstSpanType> void
+template <typename SpanType, typename ConstSpanType> void
 _testSpanStdArray()
 {
   using namespace Arccore;
-  std::array<Int64,0> v0;
-  std::array<Int64,2> v1 { 5, 7 };
-  std::array<Int64,3> v2 { 2, 4, -2 };
-  std::array<const Int64,4> v3 { 9, 13, 32, 27 };
+  std::array<Int64, 0> v0;
+  std::array<Int64, 2> v1{ 5, 7 };
+  std::array<Int64, 3> v2{ 2, 4, -2 };
+  std::array<const Int64, 4> v3{ 9, 13, 32, 27 };
 
   {
-    SpanType span0 { v0 };
-    _checkSame(span0,v0,"span0==v0");
+    SpanType span0{ v0 };
+    _checkSame(span0, v0, "span0==v0");
 
-    SpanType span1 { v1 };
-    _checkSame(span1,v1,"span1==v1");
+    SpanType span1{ v1 };
+    _checkSame(span1, v1, "span1==v1");
 
-    SpanType span2 { v1 };
-    ASSERT_TRUE(span1==span2);
-    ASSERT_FALSE(span1!=span2);
+    SpanType span2{ v1 };
+    ASSERT_TRUE(span1 == span2);
+    ASSERT_FALSE(span1 != span2);
 
-    SpanType const_span2 { v1 };
-    ASSERT_TRUE(span1==const_span2);
-    ASSERT_FALSE(span1!=const_span2);
+    SpanType const_span2{ v1 };
+    ASSERT_TRUE(span1 == const_span2);
+    ASSERT_FALSE(span1 != const_span2);
 
     span0 = v2;
-    _checkSame(span0,v2,"span0==v2");
+    _checkSame(span0, v2, "span0==v2");
   }
 
   {
-    ConstSpanType span0 { v0 };
-    _checkSame(span0,v0,"const span0==v0");
+    ConstSpanType span0{ v0 };
+    _checkSame(span0, v0, "const span0==v0");
 
-    ConstSpanType span1 { v1 };
-    _checkSame(span1,v1,"const span1==v1");
+    ConstSpanType span1{ v1 };
+    _checkSame(span1, v1, "const span1==v1");
 
     span0 = v2;
-    _checkSame(span0,v2,"const span0==v2");
+    _checkSame(span0, v2, "const span0==v2");
 
-    ConstSpanType span2 { v3 };
-    _checkSame(span2,v3,"const span2==v3");
+    ConstSpanType span2{ v3 };
+    _checkSame(span2, v3, "const span2==v3");
 
-    ConstSpanType span3 { v3 };
-    ASSERT_TRUE(span2==span3);
-    ASSERT_FALSE(span2!=span3);
+    ConstSpanType span3{ v3 };
+    ASSERT_TRUE(span2 == span3);
+    ASSERT_FALSE(span2 != span3);
 
     span1 = v3;
-    _checkSame(span1,v3,"const span1==v3");
+    _checkSame(span1, v3, "const span1==v3");
   }
   {
-    SpanType span1 { v1 };
-    ConstSpanType const_span1 { v1 };
-    ASSERT_TRUE(span1==const_span1);
+    SpanType span1{ v1 };
+    ConstSpanType const_span1{ v1 };
+    ASSERT_TRUE(span1 == const_span1);
 
-    SpanType span2 { v2 };
-    ConstSpanType const_span3 { v3 };
-    ASSERT_TRUE(span2!=const_span3);
+    SpanType span2{ v2 };
+    ConstSpanType const_span3{ v3 };
+    ASSERT_TRUE(span2 != const_span3);
   }
 }
 
@@ -412,18 +429,17 @@ TEST(Span, StdArray)
   }
 
   {
-    std::array<Int64,2> v1 { 5, 7 };
-    std::array<Int64,3> v2 { 2, 4, -2 };
-    Span<Int64,2> fixed_s1(v1);
-    Span<Int64,3> fixed_s2(v2);
-    ASSERT_FALSE(fixed_s1==fixed_s2);
-    ASSERT_TRUE(fixed_s1!=fixed_s2);
+    std::array<Int64, 2> v1{ 5, 7 };
+    std::array<Int64, 3> v2{ 2, 4, -2 };
+    Span<Int64, 2> fixed_s1(v1);
+    Span<Int64, 3> fixed_s2(v2);
+    ASSERT_FALSE(fixed_s1 == fixed_s2);
+    ASSERT_TRUE(fixed_s1 != fixed_s2);
 
     LargeSpan<const Int64> s1_a(s1);
     Span<const std::byte> fb1(asBytes(s1_a));
     Span<std::byte> fb2(asWritableBytes(s2));
-    ASSERT_FALSE(fb1==fb2);
-
+    ASSERT_FALSE(fb1 == fb2);
     std::array<Real, 3> v2r{ 2.0, 4.1, -2.3 };
     SmallSpan<const Real> small2(v2r);
     LargeSpan<const std::byte> small_fb2(asBytes(small2));
@@ -436,92 +452,92 @@ TEST(Span, StdArray)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(SmallSpan,StdArray)
+TEST(SmallSpan, StdArray)
 {
   using namespace Arccore;
-  _testSpanStdArray<SmallSpan<Int64>,SmallSpan<const Int64>>();
+  _testSpanStdArray<SmallSpan<Int64>, SmallSpan<const Int64>>();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SpanType,typename ConstSpanType> void
+template <typename SpanType, typename ConstSpanType> void
 _testSpan2StdArray()
 {
   using namespace Arccore;
 
-  std::array<Int64,6> v1 { 5, 7, 9, 32, -5, -6 };
-  std::array<Int64,5> v2 { 1, 9, 32, 41, -5 };
-  std::array<const Int64,12> v3 { 12, 33, 47, 55, 36, 13, 9, 7, 5, 1, 45, 38 };
+  std::array<Int64, 6> v1{ 5, 7, 9, 32, -5, -6 };
+  std::array<Int64, 5> v2{ 1, 9, 32, 41, -5 };
+  std::array<const Int64, 12> v3{ 12, 33, 47, 55, 36, 13, 9, 7, 5, 1, 45, 38 };
 
-  SpanType s0 { };
-  SpanType s1 { v1.data(), 3, 2 };
-  SpanType s2 { v2.data(), 1, 5 };
-  ConstSpanType s3 { v3.data(), 4, 3 };
+  SpanType s0{};
+  SpanType s1{ v1.data(), 3, 2 };
+  SpanType s2{ v2.data(), 1, 5 };
+  ConstSpanType s3{ v3.data(), 4, 3 };
 
-  ASSERT_EQ(s1[2][1],s1(2,1));
+  ASSERT_EQ(s1[2][1], s1(2, 1));
 
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   {
-    bool is_ok = s1[2,1]==s1(2,1);
+    bool is_ok = s1[2, 1] == s1(2, 1);
     ASSERT_TRUE(is_ok);
   }
 #endif
 
   {
-    SpanType span0 { s0 };
-    _checkSame2(span0,s0,"span0==s0");
+    SpanType span0{ s0 };
+    _checkSame2(span0, s0, "span0==s0");
 
-    SpanType span1 { s1 };
-    _checkSame2(span1,s1,"span1==s1");
+    SpanType span1{ s1 };
+    _checkSame2(span1, s1, "span1==s1");
 
-    SpanType span2 { s1 };
-    ASSERT_TRUE(span1==span2);
-    ASSERT_FALSE(span1!=span2);
+    SpanType span2{ s1 };
+    ASSERT_TRUE(span1 == span2);
+    ASSERT_FALSE(span1 != span2);
 
-    SpanType const_span2 { s1 };
-    ASSERT_TRUE(span1==const_span2);
-    ASSERT_FALSE(span1!=const_span2);
+    SpanType const_span2{ s1 };
+    ASSERT_TRUE(span1 == const_span2);
+    ASSERT_FALSE(span1 != const_span2);
   }
 
   {
-    ConstSpanType span0 { s0 };
-    _checkSame2(span0,s0,"const span0==s0");
+    ConstSpanType span0{ s0 };
+    _checkSame2(span0, s0, "const span0==s0");
 
-    ConstSpanType span1 { s1 };
-    _checkSame2(span1,s1,"const span1==s1");
+    ConstSpanType span1{ s1 };
+    _checkSame2(span1, s1, "const span1==s1");
 
     span0 = s2;
-    _checkSame2(span0,s2,"const span0==s2");
+    _checkSame2(span0, s2, "const span0==s2");
 
-    ConstSpanType span2 { s3 };
-    _checkSame2(span2,s3,"const span2==s3");
+    ConstSpanType span2{ s3 };
+    _checkSame2(span2, s3, "const span2==s3");
 
-    ConstSpanType span3 { s3 };
-    ASSERT_TRUE(span2==span3);
-    ASSERT_FALSE(span2!=span3);
+    ConstSpanType span3{ s3 };
+    ASSERT_TRUE(span2 == span3);
+    ASSERT_FALSE(span2 != span3);
 
     span1 = s3;
-    _checkSame2(span1,s3,"const span1==s3");
+    _checkSame2(span1, s3, "const span1==s3");
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(Span2,StdArray)
+TEST(Span2, StdArray)
 {
   using namespace Arccore;
-  _testSpan2StdArray<Span2<Int64>,Span2<const Int64>>();
+  _testSpan2StdArray<Span2<Int64>, Span2<const Int64>>();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(SmallSpan2,StdArray)
+TEST(SmallSpan2, StdArray)
 {
   using namespace Arccore;
-  _testSpan2StdArray<SmallSpan2<Int64>,SmallSpan2<const Int64>>();
+  _testSpan2StdArray<SmallSpan2<Int64>, SmallSpan2<const Int64>>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -718,7 +734,7 @@ TEST(ArrayView, SubViewInterval)
   _testSubPartInterval<SmallSpan<Int64>>();
 }
 
-TEST(ArrayView,Copyable)
+TEST(ArrayView, Copyable)
 {
   using namespace Arccore;
   ASSERT_TRUE(std::is_trivially_copyable_v<ArrayView<int>>);
@@ -740,17 +756,17 @@ TEST(ArrayView,Copyable)
   ASSERT_TRUE(std::is_trivially_copyable_v<Span2<const int>>);
 }
 
-TEST(Span,FixedValue)
+TEST(Span, FixedValue)
 {
   using namespace Arccore;
-  std::cout << "sizeof(Span<Int32,1>) = " << sizeof(Span<Int32,1>) << "\n";
-  std::cout << "sizeof(Span<Int32,DynExtent>) = " << sizeof(Span<Int32,DynExtent>) << "\n";
-  std::cout << "sizeof(Span<Int64,1>) = " << sizeof(Span<Int64,1>) << "\n";
-  std::cout << "sizeof(Span<Int64,DynExtent>) = " << sizeof(Span<Int64,DynExtent>) << "\n";
+  std::cout << "sizeof(Span<Int32,1>) = " << sizeof(Span<Int32, 1>) << "\n";
+  std::cout << "sizeof(Span<Int32,DynExtent>) = " << sizeof(Span<Int32, DynExtent>) << "\n";
+  std::cout << "sizeof(Span<Int64,1>) = " << sizeof(Span<Int64, 1>) << "\n";
+  std::cout << "sizeof(Span<Int64,DynExtent>) = " << sizeof(Span<Int64, DynExtent>) << "\n";
 
   // Vérifie que [[no_unique_address]] est bien pris en compte
   // A priori cela n'est pas le cas avec VS2022.
-  ASSERT_EQ(sizeof(Span<Int32,1>),sizeof(void*));
+  ASSERT_EQ(sizeof(Span<Int32, 1>), sizeof(void*));
   ASSERT_EQ(sizeof(Span<Int64, 1>), sizeof(void*));
 
   std::array<Int64, 12> vlist{ 9, 13, 32, 27, 43, -5, 2, -7, 8, 11, 25, 48 };
@@ -759,10 +775,65 @@ TEST(Span,FixedValue)
   Span<Int64> sub_view1 = fixed_list.subspan(0, sub_view_size);
   ASSERT_EQ(sub_view1.size(), sub_view_size);
 
-  Span<Int64,12> fixed_span_only_ptr(vlist.data());
-  ASSERT_EQ(fixed_span_only_ptr.data(),vlist.data());
-  Span<const Int64,12> fixed_span_only_const_ptr(vlist.data());
-  ASSERT_EQ(fixed_span_only_const_ptr.data(),vlist.data());
+  Span<Int64, 12> fixed_span_only_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_ptr.data(), vlist.data());
+  Span<const Int64, 12> fixed_span_only_const_ptr(vlist.data());
+  ASSERT_EQ(fixed_span_only_const_ptr.data(), vlist.data());
+}
+
+TEST(MDSpan, Misc)
+{
+  using namespace Arcane;
+  Int32 v1[4] = { 1, 3, -5, 2 };
+
+  MDSpan<Int32, MDDim1> mdspan1;
+  ASSERT_EQ(mdspan1.extent0(),0);
+
+  mdspan1 = MDSpan<Int32,MDDim1>(v1,4);
+  ASSERT_EQ(mdspan1.extent0(),4);
+  ASSERT_EQ(mdspan1.data(),v1);
+  ASSERT_EQ(mdspan1[0],1);
+  ASSERT_EQ(mdspan1[1],3);
+  ASSERT_EQ(mdspan1[2],-5);
+  ASSERT_EQ(mdspan1[3],2);
+
+  MDSpan<const Int32, MDDim1> const_mdspan1(mdspan1);
+  ASSERT_EQ(const_mdspan1.data(), mdspan1.data());
+  ASSERT_EQ(const_mdspan1.extent0(), mdspan1.extent0());
+
+  // Conversion à partir de ArrayView
+  {
+    ArrayView arrayview1(4,v1);
+
+    MDSpan<Int32, MDDim1> mdspan2(arrayview1);
+    ASSERT_EQ(mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(mdspan2.extent0(), mdspan1.extent0());
+
+    MDSpan<const Int32, MDDim1> const_mdspan2(arrayview1);
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+
+    mdspan2 = arrayview1;
+    ASSERT_EQ(mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(mdspan2.extent0(), mdspan1.extent0());
+
+    const_mdspan2 = arrayview1;
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+  }
+
+  // Conversion à partir de ConstArrayView
+  {
+    ConstArrayView const_arrayview1(4,v1);
+
+    MDSpan<const Int32, MDDim1> const_mdspan2(const_arrayview1);
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+
+    const_mdspan2 = const_arrayview1;
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -785,15 +856,15 @@ template class SmallSpan<const Int32>;
 template class SmallSpan<double>;
 template class SmallSpan<const double>;
 
-template class Span<Int32,4>;
-template class Span<const Int32,5>;
-template class Span<double,6>;
-template class Span<const double,7>;
+template class Span<Int32, 4>;
+template class Span<const Int32, 5>;
+template class Span<double, 6>;
+template class Span<const double, 7>;
 
-template class SmallSpan<Int32,4>;
-template class SmallSpan<const Int32,5>;
-template class SmallSpan<double,6>;
-template class SmallSpan<const double,7>;
+template class SmallSpan<Int32, 4>;
+template class SmallSpan<const Int32, 5>;
+template class SmallSpan<double, 6>;
+template class SmallSpan<const double, 7>;
 
 template class Span2<Int32>;
 template class Span2<const Int32>;
@@ -804,7 +875,12 @@ template class SmallSpan2<Int32>;
 template class SmallSpan2<const Int32>;
 template class SmallSpan2<double>;
 template class SmallSpan2<const double>;
-} // namespace Arccore
+
+template class MDSpan<Int32,MDDim1>;
+template class MDSpan<Int32,MDDim2>;
+template class MDSpan<Int32,MDDim3>;
+template class MDSpan<Int32,MDDim4>;
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

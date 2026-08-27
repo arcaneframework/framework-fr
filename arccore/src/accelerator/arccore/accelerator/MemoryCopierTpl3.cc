@@ -22,7 +22,7 @@ namespace Arcane::Accelerator::Impl
 void AcceleratorSpecificMemoryCopyList::
 addExplicitTemplate3()
 {
-  using namespace Arcane::impl;
+  using namespace Arcane::Impl;
 
   //! Ajoute des implémentations spécifiques pour les premières tailles courantes
   addCopier<SpecificType<Int64, ExtentValue<2>>>(); // 16
@@ -34,7 +34,7 @@ addExplicitTemplate3()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

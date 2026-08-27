@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -24,22 +24,22 @@
  ******************************************************************************/
 
 /*
-   Example 5
+   Exemple 5
 
-   Interface:    Linear-Algebraic (IJ)
+   Interface:    Linéaire-Algébrique (IJ)
 
-   Compile with: make ex5
+   Compiler avec: make ex5
 
-   Sample run:   mpirun -np 4 ex5
+   Exécution d'exemple:   mpirun -np 4 ex5
 
-   Description:  This example solves the 2-D Laplacian problem with zero boundary
-                 conditions on an n x n grid.  The number of unknowns is N=n^2.
-                 The standard 5-point stencil is used, and we solve for the
-                 interior nodes only.
+   Description:  Cet exemple résout le problème de Laplacien en 2-D avec des
+                 conditions aux limites nulles sur une grille n x n. Le nombre
+                 d'inconnues est N=n^2. La méthode de stencil standard à 5 points est
+                 utilisée, et nous résolvons uniquement pour les nœuds intérieurs.
 
-                 This example solves the same problem as Example 3.  Available
-                 solvers are AMG, PCG, and PCG with AMG or Parasails
-                 preconditioners.  */
+                 Cet exemple résout le même problème que l'Exemple 3. Les solveurs
+                 disponibles sont AMG, PCG, et PCG avec des préconditionneurs AMG ou
+                 Parasails.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@
  ******************************************************************************/
 
 /*--------------------------------------------------------------------------
- * Header file for examples
+ * Fichier d'en-tête pour les exemples
  *--------------------------------------------------------------------------*/
 
 #ifndef HYPRE_EXAMPLES_INCLUDES
@@ -70,7 +70,7 @@
 #include <cuda_runtime.h>
 
 #ifndef HYPRE_USING_UNIFIED_MEMORY
-#error *** Running the examples on GPUs requires Unified Memory. Please reconfigure and rebuild with --enable-unified-memory ***
+#error *** L'exécution des exemples sur des GPU nécessite une mémoire unifiée. Veuillez reconfigurer et reconstruire avec --enable-unified-memory ***
 #endif
 
 static inline void*
@@ -104,8 +104,8 @@ gpu_calloc(size_t num, size_t size)
 #include <vector>
 #include <iostream>
 
-#include "arcane/utils/Convert.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/Convert.h"
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/alina/Profiler.h"
 
 using namespace Arcane;
@@ -149,28 +149,28 @@ _doHypreSolver(int nb_row,
 
   HYPRE_Solver solver, precond;
 
-  /* Initialize MPI */
+  /* Initialisation de MPI */
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-  /* Initialize HYPRE */
+  /* Initialisation de HYPRE */
   HYPRE_Initialize();
 
-  /* Print GPU info */
+  /* Affichage des informations GPU */
   /* HYPRE_PrintDeviceInfo(); */
 #if defined(HYPRE_USING_GPU)
-  /* use vendor implementation for SpGEMM */
+  /* Utilise l'implémentation du fournisseur pour SpGEMM */
   HYPRE_SetSpGemmUseVendor(0);
 #endif
 
-  /* Default problem parameters */
+  /* Paramètres par défaut du problème */
   const int n = nb_row;
   solver_id = 0;
   vis = 0;
   print_system = 0;
 
-  /* Parse command line */
+  /* Analyse de la ligne de commande */
   {
     int arg_index = 0;
     int print_usage = 0;
@@ -203,17 +203,17 @@ _doHypreSolver(int nb_row,
 
     if ((print_usage) && (myid == 0)) {
       printf("\n");
-      printf("Usage: %s [<options>]\n", argv[0]);
+      printf("Utilisation: %s [<options>]\n", argv[0]);
       printf("\n");
-      printf("  -n <n>              : problem size in each direction (default: 33)\n");
-      printf("  -solver <ID>        : solver ID\n");
-      printf("                        0  - AMG (default) \n");
+      printf("  -n <n>              : taille du problème dans chaque direction (par défaut: 33)\n");
+      printf("  -solver <ID>        : ID du solveur\n");
+      printf("                        0  - AMG (par défaut) \n");
       printf("                        1  - AMG-PCG\n");
       printf("                        8  - ParaSails-PCG\n");
       printf("                        50 - PCG\n");
       printf("                        61 - AMG-FlexGMRES\n");
-      printf("  -vis                : save the solution for GLVis visualization\n");
-      printf("  -print_system       : print the matrix and rhs\n");
+      printf("  -vis                : enregistrer la solution pour la visualisation GLVis\n");
+      printf("  -print_system       : imprimer la matrice et le rhs\n");
       printf("\n");
     }
 
@@ -223,24 +223,24 @@ _doHypreSolver(int nb_row,
     }
   }
 
-  // Fill nb value per row.
+  // Remplit la valeur nb par ligne.
   std::vector<int> nb_value_per_row(n);
   for (int i = 0; i < n; ++i)
     nb_value_per_row[i] = static_cast<HYPRE_BigInt>(_ptr[i + 1] - _ptr[i]);
 
-  // The column index is the same that '_col' from CSR Matrix
-  // but we do a copy if index size is différent between Hypre and Alina.
+  // L'index de colonne est le même que '_col' de la matrice CSR
+  // mais nous faisons une copie si la taille de l'index est différente entre Hypre et Alina.
   std::vector<HYPRE_BigInt> hypre_column_index(_col.begin(), _col.end());
 
-  // Id of each row (in sequential, this is the same that the index)
+  // ID de chaque ligne (en séquentiel, c'est le même que l'index)
   std::vector<HYPRE_Int> hypre_row_index(n);
   for (int i = 0; i < n; ++i) {
     hypre_row_index[i] = i;
   }
 
-  /* Each processor knows only of its own rows - the range is denoted by ilower
-     and upper.  Here we partition the rows. We account for the fact that
-     N may not divide evenly by the number of processors. */
+  /* Chaque processeur ne connaît que ses propres lignes - la plage est indiquée par ilower
+     et upper. Ici, nous partitionnons les lignes. Nous prenons en compte le fait que
+     N peut ne pas être divisible uniformément par le nombre de processeurs. */
   local_size = N / num_procs;
   extra = N - local_size * num_procs;
 
@@ -251,26 +251,26 @@ _doHypreSolver(int nb_row,
   iupper += my_min(myid + 1, extra);
   iupper = iupper - 1;
   std::cout << "LOWER=" << ilower << " UPPER=" << iupper << "\n";
-  /* How many rows do I have? */
+  /* Combien de lignes ai-je ? */
   local_size = iupper - ilower + 1;
 
   {
-    auto t = prof.scoped_tic("IJMatrix Create");
-    /* Create the matrix.
-       Note that this is a square matrix, so we indicate the row partition
-       size twice (since number of rows = number of cols) */
+    auto t = prof.scoped_tic("Création de IJMatrix");
+    /* Crée la matrice.
+       Notez qu'il s'agit d'une matrice carrée, nous indiquons donc la taille de la partition
+       de ligne deux fois (car le nombre de lignes = nombre de colonnes) */
     HYPRE_IJMatrixCreate(MPI_COMM_WORLD, ilower, iupper, ilower, iupper, &A);
 
-    /* Choose a parallel csr format storage (see the User's Manual) */
+    /* Choisis un stockage de format csr parallèle (voir le Manuel de l'utilisateur) */
     HYPRE_IJMatrixSetObjectType(A, HYPRE_PARCSR);
 
-    /* Initialize before setting coefficients */
+    /* Initialise avant de définir les coefficients */
     HYPRE_IJMatrixInitialize(A);
   }
 
-  // Fill the matrix.
+  // Remplis la matrice.
   {
-    auto t = prof.scoped_tic("IJMatrix SetValues");
+    auto t = prof.scoped_tic("Définition des valeurs de IJMatrix");
 
     HYPRE_IJMatrixSetValues(A, n,
                             nb_value_per_row.data(),
@@ -280,28 +280,28 @@ _doHypreSolver(int nb_row,
   }
 
   {
-    auto t = prof.scoped_tic("IJMatrix Assemble");
-    /* Assemble after setting the coefficients */
+    auto t = prof.scoped_tic("Assemblage de IJMatrix");
+    /* Assemble après avoir défini les coefficients */
     HYPRE_IJMatrixAssemble(A);
   }
 
-  /* Note: for the testing of small problems, one may wish to read
-      in a matrix in IJ format (for the format, see the output files
-      from the -print_system option).
-      In this case, one would use the following routine:
-      HYPRE_IJMatrixRead( <filename>, MPI_COMM_WORLD,
+  /* Remarque : pour le test de petits problèmes, on peut souhaiter lire
+      une matrice au format IJ (pour le format, voir les fichiers de sortie
+      de l'option -print_system).
+      Dans ce cas, on utiliserait la routine suivante:
+      HYPRE_IJMatrixRead( <nom_de_fichier>, MPI_COMM_WORLD,
                           HYPRE_PARCSR, &A );
-      <filename>  = IJ.A.out to read in what has been printed out
-      by -print_system (processor numbers are omitted).
-      A call to HYPRE_IJMatrixRead is an *alternative* to the
-      following sequence of HYPRE_IJMatrix calls:
-      Create, SetObjectType, Initialize, SetValues, and Assemble
+      <nom_de_fichier>  = IJ.A.out pour lire ce qui a été imprimé par
+      -print_system (les numéros de processeur sont omis).
+      Un appel à HYPRE_IJMatrixRead est une *alternative* à la
+      séquence suivante d'appels HYPRE_IJMatrix:
+      Create, SetObjectType, Initialize, SetValues, et Assemble
    */
 
-  /* Get the parcsr matrix object to use */
+  /* Récupérer l'objet matrice parcsr pour l'utiliser */
   HYPRE_IJMatrixGetObject(A, (void**)&parcsr_A);
 
-  /* Create the rhs and solution */
+  /* Crée le rhs et la solution */
   HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &b);
   HYPRE_IJVectorSetObjectType(b, HYPRE_PARCSR);
   HYPRE_IJVectorInitialize(b);
@@ -310,7 +310,7 @@ _doHypreSolver(int nb_row,
   HYPRE_IJVectorSetObjectType(x, HYPRE_PARCSR);
   HYPRE_IJVectorInitialize(x);
 
-  /* Set the rhs values to h^2 and the solution to zero */
+  /* Définit les valeurs du rhs à h^2 et la solution à zéro */
   {
     //double *rhs_values, *x_values;
     int* rows;
@@ -334,20 +334,20 @@ _doHypreSolver(int nb_row,
   }
 
   HYPRE_IJVectorAssemble(b);
-  /*  As with the matrix, for testing purposes, one may wish to read in a rhs:
-       HYPRE_IJVectorRead( <filename>, MPI_COMM_WORLD,
+  /* Tout comme pour la matrice, pour des tests, on peut souhaiter lire un rhs:
+       HYPRE_IJVectorRead( <nom_de_fichier>, MPI_COMM_WORLD,
                                  HYPRE_PARCSR, &b );
-       as an alternative to the
-       following sequence of HYPRE_IJVectors calls:
-       Create, SetObjectType, Initialize, SetValues, and Assemble
+       comme alternative à la
+       séquence suivante d'appels HYPRE_IJVectors:
+       Create, SetObjectType, Initialize, SetValues, et Assemble
    */
   HYPRE_IJVectorGetObject(b, (void**)&par_b);
 
   HYPRE_IJVectorAssemble(x);
   HYPRE_IJVectorGetObject(x, (void**)&par_x);
 
-  /*  Print out the system  - files names will be IJ.out.A.XXXXX
-        and IJ.out.b.XXXXX, where XXXXX = processor id */
+  /* Imprime le système - les noms de fichiers seront IJ.out.A.XXXXX
+        et IJ.out.b.XXXXX, où XXXXX = ID du processeur */
   if (print_system) {
     HYPRE_IJMatrixPrint(A, "IJ.out.A");
     HYPRE_IJVectorPrint(b, "IJ.out.b");
@@ -358,47 +358,47 @@ _doHypreSolver(int nb_row,
 
   double solver_tolerance = 1.0e-8;
 
-  /* Choose a solver and solve the system */
-  std::cout << "FINISH ASSEMBLING solver_id=" << solver_id << "\n";
+  /* Choisit un solveur et résoudre le système */
+  std::cout << "FIN DE L'ASSEMBLAGE solver_id=" << solver_id << "\n";
   /* AMG */
   if (solver_id == 0) {
     auto t = prof.scoped_tic("HypreSolver AMG");
     int num_iterations;
     double final_res_norm;
 
-    /* Create solver */
+    /* Crée le solveur */
     HYPRE_BoomerAMGCreate(&solver);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
-    HYPRE_BoomerAMGSetPrintLevel(solver, 3); /* print solve info + parameters */
-    HYPRE_BoomerAMGSetOldDefault(solver); /* Falgout coarsening with modified classical interpolaiton */
-    HYPRE_BoomerAMGSetRelaxType(solver, 3); /* G-S/Jacobi hybrid relaxation */
-    HYPRE_BoomerAMGSetRelaxOrder(solver, 1); /* uses C/F relaxation */
-    HYPRE_BoomerAMGSetNumSweeps(solver, 1); /* Sweeeps on each level */
-    HYPRE_BoomerAMGSetMaxLevels(solver, 20); /* maximum number of levels */
-    HYPRE_BoomerAMGSetTol(solver, solver_tolerance); /* conv. tolerance */
+    /* Définit certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
+    HYPRE_BoomerAMGSetPrintLevel(solver, 3); /* imprimer les informations de résolution + paramètres */
+    HYPRE_BoomerAMGSetOldDefault(solver); /* Raffinement Falgout avec interpolation classique modifiée */
+    HYPRE_BoomerAMGSetRelaxType(solver, 3); /* Relaxation hybride G-S/Jacobi */
+    HYPRE_BoomerAMGSetRelaxOrder(solver, 1); /* utilise la relaxation C/F */
+    HYPRE_BoomerAMGSetNumSweeps(solver, 1); /* Balayages à chaque niveau */
+    HYPRE_BoomerAMGSetMaxLevels(solver, 20); /* nombre maximum de niveaux */
+    HYPRE_BoomerAMGSetTol(solver, solver_tolerance); /* tolérance de convergence */
 
-    /* Now setup and solve! */
+    /* Maintenant, configurer et résoudre ! */
     {
-      auto t = prof.scoped_tic("AMG Setup");
+      auto t = prof.scoped_tic("Configuration AMG");
       HYPRE_BoomerAMGSetup(solver, parcsr_A, par_b, par_x);
     }
     {
-      auto t = prof.scoped_tic("AMG Solve");
+      auto t = prof.scoped_tic("Résolution AMG");
       HYPRE_BoomerAMGSolve(solver, parcsr_A, par_b, par_x);
     }
 
-    /* Run info - needed logging turned on */
+    /* Informations d'exécution - nécessaire si le journal est activé */
     HYPRE_BoomerAMGGetNumIterations(solver, &num_iterations);
     HYPRE_BoomerAMGGetFinalRelativeResidualNorm(solver, &final_res_norm);
     if (myid == 0) {
       printf("\n");
-      printf("Iterations = %d\n", num_iterations);
-      printf("Final Relative Residual Norm = %e\n", final_res_norm);
+      printf("Itérations = %d\n", num_iterations);
+      printf("Norme résiduelle relative finale = %e\n", final_res_norm);
       printf("\n");
     }
 
-    /* Destroy solver */
+    /* Détruit le solveur */
     HYPRE_BoomerAMGDestroy(solver);
   }
   /* PCG */
@@ -407,86 +407,86 @@ _doHypreSolver(int nb_row,
     int num_iterations;
     double final_res_norm;
 
-    /* Create solver */
+    /* Crée le solveur */
     HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD, &solver);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
-    HYPRE_PCGSetMaxIter(solver, 1000); /* max iterations */
-    HYPRE_PCGSetTol(solver, solver_tolerance); /* conv. tolerance */
-    HYPRE_PCGSetTwoNorm(solver, 1); /* use the two norm as the stopping criteria */
-    HYPRE_PCGSetPrintLevel(solver, 2); /* prints out the iteration info */
-    HYPRE_PCGSetLogging(solver, 1); /* needed to get run info later */
+    /* Définit certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
+    HYPRE_PCGSetMaxIter(solver, 1000); /* itérations max */
+    HYPRE_PCGSetTol(solver, solver_tolerance); /* tolérance de convergence */
+    HYPRE_PCGSetTwoNorm(solver, 1); /* utiliser la double norme comme critère d'arrêt */
+    HYPRE_PCGSetPrintLevel(solver, 2); /* affiche les informations d'itération */
+    HYPRE_PCGSetLogging(solver, 1); /* nécessaire pour obtenir les informations d'exécution plus tard */
 
-    /* Now setup and solve! */
+    /* Maintenant, configurer et résoudre ! */
     HYPRE_ParCSRPCGSetup(solver, parcsr_A, par_b, par_x);
     HYPRE_ParCSRPCGSolve(solver, parcsr_A, par_b, par_x);
 
-    /* Run info - needed logging turned on */
+    /* Informations d'exécution - nécessaire si le journal est activé */
     HYPRE_PCGGetNumIterations(solver, &num_iterations);
     HYPRE_PCGGetFinalRelativeResidualNorm(solver, &final_res_norm);
     if (myid == 0) {
       printf("\n");
-      printf("Iterations = %d\n", num_iterations);
-      printf("Final Relative Residual Norm = %e\n", final_res_norm);
+      printf("Itérations = %d\n", num_iterations);
+      printf("Norme résiduelle relative finale = %e\n", final_res_norm);
       printf("\n");
     }
 
-    /* Destroy solver */
+    /* Détruit le solveur */
     HYPRE_ParCSRPCGDestroy(solver);
   }
-  /* PCG with AMG preconditioner */
+  /* PCG avec préconditionneur AMG */
   else if (solver_id == 1) {
     auto t = prof.scoped_tic("HypreSolver PCG-AMG");
     int num_iterations;
     double final_res_norm;
 
-    /* Create solver */
+    /* Crée le solveur */
     HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD, &solver);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
-    HYPRE_PCGSetMaxIter(solver, 1000); /* max iterations */
-    HYPRE_PCGSetTol(solver, solver_tolerance); /* conv. tolerance */
-    HYPRE_PCGSetTwoNorm(solver, 1); /* use the two norm as the stopping criteria */
-    HYPRE_PCGSetPrintLevel(solver, 2); /* print solve info */
-    HYPRE_PCGSetLogging(solver, 1); /* needed to get run info later */
+    /* Définit certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
+    HYPRE_PCGSetMaxIter(solver, 1000); /* itérations max */
+    HYPRE_PCGSetTol(solver, solver_tolerance); /* tolérance de convergence */
+    HYPRE_PCGSetTwoNorm(solver, 1); /* utiliser la double norme comme critère d'arrêt */
+    HYPRE_PCGSetPrintLevel(solver, 2); /* affiche les informations de résolution */
+    HYPRE_PCGSetLogging(solver, 1); /* nécessaire pour obtenir les informations d'exécution plus tard */
 
-    /* Now set up the AMG preconditioner and specify any parameters */
+    /* Maintenant, configurer le préconditionneur AMG et spécifier les paramètres */
     HYPRE_BoomerAMGCreate(&precond);
-    HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* print amg solution info */
+    HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* imprimer les informations de résolution AMG */
     HYPRE_BoomerAMGSetCoarsenType(precond, 6);
     HYPRE_BoomerAMGSetOldDefault(precond);
-    HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Sym G.S./Jacobi hybrid */
+    HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Hybride G.S./Jacobi symétrique */
     HYPRE_BoomerAMGSetNumSweeps(precond, 1);
-    HYPRE_BoomerAMGSetTol(precond, 0.0); /* conv. tolerance zero */
-    HYPRE_BoomerAMGSetMaxIter(precond, 1); /* do only one iteration! */
+    HYPRE_BoomerAMGSetTol(precond, 0.0); /* tolérance de convergence zéro */
+    HYPRE_BoomerAMGSetMaxIter(precond, 1); /* faire seulement une itération ! */
 
-    /* Set the PCG preconditioner */
+    /* Définit le préconditionneur PCG */
     HYPRE_PCGSetPrecond(solver, (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSolve,
                         (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSetup, precond);
 
-    /* Now setup and solve! */
-    prof.tic("Setup");
+    /* Maintenant, configurer et résoudre ! */
+    prof.tic("Configuration");
     HYPRE_ParCSRPCGSetup(solver, parcsr_A, par_b, par_x);
-    prof.toc("Setup");
-    prof.tic("Solve");
+    prof.toc("Configuration");
+    prof.tic("Résolution");
     HYPRE_ParCSRPCGSolve(solver, parcsr_A, par_b, par_x);
-    prof.toc("Solve");
+    prof.toc("Résolution");
 
-    /* Run info - needed logging turned on */
+    /* Informations d'exécution - nécessaire si le journal est activé */
     HYPRE_PCGGetNumIterations(solver, &num_iterations);
     HYPRE_PCGGetFinalRelativeResidualNorm(solver, &final_res_norm);
     if (myid == 0) {
       printf("\n");
-      printf("Iterations = %d\n", num_iterations);
-      printf("Final Relative Residual Norm = %e\n", final_res_norm);
+      printf("Itérations = %d\n", num_iterations);
+      printf("Norme résiduelle relative finale = %e\n", final_res_norm);
       printf("\n");
     }
 
-    /* Destroy solver and preconditioner */
+    /* Détruit le solveur et le préconditionneur */
     HYPRE_ParCSRPCGDestroy(solver);
     HYPRE_BoomerAMGDestroy(precond);
   }
-  /* PCG with Parasails Preconditioner */
+  /* PCG avec préconditionneur Parasails */
   else if (solver_id == 8) {
     auto t = prof.scoped_tic("HypreSolver PCG - Parasails");
     int num_iterations;
@@ -497,48 +497,48 @@ _doHypreSolver(int nb_row,
     double sai_filter = 0.05;
     int sai_sym = 1;
 
-    /* Create solver */
+    /* Crée le solveur */
     HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD, &solver);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
-    HYPRE_PCGSetMaxIter(solver, 1000); /* max iterations */
-    HYPRE_PCGSetTol(solver, solver_tolerance); /* conv. tolerance */
-    HYPRE_PCGSetTwoNorm(solver, 1); /* use the two norm as the stopping criteria */
-    HYPRE_PCGSetPrintLevel(solver, 2); /* print solve info */
-    HYPRE_PCGSetLogging(solver, 1); /* needed to get run info later */
+    /* Définit certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
+    HYPRE_PCGSetMaxIter(solver, 1000); /* itérations max */
+    HYPRE_PCGSetTol(solver, solver_tolerance); /* tolérance de convergence */
+    HYPRE_PCGSetTwoNorm(solver, 1); /* utiliser la double norme comme critère d'arrêt */
+    HYPRE_PCGSetPrintLevel(solver, 2); /* affiche les informations de résolution */
+    HYPRE_PCGSetLogging(solver, 1); /* nécessaire pour obtenir les informations d'exécution plus tard */
 
-    /* Now set up the ParaSails preconditioner and specify any parameters */
+    /* Maintenant, configurer le préconditionneur ParaSails et spécifier les paramètres */
     HYPRE_ParaSailsCreate(MPI_COMM_WORLD, &precond);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
+    /* Définir certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
     HYPRE_ParaSailsSetParams(precond, sai_threshold, sai_max_levels);
     HYPRE_ParaSailsSetFilter(precond, sai_filter);
     HYPRE_ParaSailsSetSym(precond, sai_sym);
     HYPRE_ParaSailsSetLogging(precond, 3);
 
-    /* Set the PCG preconditioner */
+    /* Définit le préconditionneur PCG */
     HYPRE_PCGSetPrecond(solver, (HYPRE_PtrToSolverFcn)HYPRE_ParaSailsSolve,
                         (HYPRE_PtrToSolverFcn)HYPRE_ParaSailsSetup, precond);
 
-    /* Now setup and solve! */
+    /* Maintenant, configurer et résoudre ! */
     HYPRE_ParCSRPCGSetup(solver, parcsr_A, par_b, par_x);
     HYPRE_ParCSRPCGSolve(solver, parcsr_A, par_b, par_x);
 
-    /* Run info - needed logging turned on */
+    /* Informations d'exécution - nécessaire si le journal est activé */
     HYPRE_PCGGetNumIterations(solver, &num_iterations);
     HYPRE_PCGGetFinalRelativeResidualNorm(solver, &final_res_norm);
     if (myid == 0) {
       printf("\n");
-      printf("Iterations = %d\n", num_iterations);
-      printf("Final Relative Residual Norm = %e\n", final_res_norm);
+      printf("Itérations = %d\n", num_iterations);
+      printf("Norme résiduelle relative finale = %e\n", final_res_norm);
       printf("\n");
     }
 
-    /* Destory solver and preconditioner */
+    /* Détruit le solveur et le préconditionneur */
     HYPRE_ParCSRPCGDestroy(solver);
     HYPRE_ParaSailsDestroy(precond);
   }
-  /* Flexible GMRES with  AMG Preconditioner */
+  /* Flexible GMRES avec préconditionneur AMG */
   else if (solver_id == 61) {
     auto t = prof.scoped_tic("HypreSolver Flexible GMRES - AMG");
     int num_iterations;
@@ -546,71 +546,71 @@ _doHypreSolver(int nb_row,
     int restart = 30;
     int modify = 1;
 
-    /* Create solver */
+    /* Crée le solveur */
     HYPRE_ParCSRFlexGMRESCreate(MPI_COMM_WORLD, &solver);
 
-    /* Set some parameters (See Reference Manual for more parameters) */
+    /* Définit certains paramètres (Voir le Manuel de Référence pour plus de paramètres) */
     HYPRE_FlexGMRESSetKDim(solver, restart);
-    HYPRE_FlexGMRESSetMaxIter(solver, 1000); /* max iterations */
-    HYPRE_FlexGMRESSetTol(solver, solver_tolerance); /* conv. tolerance */
-    HYPRE_FlexGMRESSetPrintLevel(solver, 2); /* print solve info */
-    HYPRE_FlexGMRESSetLogging(solver, 1); /* needed to get run info later */
+    HYPRE_FlexGMRESSetMaxIter(solver, 1000); /* itérations max */
+    HYPRE_FlexGMRESSetTol(solver, solver_tolerance); /* tolérance de convergence */
+    HYPRE_FlexGMRESSetPrintLevel(solver, 2); /* affiche les informations de résolution */
+    HYPRE_FlexGMRESSetLogging(solver, 1); /* nécessaire pour obtenir les informations d'exécution plus tard */
 
-    /* Now set up the AMG preconditioner and specify any parameters */
+    /* Maintenant, configurer le préconditionneur AMG et spécifier les paramètres */
     HYPRE_BoomerAMGCreate(&precond);
-    HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* print amg solution info */
+    HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* imprimer les informations de résolution AMG */
     HYPRE_BoomerAMGSetCoarsenType(precond, 6);
     HYPRE_BoomerAMGSetOldDefault(precond);
-    HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Sym G.S./Jacobi hybrid */
+    HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Hybride G.S./Jacobi symétrique */
     HYPRE_BoomerAMGSetNumSweeps(precond, 1);
-    HYPRE_BoomerAMGSetTol(precond, 0.0); /* conv. tolerance zero */
-    HYPRE_BoomerAMGSetMaxIter(precond, 1); /* do only one iteration! */
+    HYPRE_BoomerAMGSetTol(precond, 0.0); /* tolérance de convergence zéro */
+    HYPRE_BoomerAMGSetMaxIter(precond, 1); /* faire seulement une itération ! */
 
-    /* Set the FlexGMRES preconditioner */
+    /* Définit le préconditionneur FlexGMRES */
     HYPRE_FlexGMRESSetPrecond(solver, (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSolve,
                               (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSetup, precond);
 
     if (modify) {
-      /* this is an optional call  - if you don't call it, hypre_FlexGMRESModifyPCDefault
-            is used - which does nothing.  Otherwise, you can define your own, similar to
-            the one used here */
+      /* ceci est un appel optionnel - si vous ne l'appelez pas, hypre_FlexGMRESModifyPCDefault
+            est utilisé - ce qui ne fait rien. Sinon, vous pouvez en définir un propre, similaire à
+            celui utilisé ici */
       HYPRE_FlexGMRESSetModifyPC(solver, (HYPRE_PtrToModifyPCFcn)hypre_FlexGMRESModifyPCAMGExample);
     }
 
-    /* Now setup and solve! */
+    /* Maintenant, configurer et résoudre ! */
     {
-      auto t = prof.scoped_tic("FlexGMRES Setup");
+      auto t = prof.scoped_tic("Configuration FlexGMRES");
       HYPRE_ParCSRFlexGMRESSetup(solver, parcsr_A, par_b, par_x);
     }
     {
-      auto t = prof.scoped_tic("FlexGMRES Solve");
+      auto t = prof.scoped_tic("Résolution FlexGMRES");
       HYPRE_ParCSRFlexGMRESSolve(solver, parcsr_A, par_b, par_x);
     }
 
-    /* Run info - needed logging turned on */
+    /* Informations d'exécution - nécessaire si le journal est activé */
     HYPRE_FlexGMRESGetNumIterations(solver, &num_iterations);
     HYPRE_FlexGMRESGetFinalRelativeResidualNorm(solver, &final_res_norm);
     if (myid == 0) {
       printf("\n");
-      printf("Iterations = %d\n", num_iterations);
-      printf("Final Relative Residual Norm = %e\n", final_res_norm);
+      printf("Itérations = %d\n", num_iterations);
+      printf("Norme résiduelle relative finale = %e\n", final_res_norm);
       printf("\n");
     }
 
-    /* Destory solver and preconditioner */
+    /* Détruit le solveur et le préconditionneur */
     HYPRE_ParCSRFlexGMRESDestroy(solver);
     HYPRE_BoomerAMGDestroy(precond);
   }
   else {
     if (myid == 0) {
-      ARCANE_FATAL("Invalid solver id '{0}' specified.", solver_id);
+      ARCCORE_FATAL("ID de solveur '{0}' spécifié invalide.", solver_id);
     }
   }
 
   if (print_system)
     HYPRE_IJVectorPrint(x, "IJ.out.x");
 
-  /* Save the solution for GLVis visualization, see vis/glvis-ex5.sh */
+  /* Enregistre la solution pour la visualisation GLVis, voir vis/glvis-ex5.sh */
   if (vis) {
 #ifdef HYPRE_EXVIS
     FILE* file;
@@ -624,17 +624,17 @@ _doHypreSolver(int nb_row,
       rows[i] = ilower + i;
     }
 
-    /* get the local solution */
+    /* récupère la solution locale */
     HYPRE_IJVectorGetValues(x, nvalues, rows, values);
 
     sprintf(filename, "%s.%06d", "vis/ex5.sol", myid);
     if ((file = fopen(filename, "w")) == NULL) {
-      printf("Error: can't open output file %s\n", filename);
+      printf("Erreur: impossible d'ouvrir le fichier de sortie %s\n", filename);
       MPI_Finalize();
       exit(1);
     }
 
-    /* save solution */
+    /* enregistre la solution */
     for (i = 0; i < nvalues; i++) {
       fprintf(file, "%.14e\n", values[i]);
     }
@@ -645,22 +645,22 @@ _doHypreSolver(int nb_row,
     free(rows);
     free(values);
 
-    /* save global finite element mesh */
+    /* enregistre le maillage global des éléments finis */
     if (myid == 0) {
       GLVis_PrintGlobalSquareMesh("vis/ex5.mesh", n - 1);
     }
 #endif
   }
 
-  /* Clean up */
+  /* Nettoyage */
   HYPRE_IJMatrixDestroy(A);
   HYPRE_IJVectorDestroy(b);
   HYPRE_IJVectorDestroy(x);
 
-  /* Finalize HYPRE */
+  /* Finalise HYPRE */
   HYPRE_Finalize();
 
-  /* Finalize MPI*/
+  /* Finalise MPI*/
   MPI_Finalize();
 
   return;
@@ -669,10 +669,10 @@ _doHypreSolver(int nb_row,
 /*--------------------------------------------------------------------------
   hypre_FlexGMRESModifyPCAMGExample -
 
-  This is an example (not recommended)
-  of how we can modify things about AMG that
-  affect the solve phase based on how FlexGMRES is doing...For
-  another preconditioner it may make sense to modify the tolerance..
+  Ceci est un exemple (non recommandé)
+  de la façon dont nous pouvons modifier les choses concernant AMG qui
+  affectent la phase de résolution en fonction de la manière dont FlexGMRES progresse...
+  Pour un autre préconditionneur, il pourrait être judicieux de modifier la tolérance..
  *--------------------------------------------------------------------------*/
 
 int hypre_FlexGMRESModifyPCAMGExample(void* precond_data, [[maybe_unused]] int iterations,

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -22,7 +22,6 @@
 #include <utility>
 #include <numeric>
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/scope_exit.hpp>
 
@@ -35,11 +34,13 @@
 #include "arccore/alina/Profiler.h"
 #include "arccore/alina/AlinaUtils.h"
 
-// Pour test compilation uniquement
+// Uniquement pour le test de compilation
 #include "arccore/alina/DistributedSolver.h"
 
-// Pour test compilation uniquement
+// Uniquement pour le test de compilation
 #include "arccore/alina/DistributedRelaxationRuntime.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "DomainPartition.h"
 
@@ -101,7 +102,7 @@ solve(const Alina::mpi_communicator& comm,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
 
   using std::string;
   using std::vector;
@@ -110,25 +111,25 @@ int main(int argc, char* argv[])
 
   desc.add_options()("help,h", "Show this help.")("prm-file,P",
                                                   po::value<string>(),
-                                                  "Parameter file in json format. ")(
+                                                  "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples:\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")(
   "size,n",
   po::value<int>()->default_value(1024),
-  "The size of the Poisson problem to solve. "
-  "Specified as number of grid nodes along each dimension of a unit square. "
-  "The resulting system will have n*n unknowns. ")(
+  "La taille du problème de Poisson à résoudre. "
+  "Spécifié comme le nombre de nœuds de grille le long de chaque dimension d'un carré unité. "
+  "Le système résultant aura n*n inconnues. ")(
   "single-level,1",
   po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
+  "Lorsqu'il est spécifié, la hiérarchie AMG n'est pas construite. "
+  "Au lieu de cela, le problème est résolu à l'aide d'un lisseur à niveau unique comme préconditionneur. ")(
   "initial,x",
   po::value<double>()->default_value(0),
-  "Value to use as initial approximation. ");
+  "Valeur à utiliser comme approximation initiale. ");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -173,8 +174,9 @@ int main(int argc, char* argv[])
   ptrdiff_t chunk = part.size(world.rank);
 
   std::vector<ptrdiff_t> domain(world.size + 1);
-  MPI_Allgather(&chunk, 1, Alina::mpi_datatype<ptrdiff_t>(),
-                &domain[1], 1, Alina::mpi_datatype<ptrdiff_t>(), world);
+  ConstArrayView<ptrdiff_t> send_buf(1,&chunk);
+  ArrayView<ptrdiff_t> receive_buf(world.size, &domain[1]);
+  mpAllGather(world.m_message_passing_mng.get(),send_buf,receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   lo = part.domain(world.rank).min_corner();
@@ -233,8 +235,8 @@ int main(int argc, char* argv[])
   Alina::SolverResult r = solve<Alina::PreconditionerRuntime>(world, prm, std::tie(chunk, ptr, col, val));
 
   if (world.rank == 0) {
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl
               << std::endl
               << prof << std::endl;
   }

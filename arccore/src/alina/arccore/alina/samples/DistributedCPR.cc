@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -16,11 +16,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// To remove warnings about deprecated Eigen usage.
+// Pour supprimer les avertissements concernant l'utilisation obsolète d'Eigen.
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/scope_exit.hpp>
 
@@ -37,6 +36,8 @@
 #include "arccore/alina/MatrixPartitionerRuntime.h"
 #include "arccore/alina/Profiler.h"
 #include "arccore/alina/AlinaUtils.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -167,39 +168,39 @@ int main(int argc, char* argv[])
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;
 
-  // Read configuration from command line
-  namespace po = boost::program_options;
+  // Lit la configuration à partir de la ligne de commande
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")("matrix,A",
+  desc.add_options()("help,h", "affiche l'aide")("matrix,A",
                                             po::value<std::string>(),
-                                            "System matrix in the MatrixMarket format. "
-                                            "When not specified, a Poisson problem in 3D unit cube is assembled. ")(
+                                            "Matrice du système au format MatrixMarket. "
+                                            "Si non spécifié, un problème de Poisson dans un cube unitaire 3D est assemblé. ")(
   "rhs,f",
   po::value<std::string>()->default_value(""),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
+  "Le vecteur du membre de droite (RHS) au format MatrixMarket. "
+  "S'il est omis, un vecteur de uns est utilisé par défaut. "
+  "Ne doit être fourni qu'avec une matrice de système. ")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Si spécifié, traiter les fichiers d'entrée comme binaires au lieu de MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "block-size,b",
   po::value<int>()->default_value(1),
-  "The block size of the system matrix. ")(
+  "La taille de bloc de la matrice de système. ")(
   "partitioner,r",
   po::value<Alina::eMatrixPartitionerType>()->default_value(
 #if defined(ARCCORE_ALINA_HAVE_PARMETIS)
   Alina::eMatrixPartitionerType::parmetis
 #endif
   ),
-  "Repartition the system matrix")("prm-file,P",
+  "Répartition de la matrice de système")("prm-file,P",
                                    po::value<std::string>(),
-                                   "Parameter file in json format. ")(
+                                   "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300");
 
@@ -283,8 +284,8 @@ int main(int argc, char* argv[])
   prof.toc("solve");
 
   if (comm.rank == 0) {
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl
               << prof << std::endl;
   }
 }

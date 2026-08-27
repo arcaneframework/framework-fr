@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.h                                            (C) 2000-2025 */
+/* ArcaneLauncher.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -43,6 +43,7 @@ class IMainFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe de gestion de l'exécution.
  *
@@ -77,8 +78,6 @@ class IMainFactory;
  *   return ArcaneLauncher::run();
  * }
  * \endcode
- *
- * L
  */
 class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 {
@@ -115,7 +114,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static int run();
 
- /*!
+  /*!
    * \brief Exécution directe.
    *
    * Initialise l'application et appelle la fonction \a func après l'initialisation
@@ -123,7 +122,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static int run(std::function<int(DirectExecutionContext&)> func);
 
- /*!
+  /*!
    * \brief Exécution directe avec création de sous-domaine.
    *
    * Initialise l'application et créé le ou les sous-domaines et appelle
@@ -144,7 +143,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static void setDefaultMainFactory(IMainFactory* mf);
 
- /*!
+  /*!
    * \brief Informations sur l'application.
    *
    * Cette méthode permet de récupérer l'instance de `ApplicationInfo`
@@ -155,7 +154,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    */
   static ApplicationInfo& applicationInfo();
 
- /*!
+  /*!
    * \brief Informations sur les paramêtre d'exécutions de l'application.
    *
    * Cette méthode permet de récupérer l'instance de `ApplicationBuildInfo`
@@ -208,9 +207,15 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * d'exécution de ArcaneLauncher (par exemple ArcaneLauncher::run()).
    *
    * \a case_file_name est le nom du fichier contenant le jeu de données
-   * Si nul, alors il n'y a pas de jeu de données.
+   * et \a file_content est le contenu de ce fichier. Si les deux sont nuls,
+   * il n'y a pas de jeu de données. Si \a file_content est vide, alors le contenu de
+   * \a case_file_name sera lu collectivement et utilisé comme fichier de cas.
+   *
+   * Cette méthode est collective et si \a file_content n'est pas vide, elle doit avoir
+   * la même valeur sur tous les rangs.
    */
-  static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
+  static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name,
+                                                       Span<const std::byte> file_content = {});
 
   /*!
    * \brief Demande d'aide avec l'option "--help" ou "-h".
@@ -237,13 +242,13 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
   /*!
    * \deprecated
    */
-  ARCCORE_DEPRECATED_2020("Use run(func) instead")
+  ARCCORE_DEPRECATED_2020("Utiliser run(func) à la place")
   static int runDirect(std::function<int(IDirectExecutionContext*)> func);
 
   /*!
    * \deprecated
    */
-  ARCCORE_DEPRECATED_2020("Use init(args) instead")
+  ARCCORE_DEPRECATED_2020("Utiliser init(args) à la place")
   static void setCommandLineArguments(const CommandLineArguments& args)
   {
     init(args);
@@ -263,4 +268,4 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

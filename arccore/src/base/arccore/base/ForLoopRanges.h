@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ForLoopRanges.h                                             (C) 2000-2025 */
+/* ForLoopRanges.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Intervalles d'itérations pour les boucles.                                */
 /*---------------------------------------------------------------------------*/
@@ -27,9 +27,13 @@ namespace Arcane
 /*!
  * \brief Intervalle d'itération pour une boucle.
  */
-template<typename IndexType_>
+template <typename IndexType_>
 class ForLoopRange
 {
+ public:
+
+  using ExtentIndexType = IndexType_;
+
  public:
 
   //! Créé un interval entre *[lower_bound,lower_bound+size[*
@@ -65,18 +69,21 @@ class ForLoopRange
 template <int N, typename IndexType_>
 class SimpleForLoopRanges
 {
-  friend class ComplexForLoopRanges<N>;
+  friend class ComplexForLoopRanges<N, IndexType_>;
 
  public:
 
-  using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayBoundsType = ArrayBounds<typename MDDimType<N, IndexType_>::DimType>;
+  using MDIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = MDIndexType;
   using LoopIndexType = ArrayIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
+  using ExtentIndexType = IndexType_;
+
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndexType;
 
  public:
 
-  explicit SimpleForLoopRanges(std::array<Int32, N> b)
+  explicit SimpleForLoopRanges(std::array<ExtentIndexType, N> b)
   : m_bounds(b)
   {}
   explicit(false) SimpleForLoopRanges(ArrayBoundsType b)
@@ -85,11 +92,11 @@ class SimpleForLoopRanges
 
  public:
 
-  template <Int32 I> static constexpr Int32 lowerBound() { return 0; }
-  template <Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
-  template <Int32 I> constexpr Int32 extent() const { return m_bounds.template constExtent<I>(); }
+  template <Int32 I> static constexpr ExtentIndexType lowerBound() { return 0; }
+  template <Int32 I> constexpr ExtentIndexType upperBound() const { return m_bounds.template constExtent<I>(); }
+  template <Int32 I> constexpr ExtentIndexType extent() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
+  constexpr MDIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
 
  private:
 
@@ -99,7 +106,6 @@ class SimpleForLoopRanges
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Interval d'itération complexe.
  *
  * Les indices de début pour chaque dimension sont spécifiés \a lower et
@@ -108,12 +114,17 @@ class SimpleForLoopRanges
 template <int N, typename IndexType_>
 class ComplexForLoopRanges
 {
+  template <int OtherN, typename OtherIndexType> friend class ComplexForLoopRanges;
+
  public:
 
-  using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayBoundsType = ArrayBounds<typename MDDimType<N, IndexType_>::DimType>;
+  using MDIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = MDIndexType;
   using LoopIndexType = ArrayIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
+  using ExtentIndexType = IndexType_;
+
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndexType;
 
  public:
 
@@ -121,8 +132,26 @@ class ComplexForLoopRanges
   : m_lower_bounds(lower.asStdArray())
   , m_extents(extents)
   {}
-  explicit(false) ComplexForLoopRanges(const SimpleForLoopRanges<N>& bounds)
+  explicit(false) ComplexForLoopRanges(const SimpleForLoopRanges<N, IndexType_>& bounds)
   : m_extents(bounds.m_bounds)
+  {}
+
+ public:
+
+  //! Conversion à partir d'une boucle avec un type d'index différent
+  template <typename OtherIndexType> static ComplexForLoopRanges
+  fromOther(const ComplexForLoopRanges<N, OtherIndexType>& other_loop)
+  {
+    auto a = MDIndexType::fromOther(other_loop.m_lower_bounds);
+    auto b = ArrayBoundsType::fromOther(other_loop.m_extents);
+    return ComplexForLoopRanges(a, b);
+  }
+
+ private:
+
+  ComplexForLoopRanges(MDIndexType lower, ArrayBoundsType extents)
+  : m_lower_bounds(lower)
+  , m_extents(extents)
   {}
 
  public:
@@ -131,7 +160,7 @@ class ComplexForLoopRanges
   template <Int32 I> constexpr Int32 upperBound() const { return m_lower_bounds[I] + m_extents.template constExtent<I>(); }
   template <Int32 I> constexpr Int32 extent() const { return m_extents.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(Int32 i) const
   {
     auto x = m_extents.getIndices(i);
     x.add(m_lower_bounds);
@@ -141,13 +170,14 @@ class ComplexForLoopRanges
 
  private:
 
-  ArrayIndexType m_lower_bounds;
+  MDIndexType m_lower_bounds;
   ArrayBoundsType m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Créé un intervalle d'itération [0,n1[
+
+//! Crée une plage d'itération [0,n1[, [0,n2[
 inline SimpleForLoopRanges<1>
 makeLoopRanges(Int32 n1)
 {
@@ -157,7 +187,7 @@ makeLoopRanges(Int32 n1)
   return BoundsType(ArrayExtentType(n1));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[
+//! Crée une plage d'itération [0,n1[, [0,n2[
 inline SimpleForLoopRanges<2>
 makeLoopRanges(Int32 n1, Int32 n2)
 {
@@ -167,7 +197,7 @@ makeLoopRanges(Int32 n1, Int32 n2)
   return BoundsType(ArrayExtentType(n1, n2));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[
+//! Crée une plage d'itération [0,n1[, [0,n2[, [0,n3[
 inline SimpleForLoopRanges<3>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3)
 {
@@ -177,7 +207,7 @@ makeLoopRanges(Int32 n1, Int32 n2, Int32 n3)
   return BoundsType(ArrayExtentType(n1, n2, n3));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[, [0,n4[
+//! Crée une plage d'itération [0,n1[, [0,n2[, [0,n3[, [0,n4[
 inline SimpleForLoopRanges<4>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
 {
@@ -187,7 +217,7 @@ makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
   return BoundsType(ArrayExtentType(n1, n2, n3, n4));
 }
 
-//! Créé un intervalle d'itération dans ℕ.
+//! Crée une plage d'itération en N.
 inline ComplexForLoopRanges<1>
 makeLoopRanges(ForLoopRange<Int32> n1)
 {
@@ -199,7 +229,7 @@ makeLoopRanges(ForLoopRange<Int32> n1)
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ².
+//! Crée une plage d'itération en N^2.
 inline ComplexForLoopRanges<2>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2)
 {
@@ -211,7 +241,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2)
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ³.
+//! Crée une plage d'itération en N^3.
 inline ComplexForLoopRanges<3>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3)
 {
@@ -223,7 +253,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int3
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ⁴.
+//! Crée une plage d'itération en N^4.
 inline ComplexForLoopRanges<4>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3, ForLoopRange<Int32> n4)
 {
@@ -238,7 +268,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int3
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

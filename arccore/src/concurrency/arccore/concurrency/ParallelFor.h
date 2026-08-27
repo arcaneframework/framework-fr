@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelFor.h                                               (C) 2000-2025 */
+/* ParallelFor.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des boucles parallèles.                                           */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Caractéristiques d'un boucle 1D multi-thread.
  *
@@ -81,8 +82,8 @@ class ARCCORE_CONCURRENCY_EXPORT ParallelFor1DLoopInfo
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ForLoopRunInfo& run_info,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
@@ -97,23 +98,31 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   // des réducteurs (Reduce2), cette privatisation n'est plus utile. Une fois
   // qu'on aura supprimer les anciennes classes gérant les réductions (Reduce),
   // on pourra supprimer cette privatisation
+
+  // La boucle finale est toujours avec un index de type 'Int32'
+  // (car ITaskImplementation ne supporte que cela) nous convertissons donc la boucle
+  // si nécessaire.
+  // TODO: Ne faire la conversion que si nécessaire
+  // TODO: Ajouter la prise en charge de la boucle Int64 dans TaskFactory
+  auto final_loop_ranges = ComplexForLoopRanges<RankValue, Int32>::fromOther(loop_ranges);
   auto xfunc = [&lambda_function, reducer_args...](const ComplexForLoopRanges<RankValue>& sub_bounds) {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
     arccoreSequentialFor(sub_bounds, private_lambda, reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue, decltype(xfunc)> ipf(xfunc);
-  TaskFactory::executeParallelFor(loop_ranges, run_info, &ipf);
+  TaskFactory::executeParallelFor(final_loop_ranges, run_info, &ipf);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ParallelLoopOptions& options,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
@@ -127,13 +136,13 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ForLoopRunInfo& run_info,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, run_info, lambda_function, reducer_args...);
 }
 
@@ -143,13 +152,13 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ParallelLoopOptions& options,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, ForLoopRunInfo(options), lambda_function, reducer_args...);
 }
 
@@ -159,8 +168,8 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
@@ -173,24 +182,25 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
-template <int RankValue, typename LambdaType> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, options, lambda_function);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
  */
 template <typename LambdaType> inline void
 arccoreParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
-                  const LambdaType& lambda_function)
+                   const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
   ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
@@ -205,4 +215,4 @@ arccoreParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -21,6 +21,7 @@
 #include "arcane/core/matvec/Matrix.h"
 
 #include <set>
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -411,20 +412,21 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         /*--------------------------------------------------------------
-         *  Check A_marker to see if point i2 has been previously
-         *  visited. New entries in RAP only occur from unmarked points.
+         *  Vérifie A_marker pour voir si le point i2 a déjà été
+         *  visité. Les nouvelles entrées dans RAP ne proviennent que
+         *  des points non marqués.
          *--------------------------------------------------------------*/
         if (a_marker[i2] != ic) {
           a_marker[i2] = ic;
           /*-----------------------------------------------------------
-           *  Loop over entries in row i2 of P.
+           *  Boucle sur les entrées de la ligne i2 de P.
            *-----------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
             /*--------------------------------------------------------
-             *  Check P_marker to see that RAP_{ic,i3} has not already
-             *  been accounted for. If it has not, mark it and increment
-             *  counter.
+             *  Vérifie P_marker pour s'assurer que RAP_{ic,i3} n'a pas déjà
+             *  été pris en compte. Si ce n'est pas le cas, le marque et incrémente
+             *  le compteur.
              *--------------------------------------------------------*/
             if (p_marker[i3] < jj_row_begining) {
               p_marker[i3] = jj_counter;
@@ -439,7 +441,7 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
   static Integer total_rap_size = 0;
   total_rap_size += jj_counter;
 
-  cout << "** RAP_SIZE=" << jj_counter << " TOTAL=" << total_rap_size << '\n';
+  std::cout << "** RAP_SIZE=" << jj_counter << " TOTAL=" << total_rap_size << '\n';
   Matrix new_matrix(nb_final_row, nb_final_row);
   new_matrix.setRowsSize(new_matrix_rows_size);
 
@@ -468,21 +470,22 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
         Integer i2 = matrix_columns[jj2];
         Real r_a_product = r_entry * matrix_values[jj2];
         /*--------------------------------------------------------------
-         *  Check A_marker to see if point i2 has been previously
-         *  visited. New entries in RAP only occur from unmarked points.
+         *  Vérifie A_marker pour voir si le point i2 a déjà été
+         *  visité. Les nouvelles entrées dans RAP ne proviennent que
+         *  des points non marqués.
          *--------------------------------------------------------------*/
         if (a_marker[i2] != ic) {
           a_marker[i2] = ic;
           /*-----------------------------------------------------------
-           *  Loop over entries in row i2 of P.
+           *  Boucle sur les entrées de la ligne i2 de P.
            *-----------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
             Real r_a_p_product = r_a_product * right_matrix_values[jj3];
             /*--------------------------------------------------------
-             *  Check P_marker to see that RAP_{ic,i3} has not already
-             *  been accounted for. If it has not, create a new entry.
-             *  If it has, add new contribution.
+             *  Vérifie P_marker pour s'assurer que RAP_{ic,i3} n'a pas déjà
+             *  été pris en compte. Si ce n'est pas le cas, crée une nouvelle entrée.
+             *  S'il l'est, ajoute la nouvelle contribution.
              *--------------------------------------------------------*/
             if (p_marker[i3] < jj_row_begining) {
               p_marker[i3] = jj_counter;
@@ -497,8 +500,8 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
         }
         else {
           /*--------------------------------------------------------------
-           *  If i2 is previously visted ( A_marker[12]=ic ) it yields
-           *  no new entries in RAP and can just add new contributions.
+           *  Si i2 a déjà été visité ( A_marker[12]=ic ) cela ne produit
+           *  aucune nouvelle entrée dans RAP et peut simplement ajouter de nouvelles contributions.
            *--------------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
@@ -559,20 +562,21 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
       for (Integer jj2 = matrix_rows[i1]; jj2 < matrix_rows[i1 + 1]; ++jj2) {
         Integer i2 = matrix_columns[jj2];
         /*--------------------------------------------------------------
-         *  Check A_marker to see if point i2 has been previously
-         *  visited. New entries in RAP only occur from unmarked points.
+         *  Vérifie A_marker pour voir si le point i2 a déjà été
+         *  visité. Les nouvelles entrées dans RAP ne proviennent que
+         *  des points non marqués.
          *--------------------------------------------------------------*/
         if (a_marker[i2] != ic) {
           a_marker[i2] = ic;
           /*-----------------------------------------------------------
-           *  Loop over entries in row i2 of P.
+           *  Boucle sur les entrées de la ligne i2 de P.
            *-----------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
             /*--------------------------------------------------------
-             *  Check P_marker to see that RAP_{ic,i3} has not already
-             *  been accounted for. If it has not, mark it and increment
-             *  counter.
+             *  Vérifie P_marker pour s'assurer que RAP_{ic,i3} n'a pas déjà
+             *  été pris en compte. Si ce n'est pas le cas, le marque et incrémente
+             *  le compteur.
              *--------------------------------------------------------*/
             if (p_marker[i3] < jj_row_begining) {
               p_marker[i3] = jj_counter;
@@ -613,21 +617,22 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
         Integer i2 = matrix_columns[jj2];
         Real r_a_product = r_entry * matrix_values[jj2];
         /*--------------------------------------------------------------
-         *  Check A_marker to see if point i2 has been previously
-         *  visited. New entries in RAP only occur from unmarked points.
+         *  Vérifie A_marker pour voir si le point i2 a déjà été
+         *  visité. Les nouvelles entrées dans RAP ne proviennent que
+         *  des points non marqués.
          *--------------------------------------------------------------*/
         if (a_marker[i2] != ic) {
           a_marker[i2] = ic;
           /*-----------------------------------------------------------
-           *  Loop over entries in row i2 of P.
+           *  Boucle sur les entrées de la ligne i2 de P.
            *-----------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
             Real r_a_p_product = r_a_product * right_matrix_values[jj3];
             /*--------------------------------------------------------
-             *  Check P_marker to see that RAP_{ic,i3} has not already
-             *  been accounted for. If it has not, create a new entry.
-             *  If it has, add new contribution.
+             *  Vérifie P_marker pour s'assurer que RAP_{ic,i3} n'a pas déjà
+             *  été pris en compte. Si ce n'est pas le cas, crée une nouvelle entrée.
+             *  S'il l'est, ajoute la nouvelle contribution.
              *--------------------------------------------------------*/
             if (p_marker[i3] < jj_row_begining) {
               p_marker[i3] = jj_counter;
@@ -642,8 +647,8 @@ applyGalerkinOperator2(const Matrix& left_matrix, const Matrix& matrix,
         }
         else {
           /*--------------------------------------------------------------
-           *  If i2 is previously visted ( A_marker[12]=ic ) it yields
-           *  no new entries in RAP and can just add new contributions.
+           *  Si i2 a déjà été visité ( A_marker[12]=ic ) cela ne produit
+           *  aucune nouvelle entrée dans RAP et peut simplement ajouter de nouvelles contributions.
            *--------------------------------------------------------------*/
           for (Integer jj3 = right_matrix_rows[i2]; jj3 < right_matrix_rows[i2 + 1]; ++jj3) {
             Integer i3 = right_matrix_columns[jj3];
@@ -1096,8 +1101,8 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
 
   //mat_op.matrixVectorProduct(transpose_prolongation_matrix,vector_x,tmp);
 
-  // Si niveau final atteint, résoud la matrice.
-  // Sinon, continue en restreignant à nouvea la matrice
+  // Si le niveau final est atteint, résoudre la matrice.
+  // Sinon, continuer en restreignant la matrice à nouveau
   if (is_final_level) {
 
     //info() << " SOLVE FINAL LEVEL";
@@ -1141,7 +1146,7 @@ _solve(const Vector& vector_b, Vector& vector_x, Integer level)
     _printResidualInfo(fine_matrix,vector_b,vector_x);
     }*/
 
-  // Relaxation de richardson
+  // Relaxation de Richardson
   if (use_gauss_seidel) {
     for (Integer i = 0; i < nb_relax1; ++i)
       _relaxGaussSeidel(fine_matrix, vector_b, vector_x, TYPE_FINE, current_level->pointsType());
@@ -1210,8 +1215,8 @@ class PointInfo
   Integer m_lambda;
   Integer m_index;
   /*!
-   * Le tri est fait pour que le premier point de la liste est celui
-   * avec le lambda maximal et d'indice minimal.
+   * Le tri est effectué de sorte que le premier point de la liste soit celui
+   * avec le lambda maximal et l'indice minimal.
    */
   bool operator<(const PointInfo& rhs) const
   {
@@ -1489,10 +1494,10 @@ _buildCoarsePoints(Real alpha,
       ++nb_coarse;
       undefined_points.erase(max_point);
       if (m_is_verbose)
-        cout << "MARK COARSE point=" << max_value_index
-             << " measure=" << max_value
-             << " left=" << (nb_row - nb_done)
-             << "\n";
+        std::cout << "MARK COARSE point=" << max_value_index
+                  << " measure=" << max_value
+                  << " left=" << (nb_row - nb_done)
+                  << "\n";
       IntegerConstArrayView point_influences = influences[max_value_index];
       for (Integer i = 0, is = point_influences.size(); i < is; ++i) {
         //for( Integer i=0, is=depends[max_value_index].size(); i<is; ++i ){
@@ -1504,10 +1509,10 @@ _buildCoarsePoints(Real alpha,
           ++nb_fine;
           undefined_points.erase(PointInfo(lambdas[pt], pt));
           if (m_is_verbose)
-            cout << "MARK FINE point=" << pt
-                 << " measure=" << lambdas[pt]
-                 << " left=" << (nb_row - nb_done)
-                 << "\n";
+            std::cout << "MARK FINE point=" << pt
+                      << " measure=" << lambdas[pt]
+                      << " left=" << (nb_row - nb_done)
+                      << "\n";
           for (Integer z = 0, zs = depends[pt].size(); z < zs; ++z) {
             Integer pt2 = depends[pt][z];
             //for( Integer z=0, zs=point_influences.size(); z<zs; ++z ){
@@ -1543,8 +1548,8 @@ _buildCoarsePoints(Real alpha,
     fatal() << "Can not find all COARSE or FINE points nb_done=" << nb_done << " nb_point=" << nb_row;
 
   {
-    // Maintenant, il faut etre certain que deux connections F-F ont au moins un
-    // point C en commun. Si ce n'est pas le cas, le premier F est changé en C
+    //Maintenant, nous devons nous assurer que deux connexions F-F ont au moins un
+    // point C commun. Sinon, le premier F est changé en C
     //info() << "SECOND PASS !!!";
     Int32UniqueArray points_marker(nb_row);
     points_marker.fill(-1);
@@ -1607,7 +1612,7 @@ _buildCoarsePoints(Real alpha,
   }
 
   if (0) {
-    // Lecture depuis Hypre
+    //Lecture depuis Hypre
     static int matrix_number = 0;
     ++matrix_number;
     info() << "READ HYPRE CF_marker n=" << matrix_number;
@@ -1615,7 +1620,7 @@ _buildCoarsePoints(Real alpha,
     fname += matrix_number;
     std::ifstream ifile(fname.toString().localstr());
     Integer nb_read_point = 0;
-    ifile >> ws >> nb_read_point >> ws;
+    ifile >> std::ws >> nb_read_point >> std::ws;
     if (nb_read_point != nb_row)
       fatal() << "Bad number of points for reading Hypre CF_marker read=" << nb_read_point
               << " expected=" << nb_row << " matrix_number=" << matrix_number;
@@ -1639,7 +1644,7 @@ _buildCoarsePoints(Real alpha,
     }
   }
 
-  // Vérifie que tous les points fins ont au moins un point qui influence
+  // Vérifie que tous les points fins ont au moins un point d'influence
   nb_coarse = 0;
   for (Integer i = 0; i < nb_row; ++i) {
     if (m_points_type[i] == TYPE_UNDEFINED)

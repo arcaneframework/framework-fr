@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -27,9 +27,6 @@
 #include "arccore/alina/PreconditionedSolver.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/Profiler.h"
-
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;
 
 #include "SampleProblemCommon.h"
 
@@ -240,10 +237,15 @@ void test_backend(typename Backend::params const& bprm = typename Backend::param
     std::vector<value_type> val;
     std::vector<rhs_type> rhs;
 
-    val += Alina::math::identity<value_type>(), Alina::math::identity<value_type>();
-    col += 0, 1;
-    ptr += 0, 1, 2;
-    rhs += Alina::math::constant<rhs_type>(1.0), Alina::math::zero<rhs_type>();
+    val.push_back(Alina::math::identity<value_type>());
+    val.push_back(Alina::math::identity<value_type>());
+    col.push_back(0);
+    col.push_back(1);
+    ptr.push_back(0);
+    ptr.push_back(1);
+    ptr.push_back(2);
+    rhs.push_back(Alina::math::constant<rhs_type>(1.0));
+    rhs.push_back(Alina::math::zero<rhs_type>());
 
     size_t n = rhs.size();
 

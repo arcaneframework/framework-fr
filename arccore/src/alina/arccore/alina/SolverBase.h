@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SolverBase.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Base class for solver classes.                                            */
+/* Classe de base pour les classes de solveurs.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_MPI_SOLVERBASE_H
 #define ARCCORE_ALINA_MPI_SOLVERBASE_H
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/alina/AlinaGlobal.h"
+
+#include <cstddef>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,7 +27,7 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Base class for solvers.
+ * \brief Classe de base pour les solveurs.
  */
 class ARCCORE_ALINA_EXPORT SolverBase
 {
@@ -35,7 +37,7 @@ class ARCCORE_ALINA_EXPORT SolverBase
 
  public:
 
-  //! Memory used in bytes
+  //! Mémoire utilisée en octets
   virtual size_t bytes() const = 0;
 };
 

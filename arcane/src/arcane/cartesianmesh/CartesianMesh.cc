@@ -19,6 +19,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Event.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"
@@ -59,9 +60,9 @@
 /*!
  * \defgroup ArcaneCartesianMesh Maillages cartésiens.
  *
- * Ensemble des classes assurant la gestion des maillage cartésiens.
+ * Ensemble de classes assurant la gestion des maillages cartésiens.
  *
- * Pour plus de renseignements, se reporter à la page \ref arcanedoc_entities_cartesianmesh.
+ * Pour plus d'informations, référez-vous à la page \ref arcanedoc_entities_cartesianmesh.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,8 +72,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Infos spécifiques à un maillage cartésien.
+ * \brief Informations spécifiques pour un maillage cartésien.
  */
 class CartesianMeshImpl
 : public TraceAccessor
@@ -143,7 +145,7 @@ class CartesianMeshImpl
   //! Maillage associé à ce maillage cartésien
   IMesh* mesh() const override { return m_mesh; }
 
-  //! Gestionnaire de trace associé.
+  //! Gestionnaire de traces associé.
   ITraceMng* traceMng() const override { return TraceAccessor::traceMng(); }
 
   CellDirectionMng cellDirection(eMeshDirection dir) override
@@ -190,8 +192,8 @@ class CartesianMeshImpl
   CartesianPatch amrPatch(Int32 index) const override { return CartesianPatch(m_patch_group.patch(index).get()); }
   CartesianMeshPatchListView patches() const override { return m_patch_group.patchListView(); }
 
-  void refinePatch2D(Real2 position,Real2 length) override;
-  void refinePatch3D(Real3 position,Real3 length) override;
+  void refinePatch2D(Real2 position, Real2 length) override;
+  void refinePatch3D(Real3 position, Real3 length) override;
   void refinePatch(const AMRZonePosition& position) override;
 
   void coarseZone2D(Real2 position, Real2 length) override;
@@ -243,9 +245,9 @@ class CartesianMeshImpl
 
  private:
 
-  void _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,
+  void _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir,
                              VariableCellReal3& cells_center,
-                             VariableFaceReal3& faces_center,CellGroup all_cells,
+                             VariableFaceReal3& faces_center, CellGroup all_cells,
                              NodeGroup all_nodes);
 
   void _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir,
@@ -254,7 +256,7 @@ class CartesianMeshImpl
                                CellGroup overlap_cells,
                                NodeGroup all_nodes);
 
-  void _applyRefine(const AMRZonePosition &position);
+  void _applyRefine(const AMRZonePosition& position);
   void _applyCoarse(const AMRZonePosition& zone_position);
   void _addPatch(ConstArrayView<Int32> parent_cells);
   void _saveInfosInProperties();
@@ -303,7 +305,7 @@ CartesianMeshImpl(IMesh* mesh)
 void CartesianMeshImpl::
 build()
 {
-  m_properties = new Properties(*(mesh()->properties()),"CartesianMesh");
+  m_properties = new Properties(*(mesh()->properties()), "CartesianMesh");
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.cartesianMeshNumberingMngInternal()->build();
   }
@@ -312,7 +314,7 @@ build()
 
 namespace
 {
-const Int32 SERIALIZE_VERSION = 1;
+  const Int32 SERIALIZE_VERSION = 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -322,8 +324,8 @@ void CartesianMeshImpl::
 _checkNeedComputeDirections()
 {
   Int64 new_timestamp = mesh()->timestamp();
-  if (m_mesh_timestamp!=new_timestamp){
-    info() << "Mesh timestamp has changed (old=" << m_mesh_timestamp << " new=" << new_timestamp << ")";
+  if (m_mesh_timestamp != new_timestamp) {
+    info() << "Le horodatage du maillage a changé (ancien=" << m_mesh_timestamp << " nouveau=" << new_timestamp << ")";
     computeDirections();
   }
 }
@@ -335,7 +337,7 @@ void CartesianMeshImpl::
 _saveInfosInProperties()
 {
   // Sauve le numéro de version pour être sur que c'est OK en reprise
-  m_properties->set("Version",SERIALIZE_VERSION);
+  m_properties->set("Version", SERIALIZE_VERSION);
 
   m_patch_group.saveInfosInProperties();
 
@@ -351,7 +353,7 @@ _saveInfosInProperties()
 void CartesianMeshImpl::
 recreateFromDump()
 {
-  info() << "Creating 'CartesianMesh' infos from dump";
+  info() << "Création des infos 'CartesianMesh' à partir du dump";
 
   if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
     m_internal_api.cartesianMeshNumberingMngInternal()->recreateFromDump();
@@ -360,9 +362,9 @@ recreateFromDump()
 
   // Sauve le numéro de version pour être sur que c'est OK en reprise
   Int32 v = m_properties->getInt32("Version");
-  if (v!=SERIALIZE_VERSION)
-    ARCANE_FATAL("Bad serializer version: trying to read from incompatible checkpoint v={0} expected={1}",
-                 v,SERIALIZE_VERSION);
+  if (v != SERIALIZE_VERSION)
+    ARCANE_FATAL("Mauvaise version de sérialisation : tentative de lecture à partir d'un point de contrôle incompatible v={0} attendu={1}",
+                 v, SERIALIZE_VERSION);
 
   m_patch_group.recreateFromDump();
 
@@ -382,8 +384,8 @@ _checkAddObservableMeshChanged()
   m_is_mesh_event_added = true;
   // Pour appeler automatiquement 'computeDirections()' après un appel à
   // IMesh::prepareForDump().
-  auto f1 = [&](const MeshEventArgs&){ this->_checkNeedComputeDirections(); };
-  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(m_event_pool,f1);
+  auto f1 = [&](const MeshEventArgs&) { this->_checkNeedComputeDirections(); };
+  mesh()->eventObservable(eMeshEventType::EndPrepareDump).attach(m_event_pool, f1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -405,23 +407,23 @@ computeDirections()
 
   m_is_amr = m_mesh->isAmrActivated();
 
-  VariableCellReal3 cells_center(VariableBuildInfo(m_mesh,"TemporaryCartesianMeshCellCenter"));
-  VariableFaceReal3 faces_center(VariableBuildInfo(m_mesh,"TemporaryCartesianMeshFaceCenter"));
+  VariableCellReal3 cells_center(VariableBuildInfo(m_mesh, "TemporaryCartesianMeshCellCenter"));
+  VariableFaceReal3 faces_center(VariableBuildInfo(m_mesh, "TemporaryCartesianMeshFaceCenter"));
 
   // Calcule les coordonnées du centre des mailles.
   VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
-  ENUMERATE_CELL(icell,m_mesh->allCells()){
+  ENUMERATE_CELL (icell, m_mesh->allCells()) {
     Cell cell = *icell;
     Real3 center;
-    for( NodeLocalId inode : cell.nodeIds() )
+    for (NodeLocalId inode : cell.nodeIds())
       center += nodes_coord[inode];
     center /= cell.nbNode();
     cells_center[icell] = center;
   }
-  ENUMERATE_FACE(iface,m_mesh->allFaces()){
+  ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
     Real3 center;
-    for( NodeLocalId inode : face.nodeIds() )
+    for (NodeLocalId inode : face.nodeIds())
       center += nodes_coord[inode];
     center /= face.nbNode();
     faces_center[iface] = center;
@@ -440,15 +442,15 @@ computeDirections()
   Real3 cell_center = cells_center[cell0];
 
   info(4) << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
-         << " sizeof(FaceDirectionMng)=" << sizeof(FaceDirectionMng)
-         << " sizeof(NodelDirectionMng)=" << sizeof(NodeDirectionMng);
+          << " sizeof(FaceDirectionMng)=" << sizeof(FaceDirectionMng)
+          << " sizeof(NodelDirectionMng)=" << sizeof(NodeDirectionMng);
   info(4) << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
-         << " sizeof(CellInfoListView)=" << sizeof(CellInfoListView);
+          << " sizeof(CellInfoListView)=" << sizeof(CellInfoListView);
   info(4) << "Cartesian mesh compute directions is_amr=" << m_is_amr;
 
-  for( Integer i=0; i<nb_node; ++i ){
+  for (Integer i = 0; i < nb_node; ++i) {
     Node node = cell0.node(i);
-    info(4) << "Node I=" << i << " node=" << ItemPrinter(node) << " pos=" << nodes_coord[node];
+    info(4) << "Nœud I=" << i << " nœud=" << ItemPrinter(node) << " pos=" << nodes_coord[node];
   }
 
   bool is_3d = m_mesh->dimension() == 3;
@@ -470,7 +472,7 @@ computeDirections()
       Real diff_y = next_center.y - cell_center.y;
       Real diff_z = next_center.z - cell_center.z;
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real3(diff_x, diff_y, diff_z);
+      info(4) << "FACE_SUIVANTE=" << ItemPrinter(f) << " centre=" << next_center << " diff=" << Real3(diff_x, diff_y, diff_z);
 
       if (diff_x > max_x) {
         max_x = diff_x;
@@ -487,9 +489,9 @@ computeDirections()
         next_face_z = i;
       }
     }
-    info(4) << "Advance in direction X -> " << next_face_x;
-    info(4) << "Advance in direction Y -> " << next_face_y;
-    info(4) << "Advance in direction Z -> " << next_face_z;
+    info(4) << "Avancement dans la direction X -> " << next_face_x;
+    info(4) << "Avancement dans la direction Y -> " << next_face_y;
+    info(4) << "Avancement dans la direction Z -> " << next_face_z;
   }
   else {
     Real max_x = -1;
@@ -503,7 +505,7 @@ computeDirections()
       Real diff_x = next_center.x - cell_center.x;
       Real diff_y = next_center.y - cell_center.y;
 
-      info(4) << "NEXT_FACE=" << ItemPrinter(f) << " center=" << next_center << " diff=" << Real2(diff_x, diff_y);
+      info(4) << "FACE_SUIVANTE=" << ItemPrinter(f) << " centre=" << next_center << " diff=" << Real2(diff_x, diff_y);
 
       if (diff_x > max_x) {
         max_x = diff_x;
@@ -515,14 +517,14 @@ computeDirections()
         next_face_y = i;
       }
     }
-    info(4) << "Advance in direction X -> " << next_face_x;
-    info(4) << "Advance in direction Y -> " << next_face_y;
+    info(4) << "Avancement dans la direction X -> " << next_face_x;
+    info(4) << "Avancement dans la direction Y -> " << next_face_y;
   }
-  m_all_items_direction_info->_internalComputeNodeCellInformations(cell0,cells_center[cell0],nodes_coord);
+  m_all_items_direction_info->_internalComputeNodeCellInformations(cell0, cells_center[cell0], nodes_coord);
 
-  info() << "Informations from IMesh properties:";
+  info() << "Informations des propriétés IMesh:";
 
-  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
 
   info() << "GlobalNbCell = " << cmgi->globalNbCells();
   info() << "OwnNbCell: " << cmgi->ownNbCells();
@@ -531,17 +533,17 @@ computeDirections()
 
   CellGroup all_cells = cell_family->allItems();
   NodeGroup all_nodes = node_family->allItems();
-  if (m_is_amr){
-    auto x = _buildPatchGroups(mesh()->allLevelCells(0),0);
+  if (m_is_amr) {
+    auto x = _buildPatchGroups(mesh()->allLevelCells(0), 0);
     all_cells = std::get<0>(x);
     all_nodes = std::get<1>(x);
   }
 
-  if (next_face_x!=(-1)){
+  if (next_face_x != (-1)) {
     m_local_face_direction[MD_DirX] = next_face_x;
     _computeMeshDirection(*m_all_items_direction_info.get(), MD_DirX, cells_center, faces_center, all_cells, all_nodes);
   }
-  if (next_face_y!=(-1)){
+  if (next_face_y != (-1)) {
     m_local_face_direction[MD_DirY] = next_face_y;
     _computeMeshDirection(*m_all_items_direction_info.get(), MD_DirY, cells_center, faces_center, all_cells, all_nodes);
   }
@@ -551,27 +553,27 @@ computeDirections()
   }
 
   // Positionne les informations par direction
-  for( Integer idir=0, nb_dir=mesh()->dimension(); idir<nb_dir; ++idir ){
+  for (Integer idir = 0, nb_dir = mesh()->dimension(); idir < nb_dir; ++idir) {
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
     cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
                                          cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
   }
 
-  info() << "Compute cartesian connectivity";
+  info() << "Calcul de la connectivité cartésienne";
 
   m_permutation_storage.resize(1);
   m_permutation_storage[0].compute();
   m_nodes_to_cell_storage.resize(mesh()->nodeFamily()->maxLocalId());
   m_cells_to_node_storage.resize(mesh()->cellFamily()->maxLocalId());
-  m_connectivity._setStorage(m_nodes_to_cell_storage,m_cells_to_node_storage,&m_permutation_storage[0]);
-  m_connectivity._computeInfos(mesh(),nodes_coord,cells_center);
+  m_connectivity._setStorage(m_nodes_to_cell_storage, m_cells_to_node_storage, &m_permutation_storage[0]);
+  m_connectivity._computeInfos(mesh(), nodes_coord, cells_center);
 
   // Ajoute informations de connectivités pour les patchs AMR
   // TODO: supporter plusieurs appels à cette méthode ?
   for (Integer patch_index = 1; patch_index < m_patch_group.nbPatch(); ++patch_index) {
     CellGroup cells = m_patch_group.allCells(patch_index);
     Ref<CartesianMeshPatch> patch = m_patch_group.patch(patch_index);
-    info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
+    info() << "Nom du patch AMR=" << cells.name() << " taille=" << cells.size() << " index=" << patch_index << " nbPatch=" << m_patch_group.nbPatch();
     patch->_internalComputeNodeCellInformations(cell0, cells_center[cell0], nodes_coord);
     auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index);
     _computeMeshDirection(*patch.get(), MD_DirX, cells_center, faces_center, patch_cells, patch_nodes);
@@ -589,8 +591,8 @@ computeDirections()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::tuple<CellGroup,NodeGroup> CartesianMeshImpl::
-_buildPatchGroups(const CellGroup& cells,Integer patch_level)
+std::tuple<CellGroup, NodeGroup> CartesianMeshImpl::
+_buildPatchGroups(const CellGroup& cells, Integer patch_level)
 {
   // On créé un groupe pour chaque patch en garantissant que l'ordre de parcours
   // est celui des uniqueId() des entités
@@ -603,16 +605,16 @@ _buildPatchGroups(const CellGroup& cells,Integer patch_level)
   IItemFamily* node_family = nodes.itemFamily();
 
   String cell_group_name = String("AMRPatchCells") + patch_level;
-  CellGroup patch_cells = cell_family->createGroup(cell_group_name,Int32ConstArrayView(),true);
-  // Met les mêmes mailles que \a cells mais force le tri
-  patch_cells.setItems(cells.view().localIds(),true);
+  CellGroup patch_cells = cell_family->createGroup(cell_group_name, Int32ConstArrayView(), true);
+  // Définit les mêmes mailles que \a cells mais force le tri
+  patch_cells.setItems(cells.view().localIds(), true);
 
   String node_group_name = String("AMRPatchNodes") + patch_level;
-  NodeGroup patch_nodes = node_family->createGroup(node_group_name,Int32ConstArrayView(),true);
-  // Met les mêmes noeuds que \a nodes mais force le tri
-  patch_nodes.setItems(nodes.view().localIds(),true);
-  info(4) << "PATCH_CELLS name=" << patch_cells.name() << " size=" << patch_cells.size();
-  info(4) << "PATCH_NODES name=" << patch_nodes.name() << " size=" << patch_nodes.size();
+  NodeGroup patch_nodes = node_family->createGroup(node_group_name, Int32ConstArrayView(), true);
+  // Définit les mêmes nœuds que \a nodes mais force le tri
+  patch_nodes.setItems(nodes.view().localIds(), true);
+  info(4) << "PATCH_CELLS nom=" << patch_cells.name() << " taille=" << patch_cells.size();
+  info(4) << "PATCH_NODES nom=" << patch_nodes.name() << " taille=" << patch_nodes.size();
   return { patch_cells, patch_nodes };
 }
 
@@ -646,18 +648,18 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
   Int32 prev_local_face = -1;
   Int32 next_local_face = m_local_face_direction[dir];
   Integer mesh_dim = m_mesh->dimension();
-  // Calcul le numero local de face oppose à la face suivante.
-  if (mesh_dim==2)
+  // Calcule le numéro local de la face opposée à la face suivante.
+  if (mesh_dim == 2)
     prev_local_face = (next_local_face + 2) % 4;
-  else if (mesh_dim==3)
+  else if (mesh_dim == 3)
     prev_local_face = (next_local_face + 3) % 6;
 
-  cell_dm._internalSetLocalFaceIndex(next_local_face,prev_local_face);
+  cell_dm._internalSetLocalFaceIndex(next_local_face, prev_local_face);
 
   // Positionne pour chaque maille les faces avant et après dans la direction.
   // On s'assure que ces entités sont dans le groupe des entités de la direction correspondante
   std::set<Int32> cells_set;
-  ENUMERATE_CELL(icell,all_cells){
+  ENUMERATE_CELL (icell, all_cells) {
     cells_set.insert(icell.itemLocalId());
   }
 
@@ -667,14 +669,14 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
     Cell cell = *icell;
     Int32 my_level = cell.level();
     Face next_face = cell.face(next_local_face);
-    Cell next_cell = next_face.backCell()==cell ? next_face.frontCell() : next_face.backCell();
+    Cell next_cell = next_face.backCell() == cell ? next_face.frontCell() : next_face.backCell();
     if (cells_set.find(next_cell.localId()) == cells_set.end())
       next_cell = Cell();
     else if (next_cell.level() != my_level)
       next_cell = Cell();
 
     Face prev_face = cell.face(prev_local_face);
-    Cell prev_cell = prev_face.backCell()==cell ? prev_face.frontCell() : prev_face.backCell();
+    Cell prev_cell = prev_face.backCell() == cell ? prev_face.frontCell() : prev_face.backCell();
     if (cells_set.find(prev_cell.localId()) == cells_set.end())
       prev_cell = Cell();
     else if (prev_cell.level() != my_level)
@@ -682,8 +684,8 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
     cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell, prev_cell);
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
-  face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);
-  node_dm._internalComputeInfos(cell_dm,all_nodes,cells_center);
+  face_dm._internalComputeInfos(cell_dm, cells_center, faces_center);
+  node_dm._internalComputeInfos(cell_dm, all_nodes, cells_center);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -742,7 +744,7 @@ computeDirectionsPatchV2(Integer patch_index)
 
   if (patch->index() == -1) {
     auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
-    info() << "Informations from IMesh properties:";
+    info() << "Informations depuis les propriétés IMesh:";
     info() << "GlobalNbCell = " << cmgi->globalNbCells();
     info() << "OwnNbCell: " << cmgi->ownNbCells();
     info() << "SubDomainOffset: " << cmgi->subDomainOffsets();
@@ -755,13 +757,13 @@ computeDirectionsPatchV2(Integer patch_index)
     }
   }
 
-  info() << "AMR Patch name=" << cells.name() << " size=" << cells.size() << " index=" << patch_index << " trueindex=" << patch->index() << " nbPatch=" << m_patch_group.nbPatch();
+  info() << "Nom du patch AMR=" << cells.name() << " taille=" << cells.size() << " index=" << patch_index << " trueindex=" << patch->index() << " nbPatch=" << m_patch_group.nbPatch();
   {
     const AMRPatchPosition position = patch->position();
     info() << "  position min=" << position.minPoint() << " max=" << position.maxPoint() << " level=" << position.level() << " overlapLayerSize=" << position.overlapLayerSize();
   }
   patch->_internalComputeNodeCellInformations();
-  auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO A suppr
+  auto [patch_cells, patch_nodes] = _buildPatchGroups(cells, patch_index); // TODO À supprimer
   _computeMeshDirectionV2(*patch.get(), MD_DirX, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overlapCells(patch_index), patch_nodes);
   _computeMeshDirectionV2(*patch.get(), MD_DirY, m_patch_group.allCells(patch_index), m_patch_group.inPatchCells(patch_index), m_patch_group.overlapCells(patch_index), patch_nodes);
   if (is_3d)
@@ -840,7 +842,7 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-refinePatch2D(Real2 position,Real2 length)
+refinePatch2D(Real2 position, Real2 length)
 {
   info() << "REFINEMENT 2D position=" << position << " length=" << length;
   refinePatch({ position, length });
@@ -903,7 +905,7 @@ Integer CartesianMeshImpl::
 reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 {
   if (level < 1) {
-    ARCANE_FATAL("You cannot reduce number of ghost layer of level 0 with this method");
+    ARCANE_FATAL("Vous ne pouvez pas réduire le nombre de couches fantômes du niveau 0 avec cette méthode");
   }
 
   // Nombre de couche de maille fantôme max. Bof; à modifier.
@@ -915,12 +917,12 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
   }
 
   level_max = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, level_max);
-  //debug() << "Level max : " << level_max;
+  //debug() << "Niveau max : " << level_max;
 
   computeDirections();
 
   Integer level_0_nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
-  //debug() << "NbGhostLayers level 0 : " << level_0_nb_ghost_layer;
+  //debug() << "NbGhostLayers niveau 0 : " << level_0_nb_ghost_layer;
 
   if (level_0_nb_ghost_layer == 0) {
     return 0;
@@ -928,7 +930,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 
   Integer nb_ghost_layer = Convert::toInt32(level_0_nb_ghost_layer * pow(2, level));
 
-  //debug() << "NbGhostLayers level " << level << " : " << nb_ghost_layer;
+  //debug() << "NbGhostLayers niveau " << level << " : " << nb_ghost_layer;
 
   // On considère qu'on a toujours 2*2 mailles filles (2*2*2 en 3D).
   if (target_nb_ghost_layers % 2 != 0) {
@@ -939,7 +941,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     return nb_ghost_layer;
   }
 
-  //debug() << "TargetNbGhostLayers level " << level << " : " << target_nb_ghost_layers;
+  //debug() << "TargetNbGhostLayers niveau " << level << " : " << target_nb_ghost_layers;
 
   Integer parent_level = level - 1;
   Integer parent_target_nb_ghost_layer = target_nb_ghost_layers / 2;
@@ -1032,13 +1034,13 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
       }
       current_layer++;
       if (current_layer >= max_nb_layer) {
-        ARCANE_FATAL("Error in ghost layer counter algo. Report it plz.");
+        ARCANE_FATAL("Erreur dans l'algorithme du compteur de couches fantômes. Signalez-le s'il vous plaît.");
       }
     }
   }
 
   for (Integer i = level_max - 1; i >= 0; --i) {
-    // Une comm pour en éviter plein d'autres.
+    // Une communication pour éviter beaucoup d'autres.
     if (m_mesh->parallelMng()->reduce(Parallel::ReduceMax, cell_lid2[i].size()) == 0) {
       continue;
     }
@@ -1048,7 +1050,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     m_mesh->modifier()->coarsenItemsV2(false);
   }
 
-  info() << "Nb ghost layer for level " << level << " : " << target_nb_ghost_layers;
+  info() << "Nb de couches fantômes pour le niveau " << level << " : " << target_nb_ghost_layers;
 
   return target_nb_ghost_layers;
 }
@@ -1065,13 +1067,13 @@ _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Créé un patch avec tous les enfants du groupe \a parent_cells.
+ * \brief Crée un patch avec tous les enfants du groupe \a parent_cells.
  */
 void CartesianMeshImpl::
 _addPatch(ConstArrayView<Int32> parent_cells)
 {
-  // Créé le groupe contenant les mailles AMR
-  // Il s'agit des mailles filles de \a parent_cells
+  // Crée le groupe contenant les mailles AMR
+  // Ce sont les mailles enfants de \a parent_cells
 
   UniqueArray<Int32> children_local_id;
   CellInfoListView cells(m_mesh->cellFamily());
@@ -1105,27 +1107,27 @@ _applyRefine(const AMRZonePosition& position)
     if (total_nb_cell == 0)
       return;
 
-    debug() << "Refine with modifier() (for all mesh types)";
+    debug() << "Raffine avec modifier() (pour tous les types de maillage)";
     m_mesh->modifier()->flagCellToRefine(cells_local_id);
     m_mesh->modifier()->adapt();
 
     _addPatch(cells_local_id);
   }
 
-  else if(m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    debug() << "Refine with specific refiner (for cartesian mesh only)";
+  else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
+    debug() << "Raffine avec un raffineur spécifique (pour maillage cartésien uniquement)";
     m_patch_group.addPatch(position);
   }
 
   else if (m_amr_type == eMeshAMRKind::Patch) {
-    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
+    ARCANE_FATAL("L'AMR de patch général n'est pas implémenté. Veuillez utiliser PatchCartesianMeshOnly (3)");
   }
-  else{
-    ARCANE_FATAL("AMR is not enabled");
+  else {
+    ARCANE_FATAL("L'AMR n'est pas activé");
   }
 
   {
-    MeshStats ms(traceMng(),m_mesh,m_mesh->parallelMng());
+    MeshStats ms(traceMng(), m_mesh, m_mesh->parallelMng());
     ms.dumpStats();
   }
 }
@@ -1150,7 +1152,7 @@ _applyCoarse(const AMRZonePosition& zone_position)
     if (total_nb_cell == 0)
       return;
 
-    debug() << "Coarse with modifier() (for all mesh types)";
+    debug() << "Coarsening avec modifier() (pour tous les types de maillage)";
     m_patch_group.removeCellsInAllPatches(cells_local_id);
 
     m_mesh->modifier()->flagCellToCoarsen(cells_local_id);
@@ -1158,15 +1160,15 @@ _applyCoarse(const AMRZonePosition& zone_position)
   }
 
   else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    debug() << "Coarsen with specific coarser (for cartesian mesh only)";
+    debug() << "Coarsening avec un grossisseur spécifique (pour maillage cartésien uniquement)";
     m_patch_group.removeCellsInZone(zone_position);
   }
 
   else if (m_amr_type == eMeshAMRKind::Patch) {
-    ARCANE_FATAL("General patch AMR is not implemented. Please use PatchCartesianMeshOnly (3)");
+    ARCANE_FATAL("L'AMR de patch général n'est pas implémenté. Veuillez utiliser PatchCartesianMeshOnly (3)");
   }
   else {
-    ARCANE_FATAL("AMR is not enabled");
+    ARCANE_FATAL("L'AMR n'est pas activé");
   }
 
   {
@@ -1181,9 +1183,9 @@ _applyCoarse(const AMRZonePosition& zone_position)
 void CartesianMeshImpl::
 checkValid() const
 {
-  info(4) << "Check valid CartesianMesh";
+  info(4) << "Vérification du maillage cartésien valide";
   Integer nb_patch = nbPatch();
-  for( Integer i=0; i<nb_patch; ++i ){
+  for (Integer i = 0; i < nb_patch; ++i) {
     ICartesianMeshPatch* p = patch(i);
     p->checkValid();
   }
@@ -1195,24 +1197,24 @@ checkValid() const
 void CartesianMeshImpl::
 renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 {
-  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh,true);
+  auto* cmgi = ICartesianMeshGenerationInfo::getReference(m_mesh, true);
 
   // Regarde d'abord si on renumérote les faces
   Int32 face_method = v.renumberFaceMethod();
-  if (face_method!=0 && face_method!=1)
-    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1",
+  if (face_method != 0 && face_method != 1)
+    ARCANE_FATAL("Valeur '{0}' invalide pour renumberFaceMethod(). Les valeurs valides sont 0 ou 1",
                  face_method);
-  if (face_method==1)
-    ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
+  if (face_method == 1)
+    ARCANE_THROW(NotImplementedException, "Méthode 1 pour la renumérotation des faces");
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
   if (patch_method < 0 || patch_method > 4) {
-    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0, 1, 2, 3 or 4",
+    ARCANE_FATAL("Valeur '{0}' invalide pour renumberPatchMethod(). Les valeurs valides sont 0, 1, 2, 3 ou 4",
                  patch_method);
   }
   if (patch_method != 0 && m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
-    ARCANE_FATAL("Mesh items renumbering is not compatible with this type of AMR");
+    ARCANE_FATAL("La renumérotation des éléments du maillage n'est pas compatible avec ce type d'AMR");
   }
 
   if (patch_method == 1 || patch_method == 3 || patch_method == 4) {
@@ -1220,14 +1222,14 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
     renumberer.renumber();
   }
   else if (patch_method == 2) {
-    warning() << "The patch method 2 is experimental!";
+    warning() << "La méthode de patch 2 est expérimentale !";
     CartesianMeshUniqueIdRenumberingV2 renumberer(this, cmgi);
     renumberer.renumber();
   }
 
   // Termine par un tri éventuel.
-  if (v.isSortAfterRenumbering()){
-    info() << "Compacting and Sorting after renumbering";
+  if (v.isSortAfterRenumbering()) {
+    info() << "Compactage et tri après renumérotation";
     m_mesh->nodeFamily()->compactItems(true);
     m_mesh->faceFamily()->compactItems(true);
     m_mesh->cellFamily()->compactItems(true);
@@ -1260,22 +1262,22 @@ _createCartesianMeshCoarsening2()
 /*---------------------------------------------------------------------------*/
 
 ICartesianMesh* ICartesianMesh::
-getReference(const MeshHandleOrMesh& mesh_handle_or_mesh,bool create)
+getReference(const MeshHandleOrMesh& mesh_handle_or_mesh, bool create)
 {
   MeshHandle h = mesh_handle_or_mesh.handle();
   //TODO: faire lock pour multi-thread
   const char* name = "CartesianMesh";
   IUserDataList* udlist = h.meshUserDataList();
 
-  IUserData* ud = udlist->data(name,true);
-  if (!ud){
+  IUserData* ud = udlist->data(name, true);
+  if (!ud) {
     if (!create)
       return nullptr;
     IMesh* mesh = h.meshOrNull();
     if (!mesh)
-      ARCANE_FATAL("The mesh {0} is not yet created",h.meshName());
+      ARCANE_FATAL("Le maillage {0} n'a pas encore été créé", h.meshName());
     ICartesianMesh* cm = arcaneCreateCartesianMesh(mesh);
-    udlist->setData(name,new AutoDestroyUserData<ICartesianMesh>(cm));
+    udlist->setData(name, new AutoDestroyUserData<ICartesianMesh>(cm));
 
     // Indique que le maillage est cartésien
     MeshKind mk = mesh->meshKind();
@@ -1286,7 +1288,7 @@ getReference(const MeshHandleOrMesh& mesh_handle_or_mesh,bool create)
   }
   AutoDestroyUserData<ICartesianMesh>* adud = dynamic_cast<AutoDestroyUserData<ICartesianMesh>*>(ud);
   if (!adud)
-    ARCANE_FATAL("Can not cast to ICartesianMesh*");
+    ARCANE_FATAL("Impossible de caster en ICartesianMesh*");
   return adud->data();
 }
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,31 +40,25 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class MultiArray2View;
-template<typename T> class ConstMultiArray2View;
-template<typename T> class MultiArray2;
-template<typename DataType> class UniqueMultiArray2;
-template<typename DataType> class SharedMultiArray2;
+template <typename T> class MultiArray2View;
+template <typename T> class ConstMultiArray2View;
+template <typename T> class MultiArray2;
+template <typename DataType> class UniqueMultiArray2;
+template <typename DataType> class SharedMultiArray2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Real2;
-class Real3;
-class Real2x2;
-class Real3x3;
 template <typename T> class Vector2;
 template <typename T> class Vector3;
 using Int64x3 = Vector3<Int64>;
 using Int32x3 = Vector3<Int32>;
 using Int64x2 = Vector2<Int64>;
 using Int32x2 = Vector2<Int32>;
-template<typename T,int Size> class NumVector;
-template<typename T,int RowSize,int ColumnSize = RowSize> class NumMatrix;
-using RealN2 = NumVector<Real,2>;
-using RealN3 = NumVector<Real,3>;
-using RealN2x2 = NumMatrix<Real,2>;
-using RealN3x3 = NumMatrix<Real,3>;
+template <typename DataType_, int RowSize, int ColumnSize>
+class NumMatrixDataViewGetter;
+template <typename DataType_, int RowSize, int ColumnSize>
+class NumMatrixDataViewGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -96,9 +90,9 @@ class ParallelLoopOptions;
 class ParallelFor1DLoopInfo;
 class TaskContext;
 class ITaskFunctor;
-template<typename InstanceType>
+template <typename InstanceType>
 class TaskFunctor;
-template<typename InstanceType>
+template <typename InstanceType>
 class TaskFunctorWithContext;
 class ITask;
 class ITaskImplementation;
@@ -107,10 +101,10 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec l'existant (à supprimer après la version 3.8)
-template<typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
-template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
-template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
+// Pour la compatibilité avec le code existant (sera supprimé après la version 3.8)
+template <typename IndexType_ = Int32> using LoopRange = ForLoopRange<IndexType_>;
+template <int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
+template <int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -245,6 +239,10 @@ typedef UniqueArray2<UChar> UCharUniqueArray2;
 typedef UniqueArray2<Int64> Int64UniqueArray2;
 //! Tableau dynamique 2D d'entiers 32 bits
 typedef UniqueArray2<Int32> Int32UniqueArray2;
+//! Tableau dynamique 2D d'entiers 16 bits
+typedef UniqueArray2<Int16> Int16UniqueArray2;
+//! Tableau dynamique 2D d'entiers 8 bits
+typedef UniqueArray2<Int8> Int8UniqueArray2;
 //! Tableau dynamique 2D d'entiers
 typedef UniqueArray2<Integer> IntegerUniqueArray2;
 //! Tableau dynamique 2D de réels
@@ -440,7 +438,7 @@ typedef MultiArray2<Real3x3> Real3x3MultiArray2;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-				
+
 //! Equivalent C d'un tableau à une dimension de pointeurs
 typedef ArrayView<Pointer> PointerArrayView;
 //! Equivalent C d'un tableau à une dimension de caractères
@@ -643,4 +641,4 @@ using Real3x3ConstSmallSpan = SmallSpan<const Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* RelaxationRuntime.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Runtime configurable relaxation.                                          */
+/* Relaxation configurable en temps d'exécution.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_RELAXATIONRUNTIME_H
 #define ARCCORE_ALINA_RELAXATIONRUNTIME_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -39,26 +39,26 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Relaxation schemes.
+/// Schémas de relaxation.
 enum class eRelaxationType
 {
-  gauss_seidel, ///< Gauss-Seidel smoothing
+  gauss_seidel, ///< Lissage de Gauss-Seidel
   GaussSeidelRelaxation = gauss_seidel,
-  ilu0, ///< Incomplete LU with zero fill-in
+  ilu0, ///< LU incomplète avec remplissage nul
   ILU0Relaxation = ilu0,
-  iluk, ///< Level-based incomplete LU
+  iluk, ///< LU incomplète basée sur les niveaux
   ILUKRelaxation = iluk,
-  ilup, ///< Level-based incomplete LU (fill-in is determined from A^p pattern)
+  ilup, ///< LU incomplète basée sur les niveaux (le remplissage est déterminé à partir du motif A^p)
   ILUPRelaxation = ilup,
-  ilut, ///< Incomplete LU with thresholding
+  ilut, ///< LU incomplète avec seuillage
   ILUTRelaxation = ilut,
-  damped_jacobi, ///< Damped Jacobi
+  damped_jacobi, ///< Jacobi amorti
   DampedJacobiRelaxation = damped_jacobi,
-  spai0, ///< Sparse approximate inverse of 0th order
+  spai0, ///< Inverse approximative éparse d'ordre 0
   SPAI0Relaxation = spai0,
-  spai1, ///< Sparse approximate inverse of 1st order
+  spai1, ///< Inverse approximative éparse d'ordre 1
   SPAI1Relaxation = spai1,
-  chebyshev, ///< Chebyshev relaxation
+  chebyshev, ///< Relaxation de Chebyshev
   ChebyshevRelaxation = chebyshev
 };
 
@@ -85,7 +85,7 @@ std::istream& operator>>(std::istream& in, eRelaxationType& r);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Runtime configurable relaxation.
+ * \brief Relaxation configurable en temps d'exécution.
  */
 template <class Backend>
 struct RelaxationRuntime
@@ -242,7 +242,7 @@ struct RelaxationRuntime
   void _throwBadTypeType [[noreturn]] () const
   {
     int v = static_cast<int>(m_relaxation_type);
-    ARCANE_FATAL("Unsupported relaxation type '{0}'", v);
+    ARCCORE_FATAL("Unsupported relaxation type '{0}'", v);
   }
   void _throwUnsupportedBackendType [[noreturn]] () const
   {

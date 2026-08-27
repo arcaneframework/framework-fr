@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -32,8 +32,6 @@
 
 #include <boost/scope_exit.hpp>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/RelaxationRuntime.h"
@@ -41,6 +39,8 @@
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -59,7 +59,7 @@ read_problem(const Alina::mpi_communicator& world,
              std::vector<double>& val,
              std::vector<double>& rhs)
 {
-  // Read partition
+  // Lit la partition
   std::vector<int> part;
   std::vector<ptrdiff_t> domain(world.size + 1, 0);
   ptrdiff_t n = 0;
@@ -102,7 +102,7 @@ read_problem(const Alina::mpi_communicator& world,
   ptrdiff_t chunk_end = domain[world.rank + 1];
   ptrdiff_t chunk = chunk_end - chunk_beg;
 
-  // Reorder unknowns
+  // Réordonne les inconnues
   std::vector<ptrdiff_t> order(n);
   {
     for (ptrdiff_t i = 0; i < n; ++i) {
@@ -116,7 +116,7 @@ read_problem(const Alina::mpi_communicator& world,
     domain[0] = 0;
   }
 
-  // Read matrix chunk
+  // Lit le bloc de la matrice
   {
     std::ifstream A(A_file.c_str());
     precondition(A, "Failed to open matrix file (" + A_file + ")");
@@ -180,7 +180,7 @@ read_problem(const Alina::mpi_communicator& world,
     }
   }
 
-  // Read RHS chunk.
+  // Lit le bloc du côté droit (RHS).
   {
     std::ifstream f(rhs_file.c_str());
     precondition(f, "Failed to open rhs file (" + rhs_file + ")");
@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
 
-  // Read configuration from command line
+  // Lit la configuration à partir de la ligne de commande
   auto coarsening = Alina::eCoarserningType::smoothed_aggregation;
   auto relaxation = Alina::eRelaxationType::spai0;
   auto iterative_solver = Alina::eSolverType::bicgstabl;
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
   std::string part_file = "partition.mtx";
   std::string out_file;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(
@@ -268,19 +268,19 @@ int main(int argc, char* argv[])
   )(
   "params,p",
   po::value<std::string>(&parameter_file),
-  "parameter file in json format")(
+  "fichier de paramètres au format json")(
   "matrix,A",
   po::value<std::string>(&A_file)->default_value(A_file),
-  "The system matrix in MatrixMarket format")(
+  "La matrice du système au format MatrixMarket")(
   "rhs,b",
   po::value<std::string>(&rhs_file)->default_value(rhs_file),
-  "The right-hand side in MatrixMarket format")(
+  "Le côté droit en format MatrixMarket")(
   "part,s",
   po::value<std::string>(&part_file)->default_value(part_file),
-  "Partitioning of the problem in MatrixMarket format")(
+  "Partitionnement du problème au format MatrixMarket")(
   "output,o",
   po::value<std::string>(&out_file),
-  "The output file (saved in MatrixMarket format)");
+  "Le fichier de sortie (enregistré au format MatrixMarket)");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);

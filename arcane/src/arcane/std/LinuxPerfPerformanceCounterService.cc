@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LinuxPerfPerformanceCounterService.cc                       (C) 2000-2022 */
+/* LinuxPerfPerformanceCounterService.cc                       (C) 2000-2026 */
 /*                                                                           */
 /* Récupération des compteurs hardware via l'API 'perf' de Linux.            */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/FactoryService.h"
+#include "arcane/core/FactoryService.h"
 
 #include <linux/perf_event.h>
 #include <linux/hw_breakpoint.h>
@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <syscall.h>
 #include <sys/ioctl.h>
+
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,7 +63,7 @@ class LinuxPerfPerformanceCounterService
   bool _addEvent(int event_type, int event_config, bool is_optional = false)
   {
     struct perf_event_attr attr;
-    memset(&attr, 0, sizeof(attr));
+    std::memset(&attr, 0, sizeof(attr));
 
     attr.type = event_type,
     attr.config = event_config;
@@ -76,10 +78,10 @@ class LinuxPerfPerformanceCounterService
     unsigned long flags = 0;
     long long_fd = syscall(__NR_perf_event_open, &attr, m_process_id, cpu, group_fd, flags);
     info(4) << "AddEvent type=" << attr.type << " id=" << attr.config << " fd=" << long_fd;
-    if (long_fd == (-1)){
+    if (long_fd == (-1)) {
       if (is_optional)
         return true;
-      ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));
+      ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, std::strerror(errno));
     }
     int fd = static_cast<int>(long_fd);
     m_events_file_descriptor.add(fd);

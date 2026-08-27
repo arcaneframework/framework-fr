@@ -36,6 +36,7 @@
 
 #include <map>
 #include <set>
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +48,7 @@ namespace
   // Nombre de noeuds pour les types polygones additionnels.
   // Les types jusqu'à ITI_Octogon8 existent toujours.
   Int16 global_polygon_begin_nb_node = 9;
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -123,6 +124,7 @@ _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Construit les types des entités.
  *
@@ -133,7 +135,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
   // Construit la connectivité des éléments.
   // Pour les éléments classiques, la connectivité est la même que
-  // celle de VTK, disponible dans le document:
+  // celle de VTK, disponible dans le document :
   //
   // https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
 
@@ -970,7 +972,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
     type->setInfos(this, IT_Cell3D_Line3, "Cell3D_Line3", Dimension::Dim1, 3, 0, 0);
   }
-  
+
   // Cell3D_Line4
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
@@ -1105,10 +1107,10 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     }
   }
 
-  { // Polygon & Polyhedron: generic item types
+  { // Polygone et Polyèdre : types d'éléments génériques
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
-      // verify the existence of item type file. if doesn't exist return an exception
+      // vérifier l'existence du fichier de type d'élément. s'il n'existe pas, renvoyer une exception
       _readTypes(parallel_mng, arcane_item_type_file);
     }
   }
@@ -1149,6 +1151,7 @@ buildPolygonTypes()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Ajoute un type polygone générique
  *
@@ -1180,12 +1183,12 @@ printTypes(std::ostream& ostr)
 {
   ARCANE_ASSERT((m_initialized), ("Cannot use not built ItemTypeMng"));
   Integer nb_type = m_types.size();
-  ostr << "** Number of types " << nb_type << '\n';
+  ostr << "** Nombre de types " << nb_type << '\n';
   for (Integer i = 0; i < nb_type; ++i) {
     ItemTypeInfo* type = m_types[i];
     ostr << " - Type " << type->typeId()
-         << " Name: " << type->typeName()
-         << " Nodes: " << type->nbLocalNode()
+         << " Nom: " << type->typeName()
+         << " Nœuds: " << type->nbLocalNode()
          << " Faces " << type->nbLocalFace() << '\n';
     for (Integer z = 0, sz = type->nbLocalFace(); z < sz; ++z) {
       ItemTypeInfo::LocalFace lf = type->localFace(z);
@@ -1201,6 +1204,7 @@ printTypes(std::ostream& ostr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Lecture d'un fichier de types voronoi.
  *
@@ -1262,7 +1266,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     bytes[0] = '\0';
   }
 
-  // Already built polygons (size => identifier)
+  // Polygones déjà construits (taille => identifiant)
   typedef std::map<Integer, Integer> PolygonMapper;
   PolygonMapper built_polygons;
   built_polygons[3] = IT_Triangle3;
@@ -1288,7 +1292,7 @@ _readTypes(IParallelSuperMng* pm, const String& filename)
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     ifile >> typeId >> nbF >> nbE;
     if (typeId >= nb_type || typeId < 0)
-      ARCANE_THROW(IOException,"Polyhedron reader cannot allow typeId {0}", typeId);
+      ARCANE_THROW(IOException, "Polyhedron reader cannot allow typeId {0}", typeId);
     typeId += ItemTypeMng::nbBuiltInItemType(); // translation d'indexation
     if (known_types.find(typeId) != known_types.end())
       ARCANE_FATAL("Already existing typeId {0}", typeId);
@@ -1416,7 +1420,7 @@ _singleton()
 void ItemTypeMng::
 _destroySingleton()
 {
-  //GG: Ca plante avec Windows. Regarder pourquoi.
+  //GG: It crashes on Windows. Check why.
 #ifndef ARCANE_OS_WIN32
   delete singleton_instance;
 #endif
@@ -1473,6 +1477,7 @@ typeName(ItemTypeId id) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 // Recopie de la fonction obsolète Item::typeName().
 // TODO: voir pourquoi il y a un test sur nBasicItemType().
 String ItemTypeMng::

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -19,16 +19,13 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/String.h"
+#include "arccore/base/Convert.h"
 
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
-
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/Convert.h"
-
 #include "arccore/alina/Relaxation.h"
 #include "arccore/alina/Coarsening.h"
 #include "arccore/alina/BiCGStabSolver.h"
@@ -42,6 +39,8 @@
 
 #include "arccore/alina/Profiler.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 #include "AlinaSamplesCommon.h"
 #include "arccore/trace/ITraceMng.h"
 
@@ -53,7 +52,7 @@ using Alina::precondition;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Use 32 bit indexing for backend.
+//! Utilise l'indexation 32 bits pour le backend.
 using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +90,7 @@ solve(const Alina::PropertyTree& prm,
   using Precond = Alina::AMG<Backend, Alina::AggregationCoarsening, Alina::SPAI0Relaxation>;
   //using Solver = Alina::PreconditionedSolver<Precond, Alina::BiCGStabSolver<Backend>>;
   using Solver = Alina::PreconditionedSolver<Precond, Alina::SolverRuntime<Backend>>;
-  //using Solver = Alina::PreconditionedSolver<Alina::PreconditionerRuntime<Backend>, Alina::SolverRuntime<Backend>>;
+  //using Solver = Alina::PreconditionedSolver<Precond, Alina::SolverRuntime<Backend>>;
   //using Solver = Alina::PreconditionedSolver<Alina::PreconditionerRuntime<Backend>, Alina::BiCGStabSolver<Backend>>;
 
   Alina::SolverResult info;
@@ -125,7 +124,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ITraceMng* tm = ctx.traceMng();
 
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;
@@ -133,25 +132,25 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.");
+  desc.add_options()("help,h", "Affiche cette aide.");
   desc.add_options()("prm-file,P", po::value<string>(),
-                     "Parameter file in json format. ");
+                     "Fichier de paramètres au format json. ");
   desc.add_options()("prm,p", po::value<vector<string>>()->multitoken(),
-                     "Parameters specified as name=value pairs. "
-                     "May be provided multiple times. Examples:\n"
+                     "Paramètres spécifiés sous forme de paires nom=valeur. "
+                     "Peut être fourni plusieurs fois. Exemples:\n"
                      "  -p solver.tol=1e-3\n"
                      "  -p precond.coarse_enough=300");
 
   desc.add_options()("size,n",
                      po::value<int>()->default_value(32),
-                     "The size of the Poisson problem to solve when no system matrix is given. "
-                     "Specified as number of grid nodes along each dimension of a unit cube. "
-                     "The resulting system will have n*n*n unknowns. ");
+                     "La taille du problème de Poisson à résoudre lorsqu'aucune matrice de système n'est donnée. "
+                     "Spécifié comme le nombre de nœuds de grille le long de chaque dimension d'un cube unité. "
+                     "Le système résultant aura n*n*n inconnues. ");
 
   desc.add_options()("anisotropy,a",
                      po::value<double>()->default_value(1.0),
-                     "The anisotropy value for the generated Poisson value. "
-                     "Used to determine problem scaling along X, Y, and Z axes: "
+                     "La valeur d'anisotropie pour la valeur de Poisson générée. "
+                     "Utilisée pour déterminer la mise à l'échelle du problème le long des axes X, Y et Z : "
                      "hy = hx * a, hz = hy * a.");
 
   po::positional_options_description p;

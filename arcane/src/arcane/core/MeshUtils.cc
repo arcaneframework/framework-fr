@@ -127,8 +127,8 @@ _writeInfo(ISubDomain* mng, const VariableCollection& variables, const ItemType&
     if (v) {
       ConstArrayView<ValueType> values = v->valueView();
       if (values.size() < item.localId()) {
-        trace->error() << "Invalid dimensions for variable '" << name << "' "
-                       << "(size=" << values.size() << " index=" << item.localId();
+        trace->error() << "Dimensions invalides pour la variable '" << name << "' "
+                       << "(taille=" << values.size() << " index=" << item.localId();
         continue;
       }
       _writeValue(trace, name, values[item.localId()]);
@@ -139,8 +139,8 @@ _writeInfo(ISubDomain* mng, const VariableCollection& variables, const ItemType&
       Array2View<ValueType> values = v2->valueView();
       Integer lid = item.localId();
       if (values.dim1Size() < lid) {
-        trace->error() << "Invalid dimensions for variable '" << name << "' "
-                       << "(size=" << values.dim1Size() << " index=" << lid;
+        trace->error() << "Dimensions invalides pour la variable '" << name << "' "
+                       << "(taille=" << values.dim1Size() << " index=" << lid;
         continue;
       }
       Integer n = values[lid].size();
@@ -170,26 +170,26 @@ writeMeshItemInfo(ISubDomain* sd, Cell cell, bool depend_info)
   Integer nb_face = cell.nbFace();
 
   trace->pinfo() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
-  trace->pinfo() << "** -- Dumping information for cell " << cell.uniqueId();
+  trace->pinfo() << "** -- Affichage des informations pour la maille " << cell.uniqueId();
   trace->pinfo() << "** -- Structure:";
-  trace->pinfo() << "unique id:               " << Trace::Width(5) << cell.uniqueId();
-  trace->pinfo() << "local id:                " << Trace::Width(5) << cell.localId();
-  trace->pinfo() << "owner:                   " << Trace::Width(5) << cell.owner();
+  trace->pinfo() << "id unique:               " << Trace::Width(5) << cell.uniqueId();
+  trace->pinfo() << "id local:                " << Trace::Width(5) << cell.localId();
+  trace->pinfo() << "propriétaire:            " << Trace::Width(5) << cell.owner();
   trace->pinfo() << "type:                    " << Trace::Width(5) << cell.typeInfo()->typeName();
 
-  trace->pinfo() << "number of nodes:         " << Trace::Width(5) << nb_node;
+  trace->pinfo() << "nombre de nœuds:         " << Trace::Width(5) << nb_node;
   for (Integer i = 0; i < nb_node; ++i)
-    trace->pinfo() << "unique id of node " << Trace::Width(2)
+    trace->pinfo() << "id unique du nœud " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << cell.node(i).uniqueId();
 
-  trace->pinfo() << "number of edges:         " << Trace::Width(5) << nb_edge;
+  trace->pinfo() << "nombre d'arêtes:         " << Trace::Width(5) << nb_edge;
   for (Integer i = 0; i < nb_edge; ++i)
-    trace->pinfo() << "unique id of edge " << Trace::Width(2)
+    trace->pinfo() << "id unique de l'arête " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << cell.edge(i).uniqueId();
 
-  trace->pinfo() << "number of faces:         " << Trace::Width(5) << nb_face;
+  trace->pinfo() << "nombre de faces:         " << Trace::Width(5) << nb_face;
   for (Integer i = 0; i < nb_face; ++i)
-    trace->pinfo() << "local id of face " << Trace::Width(2)
+    trace->pinfo() << "id local de la face " << Trace::Width(2)
                    << i << " :    " << Trace::Width(5) << cell.face(i).localId();
 
   trace->pinfo() << "** -- Variables:";
@@ -232,20 +232,20 @@ writeMeshItemInfo(ISubDomain* sd, Node node, bool depend_info)
   Integer nb_face = node.nbFace();
 
   trace->pinfo() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
-  trace->pinfo() << "** -- Dumping information for node " << node.uniqueId();
+  trace->pinfo() << "** -- Affichage des informations pour le nœud " << node.uniqueId();
   trace->pinfo() << "** -- Structure:";
-  trace->pinfo() << "unique id:               " << Trace::Width(5) << node.uniqueId();
-  trace->pinfo() << "local id:                " << Trace::Width(5) << node.localId();
-  trace->pinfo() << "owner:                   " << Trace::Width(5) << node.owner();
+  trace->pinfo() << "id unique:               " << Trace::Width(5) << node.uniqueId();
+  trace->pinfo() << "id local:                " << Trace::Width(5) << node.localId();
+  trace->pinfo() << "propriétaire:            " << Trace::Width(5) << node.owner();
 
-  trace->pinfo() << "number of cells:         " << Trace::Width(5) << nb_cell;
+  trace->pinfo() << "nombre de mailles:         " << Trace::Width(5) << nb_cell;
   for (Integer i = 0; i < nb_cell; ++i)
-    trace->pinfo() << "unique id of cell " << Trace::Width(2)
+    trace->pinfo() << "id unique de la maille " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << node.cell(i).uniqueId();
 
-  trace->pinfo() << "number of faces:         " << Trace::Width(5) << nb_face;
+  trace->pinfo() << "nombre de faces:         " << Trace::Width(5) << nb_face;
   for (Integer i = 0; i < nb_face; ++i)
-    trace->pinfo() << "local id of face " << Trace::Width(2)
+    trace->pinfo() << "id local de la face " << Trace::Width(2)
                    << i << " :    " << Trace::Width(5) << node.face(i).localId();
 
   trace->pinfo() << "** -- Variables:";
@@ -286,20 +286,20 @@ writeMeshItemInfo(ISubDomain* sd, Edge edge, bool depend_info)
   Integer nb_node = edge.nbNode();
 
   trace->pinfo() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
-  trace->pinfo() << "** -- Dumping information for face " << edge.localId() << " (localid)";
+  trace->pinfo() << "** -- Affichage des informations pour l'arête " << edge.localId() << " (localid)";
   trace->pinfo() << "** -- Structure:";
-  trace->pinfo() << "unique id:               " << Trace::Width(5) << "None";
-  trace->pinfo() << "local id:                " << Trace::Width(5) << edge.localId();
-  trace->pinfo() << "owner:                   " << Trace::Width(5) << edge.owner();
+  trace->pinfo() << "id unique:               " << Trace::Width(5) << "None";
+  trace->pinfo() << "id local:                " << Trace::Width(5) << edge.localId();
+  trace->pinfo() << "propriétaire:            " << Trace::Width(5) << edge.owner();
 
-  trace->pinfo() << "number of nodes:         " << Trace::Width(5) << nb_node;
+  trace->pinfo() << "nombre de nœuds:         " << Trace::Width(5) << nb_node;
   for (Integer i = 0; i < nb_node; ++i)
-    trace->pinfo() << "unique id of node " << Trace::Width(2)
+    trace->pinfo() << "id unique du nœud " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << edge.node(i).uniqueId();
 
-  trace->pinfo() << "number of cells:         " << Trace::Width(5) << nb_cell;
+  trace->pinfo() << "nombre de mailles:         " << Trace::Width(5) << nb_cell;
   for (Integer i = 0; i < nb_cell; ++i)
-    trace->pinfo() << "unique id of cell " << Trace::Width(2)
+    trace->pinfo() << "id unique de la maille " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << edge.cell(i).uniqueId();
 
   trace->pinfo() << "** -- Variables:";
@@ -340,20 +340,20 @@ writeMeshItemInfo(ISubDomain* sd, Face face, bool depend_info)
   Integer nb_node = face.nbNode();
 
   trace->pinfo() << "** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- ** -- **";
-  trace->pinfo() << "** -- Dumping information for face " << face.localId() << " (localid)";
+  trace->pinfo() << "** -- Affichage des informations pour la face " << face.localId() << " (localid)";
   trace->pinfo() << "** -- Structure:";
-  trace->pinfo() << "unique id:               " << Trace::Width(5) << "None";
-  trace->pinfo() << "local id:                " << Trace::Width(5) << face.localId();
-  trace->pinfo() << "owner:                   " << Trace::Width(5) << face.owner();
+  trace->pinfo() << "id unique:               " << Trace::Width(5) << "None";
+  trace->pinfo() << "id local:                " << Trace::Width(5) << face.localId();
+  trace->pinfo() << "propriétaire:            " << Trace::Width(5) << face.owner();
 
-  trace->pinfo() << "number of nodes:         " << Trace::Width(5) << nb_node;
+  trace->pinfo() << "nombre de nœuds:         " << Trace::Width(5) << nb_node;
   for (Integer i = 0; i < nb_node; ++i)
-    trace->pinfo() << "unique id of node " << Trace::Width(2)
+    trace->pinfo() << "id unique du nœud " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << face.node(i).uniqueId();
 
-  trace->pinfo() << "number of cells:         " << Trace::Width(5) << nb_cell;
+  trace->pinfo() << "nombre de mailles:         " << Trace::Width(5) << nb_cell;
   for (Integer i = 0; i < nb_cell; ++i)
-    trace->pinfo() << "unique id of cell " << Trace::Width(2)
+    trace->pinfo() << "id unique de la maille " << Trace::Width(2)
                    << i << " :   " << Trace::Width(5) << face.cell(i).uniqueId();
 
   trace->pinfo() << "** -- Variables:";
@@ -530,11 +530,11 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
   Integer nb_edge = mesh->nbEdge();
   Integer nb_face = mesh->nbFace();
   Integer nb_cell = mesh->nbCell();
-  ofile << "** Mesh Sorted --> "
-        << " Nodes " << nb_node
-        << " Edges " << nb_edge
+  ofile << "** Maillage Trié --> "
+        << " Nœuds " << nb_node
+        << " Arêtes " << nb_edge
         << " Faces " << nb_face
-        << " Cells " << nb_cell
+        << " Mailles " << nb_cell
         << "\n";
   UniqueArray<Node> sorted_nodes(nb_node);
   UniqueArray<Edge> sorted_edges(nb_edge);
@@ -593,15 +593,15 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
 
     SharedVariableNodeReal3 coords(mesh->sharedNodesCoordinates());
 
-    ofile << "** Nodes\n";
+    ofile << "** Nœuds\n";
     Int32UniqueArray lids;
     for (Integer i = 0; i < nb_node; ++i) {
       const Node& node = sorted_nodes[i];
-      ofile << "Node: " << i << " Coord: " << coords[node];
+      ofile << "Nœud: " << i << " Coordonnée: " << coords[node];
 
       _fillSorted(node, lids, edges_sorted_id, EdgeFiller());
       std::sort(std::begin(lids), std::end(lids));
-      _writeItems(ofile, "Edges", lids);
+      _writeItems(ofile, "Arêtes", lids);
 
       _fillSorted(node, lids, faces_sorted_id, FaceFiller());
       std::sort(std::begin(lids), std::end(lids));
@@ -609,19 +609,19 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
 
       _fillSorted(node, lids, cells_sorted_id, CellFiller());
       std::sort(std::begin(lids), std::end(lids));
-      _writeItems(ofile, "Cells", lids);
+      _writeItems(ofile, "Mailles", lids);
 
       ofile << '\n';
     }
 
-    ofile << "** Edges\n";
+    ofile << "** Arêtes\n";
     for (Integer i = 0; i < nb_edge; ++i) {
       Edge edge = sorted_edges[i];
       Integer edge_nb_node = edge.nbNode();
       Integer edge_nb_face = edge.nbFace();
       Integer edge_nb_cell = edge.nbCell();
-      ofile << "Edge: " << i
-            << " Nodes " << edge_nb_node << " (";
+      ofile << "Arête: " << i
+            << " Nœuds " << edge_nb_node << " (";
       for (Integer i_node = 0; i_node < edge_nb_node; ++i_node)
         ofile << ' ' << nodes_sorted_id[edge.node(i_node).localId()];
       ofile << " )";
@@ -629,7 +629,7 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
       for (Integer i_face = 0; i_face < edge_nb_face; ++i_face)
         ofile << ' ' << faces_sorted_id[edge.face(i_face).localId()];
       ofile << " )";
-      ofile << " Cells " << edge_nb_cell << " (";
+      ofile << " Mailles " << edge_nb_cell << " (";
       for (Integer i_cell = 0; i_cell < edge_nb_cell; ++i_cell)
         ofile << ' ' << cells_sorted_id[edge.cell(i_cell).localId()];
       ofile << " )";
@@ -643,37 +643,37 @@ writeMeshInfosSorted(IMesh* mesh, const String& file_name)
       Integer face_nb_edge = face.nbEdge();
       Integer face_nb_cell = face.nbCell();
       ofile << "Face: " << i;
-      ofile << " Nodes " << face.nbNode() << " (";
+      ofile << " Nœuds " << face.nbNode() << " (";
       for (Integer i_node = 0; i_node < face_nb_node; ++i_node)
         ofile << ' ' << nodes_sorted_id[face.node(i_node).localId()];
       ofile << " )";
 
-      ofile << " Edges " << face_nb_edge << " (";
+      ofile << " Arêtes " << face_nb_edge << " (";
       for (Integer i_edge = 0; i_edge < face_nb_edge; ++i_edge)
         ofile << ' ' << edges_sorted_id[face.edge(i_edge).localId()];
       ofile << " )";
 
-      ofile << " Cells " << face_nb_cell << " (";
+      ofile << " Mailles " << face_nb_cell << " (";
       for (Integer i_cell = 0; i_cell < face_nb_cell; ++i_cell)
         ofile << ' ' << cells_sorted_id[face.cell(i_cell).localId()];
 
       const Cell& back_cell = face.backCell();
       if (!back_cell.null())
-        ofile << " Back " << cells_sorted_id[back_cell.localId()];
+        ofile << " Arrière " << cells_sorted_id[back_cell.localId()];
 
       const Cell& front_cell = face.frontCell();
       if (!front_cell.null())
-        ofile << " Front " << cells_sorted_id[front_cell.localId()];
+        ofile << " Avant " << cells_sorted_id[front_cell.localId()];
 
       ofile << " )";
       ofile << '\n';
     }
 
-    ofile << "** Cells\n";
+    ofile << "** Mailles\n";
     for (Integer i = 0; i < nb_cell; ++i) {
       Cell cell = sorted_cells[i];
       //Integer cell_nb_node = cell.nbNode();
-      ofile << "Cell: " << i;
+      ofile << "Maille: " << i;
 
       _fillSorted(cell, lids, nodes_sorted_id, NodeFiller());
       _writeItems(ofile, "Nodes", lids);
@@ -700,11 +700,11 @@ writeMeshInfos(IMesh* mesh, const String& file_name)
   Integer nb_edge = mesh->nbEdge();
   Integer nb_face = mesh->nbFace();
   Integer nb_cell = mesh->nbCell();
-  ofile << "** Mesh --> "
-        << " Nodes " << nb_node
-        << " Edges " << nb_edge
+  ofile << "** Maillage --> "
+        << " Nœuds " << nb_node
+        << " Arêtes " << nb_edge
         << " Faces " << nb_face
-        << " Cells " << nb_cell
+        << " Mailles " << nb_cell
         << "\n";
 
   NodeInfoListView nodes(mesh->nodeFamily());
@@ -713,17 +713,17 @@ writeMeshInfos(IMesh* mesh, const String& file_name)
   //TODO pouvoir afficher les infos même si on n'est pas un maillage primaire
   VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
 
-  ofile << "** Nodes\n";
+  ofile << "** Nœuds\n";
   for (Integer i = 0; i < nb_node; ++i) {
     Node node = nodes[i];
     Integer node_nb_face = node.nbFace();
     Integer node_nb_cell = node.nbCell();
-    ofile << "Node: " << i << " Coord: " << coords[node];
+    ofile << "Nœud: " << i << " Coordonnée: " << coords[node];
     ofile << " Faces " << node_nb_face << " (";
     for (Integer i_face = 0; i_face < node_nb_face; ++i_face)
       ofile << ' ' << node.face(i_face).localId();
     ofile << " )";
-    ofile << " Cells " << node_nb_cell << " (";
+    ofile << " Mailles " << node_nb_cell << " (";
     for (Integer i_cell = 0; i_cell < node_nb_cell; ++i_cell)
       ofile << ' ' << node.cell(i_cell).localId();
     ofile << " )";
@@ -736,34 +736,34 @@ writeMeshInfos(IMesh* mesh, const String& file_name)
     Integer face_nb_node = face.nbNode();
     Integer face_nb_cell = face.nbCell();
     ofile << "Face: " << i
-          << " Nodes " << face_nb_node << " (";
+          << " Nœuds " << face_nb_node << " (";
     for (Integer i_node = 0; i_node < face_nb_node; ++i_node)
       ofile << ' ' << face.node(i_node).localId();
     ofile << " )";
-    ofile << " Cells " << face_nb_cell << " (";
+    ofile << " Mailles " << face_nb_cell << " (";
 
     for (Integer i_cell = 0; i_cell < face_nb_cell; ++i_cell)
       ofile << ' ' << face.cell(i_cell).localId();
 
     const Cell& back_cell = face.backCell();
     if (!back_cell.null())
-      ofile << " Back " << back_cell.localId();
+      ofile << " Arrière " << back_cell.localId();
 
     const Cell& front_cell = face.frontCell();
     if (!front_cell.null())
-      ofile << " Front " << front_cell.localId();
+      ofile << " Avant " << front_cell.localId();
 
     ofile << " )";
     ofile << '\n';
   }
 
-  ofile << "** Cells\n";
+  ofile << "** Mailles\n";
   for (Integer i = 0; i < nb_cell; ++i) {
     Cell cell = cells[i];
     Integer cell_nb_node = cell.nbNode();
     Integer cell_nb_face = cell.nbFace();
-    ofile << "Cell: " << i
-          << " Nodes " << cell_nb_node << " (";
+    ofile << "Maille: " << i
+          << " Nœuds " << cell_nb_node << " (";
     for (Integer i_node = 0; i_node < cell_nb_node; ++i_node)
       ofile << ' ' << cell.node(i_node).localId();
     ofile << " )";
@@ -835,7 +835,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
 
   ITraceMng* trace = mesh->traceMng();
 
-  trace->info() << "Writing mesh connectivity in '" << file_name << "'";
+  trace->info() << "Écriture de la connectivité du maillage dans '" << file_name << "'";
 
   ofile << "<?xml version='1.0' ?>\n";
   ofile << "<mesh-connectivity>\n";
@@ -915,8 +915,8 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
   {
     ofile << "<cells count='" << cells.size() << "'>\n";
     // Pour les mailles autour d'une maille.
-    // Une maille est autour d'une autre, si elle est connectée par
-    // au moins un noeud
+    // Une maille est autour d'une autre si elle est connectée par
+    // au moins un nœud
     Int64UniqueArray ghost_cells_layer1;
     ghost_cells_layer1.reserve(100);
     for (Cell cell : cells) {
@@ -975,14 +975,14 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
     ofile << "<groups>\n";
     // Trie les groupes par ordre alphabétique pour être certains qu'ils sont
     // toujours écrits dans le même ordre.
-    std::map<String,ItemGroup> sorted_groups;
+    std::map<String, ItemGroup> sorted_groups;
     for (ItemGroupCollection::Enumerator i_group(mesh->groups()); ++i_group;) {
       const ItemGroup& group = *i_group;
       if (group.isLocalToSubDomain())
         continue;
-      sorted_groups.insert(std::make_pair(group.name(),group));
+      sorted_groups.insert(std::make_pair(group.name(), group));
     }
-    for ( const auto& [name,group] : sorted_groups ){
+    for (const auto& [name, group] : sorted_groups) {
       ofile << "<group name='" << group.name()
             << "' kind='" << itemKindName(group.itemKind())
             << "' count='" << group.size() << "'>\n";
@@ -1096,7 +1096,7 @@ class MeshUtilsCheckConnectivity
     {
       ItemGroup all_items(m_mesh->allItems(ik));
       items_internal.resize(all_items.size());
-      
+
       Integer index = 0;
       ENUMERATE_ITEM(i,all_items){
         const Item& item = *i;
@@ -1205,7 +1205,7 @@ _read(eItemKind ik, ItemInternalXmlMap& items_internal, XmlNode root_node,
     const XmlNode& xitem = item_xml.m_element;
     if (xitem.null()) {
       trace->error() << "Item " << kind_name << ":" << item.uniqueId()
-                     << "unknown in reference mesh";
+                     << "inconnu dans le maillage de référence";
       m_has_error = true;
       continue;
     }
@@ -1216,8 +1216,8 @@ _read(eItemKind ik, ItemInternalXmlMap& items_internal, XmlNode root_node,
       Integer nb_node = item_with_node.nbNode();
       if (ref_nb_node != nb_node) {
         trace->error() << "Item " << kind_name << ":" << item.uniqueId()
-                       << ": number of nodes (" << nb_node << ") "
-                       << "different than reference (" << ref_nb_node << ")";
+                       << ": nombre de nœuds (" << nb_node << ") "
+                       << "différent du référentiel (" << ref_nb_node << ")";
         m_has_error = true;
         continue;
       }
@@ -1236,19 +1236,19 @@ _read(eItemKind ik, ItemInternalXmlMap& items_internal, XmlNode root_node,
         m_has_error = true;
         OStringStream ostr;
         ostr() << "Item " << kind_name << ":" << item.uniqueId()
-               << ": nodes (";
+               << ": nœuds (";
         for (NodeEnumerator i_node(item_with_node.nodes()); i_node(); ++i_node) {
           ostr() << ' ' << i_node->uniqueId();
         }
-        ostr() << ") different than reference (" << s << ")";
+        ostr() << ") différents du référentiel (" << s << ")";
         trace->error() << ostr.str();
       }
     }
     if (item.isOwn()) {
-      // Si c'est une maille, recherche si les mailles qui doivent être
-      // fantômes sont bien présentes dans le maillage.
-      // Si c'est un noeud, recherche si les mailles autour de ce noeud
-      // sont bien présentes dans le maillage.
+      // Si c'est une maille, vérifier si les mailles qui devraient être
+      // des fantômes sont présentes dans le maillage.
+      // Si c'est un nœud, vérifier si les mailles autour de ce nœud
+      // sont présentes dans le maillage.
       XmlNode elem;
       if (ik == IK_Cell)
         elem = xitem.child(ustr_ghost1);
@@ -1270,12 +1270,12 @@ _read(eItemKind ik, ItemInternalXmlMap& items_internal, XmlNode root_node,
         }
         if (has_not_found) {
           if (ik == IK_Cell)
-            trace->info() << "ERROR: One or more ghost cells of cell "
-                          << ItemPrinter(item) << " are not in the sub-domain"
+            trace->info() << "ERREUR : Une ou plusieurs mailles fantômes de la maille "
+                          << ItemPrinter(item) << " ne sont pas dans le sous-domaine"
                           << " ref='" << elem.value() << "' not_found='" << not_found << '\'';
           else if (ik == IK_Node) {
-            trace->info() << "ERROR: One or more cells with node "
-                          << ItemPrinter(item) << " are not in the sub-domain"
+            trace->info() << "ERREUR : Une ou plusieurs mailles avec le nœud "
+                          << ItemPrinter(item) << " ne sont pas dans le sous-domaine"
                           << " ref='" << elem.value() << "' not_found='" << not_found << '\'';
           }
         }
@@ -1295,11 +1295,11 @@ doCheck()
 {
   ITraceMng* trace = m_mesh->traceMng();
 
-  trace->info() << "Checking mesh checkMeshConnectivity()";
+  trace->info() << "Vérification de la connectivité du maillage checkMeshConnectivity()";
 
   XmlNode root_node = m_doc_node.child(String("mesh-connectivity"));
   if (!root_node) {
-    trace->warning() << "Incorrect connectivity file";
+    trace->warning() << "Fichier de connectivité incorrect";
     return;
   }
   XmlNode nodes_root = root_node.child("nodes");
@@ -1430,7 +1430,7 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
   // conservé lors du partitionnement, alors l'orientation des faces
   // sera aussi conservée.
 
-  // L'algorithme est le suivant:
+  // L'algorithme est le suivant :
   // - Recherche le noeud n de plus petit indice.
   // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
   // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
@@ -1448,17 +1448,15 @@ reorderNodesOfFace(Int64ConstArrayView before_ids, Int64ArrayView after_ids)
   }
   Int64 next_node = before_ids[(min_node_index + 1) % nb_node];
   Int64 prev_node = before_ids[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = before_ids[(min_node_index + (nb_node + 2)) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = before_ids[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1506,7 +1504,7 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
   // conservé lors du partitionnement, alors l'orientation des faces
   // sera aussi conservée.
 
-  // L'algorithme est le suivant:
+  // L'algorithme est le suivant :
   // - Recherche le noeud n de plus petit indice.
   // - Recherche n-1 et n+1 les indices de ses 2 noeuds voisins.
   // - Si (n+1) est inférieur à (n-1), l'orientation n'est pas modifiée.
@@ -1524,17 +1522,15 @@ reorderNodesOfFace2(Int64ConstArrayView nodes_unique_id, IntegerArrayView new_in
   }
   Int64 next_node = nodes_unique_id[(min_node_index + 1) % nb_node];
   Int64 prev_node = nodes_unique_id[(min_node_index + (nb_node - 1)) % nb_node];
-  Integer incr = 0 ;
-  Integer incr2 = 0 ;
-  if(next_node==min_node)
-  {
+  Integer incr = 0;
+  Integer incr2 = 0;
+  if (next_node == min_node) {
     next_node = nodes_unique_id[(min_node_index + 2) % nb_node];
-    incr = 1 ;
+    incr = 1;
   }
-  if(prev_node==min_node)
-  {
+  if (prev_node == min_node) {
     prev_node = nodes_unique_id[(min_node_index + (nb_node - 2)) % nb_node];
-    incr2 = nb_node - 1 ;
+    incr2 = nb_node - 1;
   }
   if (next_node > prev_node)
     need_swap_orientation = true;
@@ -1918,7 +1914,7 @@ checkUniqueIdsHashCollective(IItemFamily* family, IHashAlgorithm* hash_algo,
 /*---------------------------------------------------------------------------*/
 
 void MeshUtils::
-fillUniqueIds(ItemVectorView items,Array<Int64>& uids)
+fillUniqueIds(ItemVectorView items, Array<Int64>& uids)
 {
   Integer nb_item = items.size();
   uids.resize(nb_item);
@@ -1945,7 +1941,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
     Int64 next_hash = Hasher::hashfunc(nodes_unique_id[i]);
     hash ^= next_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
   }
-  Int64 new_uid = abs(hash);
+  Int64 new_uid = math::abs(hash);
   ARCANE_ASSERT(new_uid >= 0, ("UniqueId is not >= 0"));
   return new_uid;
 }

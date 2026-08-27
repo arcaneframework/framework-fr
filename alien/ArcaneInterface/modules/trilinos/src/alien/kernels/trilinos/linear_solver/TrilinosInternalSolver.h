@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,6 @@
 #include <MueLu_ExplicitInstantiation.hpp>
 #endif
 #include <MueLu_Level.hpp>
-#include <MueLu_MutuallyExclusiveTime.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 #include <MueLu_CreateTpetraPreconditioner.hpp>
@@ -483,7 +482,7 @@ template <typename TagT> class SolverInternal
     using Teuchos::rcp;
     m_solver_name = TrilinosOptionTypes::solverName(options->solver());
 
-    // Make an empty new parameter list.
+    // Crée une nouvelle liste de paramètres vide.
     m_solver_parameters = rcp(new ParameterList());
 
     int level = Belos::Errors + Belos::Warnings;
@@ -518,25 +517,25 @@ template <typename TagT> class SolverInternal
     using Teuchos::TimeMonitor;
     using std::endl;
 
-    // Fetch the typedefs defined by Tpetra::CrsMatrix.
+    // Récupére les typedefs définis par Tpetra::CrsMatrix.
 
-    // Ifpack2's generic Preconditioner interface implements
-    // Tpetra::Operator.  A Tpetra::Operator is an abstraction of a
-    // function mapping a (Multi)Vector to a (Multi)Vector, with the
-    // option of applying the transpose or conjugate transpose of the
-    // operator.  Tpetra::CrsMatrix implements Operator as well.
+    // L'interface générique Preconditioner d'Ifpack2 implémente
+    // Tpetra::Operator. Un Tpetra::Operator est une abstraction d'une
+    // fonction mappant un (Multi)Vector à un (Multi)Vector, avec la
+    // possibilité d'appliquer la transposée ou la transposée conjuguée de l'
+    // opérateur. Tpetra::CrsMatrix implémente également Operator.
     typedef Tpetra::Operator<scalar_type, local_ordinal_type, global_ordinal_type,
         node_type>
         op_type;
 
-    // These are just some convenience typedefs.
+    // Ce ne sont que des typedefs de commodité.
 
-    // An Ifpack2::Preconditioner is-a Tpetra::Operator.  Ifpack2
-    // creates a Preconditioner object, but users of iterative methods
-    // want a Tpetra::Operator.  That's why create() returns an Operator
-    // instead of a Preconditioner.
+    // Un Ifpack2::Preconditioner est un Tpetra::Operator. Si Ifpack2
+    // crée un objet Preconditioner, mais que les utilisateurs de méthodes
+    // itératives veulent un Tpetra::Operator. C'est pourquoi create() retourne un Operator
+    // au lieu d'un Preconditioner.
 
-    // Create timers to show how long it takes for Ifpack2 to do various operations.
+    // Crée des minuteurs pour montrer le temps qu'il faut à Ifpack2 pour effectuer diverses opérations.
     RCP<Time> initTimer =
         TimeMonitor::getNewCounter("Ifpack2::Preconditioner::initialize");
     RCP<Time> computeTimer =
@@ -544,14 +543,14 @@ template <typename TagT> class SolverInternal
     RCP<Time> condestTimer =
         TimeMonitor::getNewCounter("Ifpack2::Preconditioner::condest");
 
-    out << "Creating preconditioner : " << precondType << endl
-        << "-- Configuring" << endl;
+    out << "Création du préconditionneur : " << precondType << endl
+        << "-- Configuration" << endl;
     //
-    // Create the preconditioner and set parameters.
+    // Crée le préconditionneur et définir les paramètres.
     //
-    // This doesn't actually _compute_ the preconditioner.
-    // It just sets up the specific type of preconditioner and
-    // its associated parameters (which depend on the type).
+    // Cela ne calcule pas réellement le préconditionneur.
+    // Il configure simplement le type spécifique de préconditionneur et
+    // ses paramètres associés (qui dépendent du type).
     //
     // RCP<muelu_prec_type> mueLuPreconditioner ;
     if (precondType.compare("MueLu") == 0) {
@@ -577,17 +576,17 @@ template <typename TagT> class SolverInternal
 
       RCP<prec_type> prec;
       Ifpack2::Factory factory;
-      // Set up the preconditioner of the given type.
+      // Configure le préconditionneur du type donné.
       const matrix_type& cA = A;
       prec = factory.create(precondType, rcpFromRef(cA));
       prec->setParameters(*plist);
 
-      out << "-- Initializing" << endl;
+      out << "-- Initialisation" << endl;
       {
         TimeMonitor mon(*initTimer);
         prec->initialize();
       }
-      out << "-- Computing" << endl;
+      out << "-- Calcul" << endl;
       {
         TimeMonitor mon(*computeTimer);
         prec->compute();
@@ -603,13 +602,13 @@ template <typename TagT> class SolverInternal
     using Teuchos::parameterList;
     using Teuchos::RCP;
     using Teuchos::rcp;
-    using Teuchos::rcpFromRef; // Make a "weak" RCP from a reference.
+    using Teuchos::rcpFromRef; // Crée un RCP "faible" à partir d'une référence.
 
     RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
         belos_solver_create<scalar_type, vec_type, op_type>(m_solver_name, m_solver_parameters);
 
-    // Create a LinearProblem struct with the problem to solve.
-    // A, X, B, and M are passed by (smart) pointer, not copied.
+    // Crée une structure LinearProblem avec le problème à résoudre.
+    // A, X, B et M sont passés par pointeur (intelligent), non copiés.
     typedef Belos::LinearProblem<scalar_type, vec_type, op_type> problem_type;
     RCP<problem_type> problem =
         rcp(new problem_type(rcpFromRef(A), rcpFromRef(X), rcpFromRef(B)));
@@ -619,10 +618,10 @@ template <typename TagT> class SolverInternal
     else
       problem->setRightPrec(M);
 
-    // Tell the LinearProblem to make itself ready to solve.
+    // Indique à LinearProblem de se préparer à résoudre.
     problem->setProblem();
 
-    // Tell the solver what problem you want to solve.
+    // Indique au solveur quel problème vous voulez résoudre.
     solver->setProblem(problem);
 
     Belos::ReturnType result = solver->solve();
@@ -642,12 +641,12 @@ template <typename TagT> class SolverInternal
     using Teuchos::parameterList;
     using Teuchos::RCP;
     using Teuchos::rcp;
-    using Teuchos::rcpFromRef; // Make a "weak" RCP from a reference.
+    using Teuchos::rcpFromRef; // Crée un RCP "faible" à partir d'une référence.
     using Teuchos::ParameterList;
     using Teuchos::parameterList;
 
-    // Compute the preconditioner using the matrix A.
-    // The matrix A itself is not modified.
+    // Calcule le préconditionneur en utilisant la matrice A.
+    // La matrice A elle-même n'est pas modifiée.
     RCP<op_type> M;
 #ifdef HAVE_MUELU_AMGX
     if (m_use_amgx) {
@@ -657,8 +656,8 @@ template <typename TagT> class SolverInternal
 #endif
       M = createPreconditioner(A,coordinates, m_precond_name, m_precond_parameters, std::cout, std::cerr);
 
-    // Create a LinearProblem struct with the problem to solve.
-    // A, X, B, and M are passed by (smart) pointer, not copied.
+    // Crée une structure LinearProblem avec le problème à résoudre.
+    // A, X, B et M sont passés par pointeur (intelligent), non copiés.
     typedef Belos::LinearProblem<scalar_type, vec_type, op_type> problem_type;
     RCP<problem_type> problem =
         rcp(new problem_type(rcpFromRef(A), rcpFromRef(X), rcpFromRef(B)));
@@ -668,14 +667,14 @@ template <typename TagT> class SolverInternal
     else
       problem->setRightPrec(M);
 
-    // Tell the LinearProblem to make itself ready to solve.
+    // Indique à LinearProblem de se préparer à résoudre.
     problem->setProblem();
 
-    // the list of solver parameters created above.
+    // La liste des paramètres du solveur créée ci-dessus.
     RCP<Belos::SolverManager<scalar_type, vec_type, op_type>> solver =
         belos_solver_create<scalar_type, vec_type, op_type>(m_solver_name, m_solver_parameters);
 
-    // Tell the solver what problem you want to solve.
+    // Indique au solveur quel problème vous voulez résoudre.
     solver->setProblem(problem);
 
     // Tpetra::MatrixMarket::Writer<matrix_type>::writeSparseFile("A.txt",A);

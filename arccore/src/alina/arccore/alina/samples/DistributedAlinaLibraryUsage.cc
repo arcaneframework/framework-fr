@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -42,9 +42,12 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   ITraceMng* tm = ctx.traceMng();
 
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  Alina::mpi_communicator world(MPI_COMM_WORLD);
+
+  int rank = world.rank;
+  int size = world.size;
+  //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  //MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   if (rank == 0)
     tm->info() << "World size: " << size;
@@ -52,7 +55,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   const ptrdiff_t n = argc > 1 ? atoi(argv[1]) : 1024;
   const ptrdiff_t n2 = n * n;
 
-  // Partition
+  // Partitionnement
   boost::array<ptrdiff_t, 2> lo = { { 0, 0 } };
   boost::array<ptrdiff_t, 2> hi = { { n - 1, n - 1 } };
 
@@ -60,7 +63,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ptrdiff_t chunk = part.size(rank);
 
   std::vector<ptrdiff_t> domain(size + 1);
-  MPI_Allgather(&chunk, 1, Alina::mpi_datatype<ptrdiff_t>(), &domain[1], 1, Alina::mpi_datatype<ptrdiff_t>(), MPI_COMM_WORLD);
+  ConstArrayView<ptrdiff_t> send_buf(1, &chunk);
+  ArrayView<ptrdiff_t> receive_buf(size, &domain[1]);
+  mpAllGather(world.m_message_passing_mng.get(), send_buf, receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   ptrdiff_t chunk_start = domain[rank];
@@ -75,9 +80,15 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     }
   }
 
-  // Assemble
-  std::vector<ptrdiff_t> ptr;
-  std::vector<ptrdiff_t> col;
+  // Assemblage
+
+  // Pour l'indexation 32 bits
+  using ColumnType = Int32;
+  // Pour l'indexation 64 bits
+  // using ColumnType = Int64;
+
+  std::vector<ColumnType> ptr;
+  std::vector<ColumnType> col;
   std::vector<double> val;
   std::vector<double> rhs;
 
@@ -123,7 +134,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     }
   }
 
-  // Setup
+  // Configuration
   AlinaParameters* prm = AlinaLib::params_create();
 
   AlinaLib::params_set_string(prm, "local.coarsening.type", "smoothed_aggregation");
@@ -135,14 +146,14 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
                                                                chunk, ptr.data(), col.data(), val.data(),
                                                                1, constant_deflation, NULL, prm);
 
-  // Solve
+  // Résolution
   std::vector<double> x(chunk, 0);
   AlinaConvergenceInfo cnv = AlinaLib::solver_mpi_solve(solver, rhs.data(), x.data());
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;
 
-  // Clean up
+  // Nettoyage
   AlinaLib::solver_mpi_destroy(solver);
   AlinaLib::params_destroy(prm);
 

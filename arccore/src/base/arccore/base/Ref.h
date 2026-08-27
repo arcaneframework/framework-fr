@@ -17,11 +17,14 @@
 #include "arccore/base/RefDeclarations.h"
 #include "arccore/base/RefBase.h"
 
+#include <memory>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::impl
 {
+
 /*!
  * \brief Wrapper autour d'une classe gérant son propre compteur de référence.
  *
@@ -100,6 +103,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 //! Spécialisation pour indiquer qu'on utilise l'implémentation 'shared_ptr'
 template <typename InstanceType>
 struct RefTraitsTagId<InstanceType, REF_TAG_SHARED_PTR>
@@ -118,6 +122,7 @@ struct RefTraitsTagId<InstanceType, REF_TAG_REFERENCE_COUNTER>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Implémentation de la référence à une instance.
  *
@@ -127,7 +132,7 @@ template <typename InstanceType, typename RefClassType, int ImplTagId>
 class RefImpl
 : public RefBase
 {
-  // NOTE: RefClassType est utilisé uniquement pour accéder au destructeur
+  // NOTE : RefClassType est utilisé uniquement pour accéder au destructeur
   // de \a InstanceType qui peut être privé et 'friend' de 'Ref'.
 
  public:
@@ -253,7 +258,7 @@ class RefImpl
    * \brief Libère le pointeur du compteur de référence sans le détruire.
    * Cela n'est autorisé que si l'implémentation utiliser 'std::shared_ptr'.
    */
-  template<typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
+  template <typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
   InstanceType* _release()
   {
     // Relâche l'instance. Pour cela, on indique au destructeur
@@ -294,6 +299,7 @@ class RefImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Référence à une instance.
  *
@@ -407,6 +413,7 @@ class Ref
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Créé une référence sur un pointeur.
  *
@@ -422,11 +429,12 @@ makeRef(InstanceType* t) -> Ref<InstanceType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Récupère une référence sur le pointeur \a t.
  *
  * Cette méthode n'est disponible que si la classe InstanceType utilise un
- * compteur de réference (ImplTagId==REF_TAG_REFERENCE_COUNTER).
+ * compteur de réferences (ImplTagId==REF_TAG_REFERENCE_COUNTER).
  *
  * \code
  * class A {};
@@ -447,6 +455,7 @@ makeRefFromInstance(InstanceType2* t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Créé une instance de type \a TrueType avec les arguments \a Args
  * et retourne une référence dessus.
@@ -460,7 +469,7 @@ createRef(Args&&... args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -478,10 +487,9 @@ using Arcane::makeRefFromInstance;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

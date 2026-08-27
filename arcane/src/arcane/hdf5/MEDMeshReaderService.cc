@@ -14,6 +14,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/BasicService.h"
@@ -289,7 +290,7 @@ _initMEDToArcaneTypes()
 IMeshReader::eReturnType MEDMeshReader::
 readMesh(IPrimaryMesh* mesh, const String& file_name)
 {
-  info() << "Trying to read MED File name=" << file_name;
+  info() << "Tentative de lecture du fichier MED nommé=" << file_name;
   m_mesh = mesh;
   return _readMesh(mesh, file_name);
 }
@@ -311,12 +312,12 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   int nb_mesh = MEDnMesh(fid);
   if (nb_mesh < 0) {
-    error() << "Error reading number of meshes";
+    error() << "Erreur lors de la lecture du nombre de maillages";
     return IMeshReader::RTError;
   }
   info() << "MED: nb_mesh=" << nb_mesh;
   if (nb_mesh == 0) {
-    error() << "No mesh is present";
+    error() << "Aucun maillage n'est présent";
     return IMeshReader::RTError;
   }
 
@@ -326,7 +327,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   // Récupère la dimension d'espace. Cela est nécessaire pour dimensionner axisname eet unitname
   int nb_axis = MEDmeshnAxis(fid, mesh_index);
   if (nb_axis < 0) {
-    error() << "Can not read number of axis (MEDmeshnAxis)";
+    error() << "Impossible de lire le nombre d'axes (MEDmeshnAxis)";
     return IMeshReader::RTError;
   }
   info() << "MED: nb_axis=" << nb_axis;
@@ -350,16 +351,16 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   err = MEDmeshInfo(fid, mesh_index, meshname, &spacedim, &meshdim, &meshtype, meshdescription,
                     dtunit, &sortingtype, &nstep, &axistype, axisname.data(), unitname.data());
   if (err < 0) {
-    error() << "Can not read mesh info (MEDmeshInfo) r=" << err;
+    error() << "Impossible de lire les informations du maillage (MEDmeshInfo) r=" << err;
     return IMeshReader::RTError;
   }
   if (meshtype != MED_UNSTRUCTURED_MESH) {
-    error() << "Arcane handle only MED unstructured mesh (MED_UNSTRUCTURED_MESH) type=" << meshtype;
+    error() << "Arcane ne gère que les maillages non structurés MED (MED_UNSTRUCTURED_MESH) type=" << meshtype;
     return IMeshReader::RTError;
   }
   Integer mesh_dimension = meshdim;
   if (mesh_dimension != 2 && mesh_dimension != 3)
-    ARCANE_FATAL("MED reader handles only 2D or 3D meshes");
+    ARCANE_FATAL("Le lecteur MED ne gère que les maillages 2D ou 3D");
 
   info() << "MED: name=" << meshname;
   info() << "MED: description=" << meshdescription;
@@ -382,7 +383,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
                                          MED_COORDINATE, MED_NO_CMODE, &coordinatechangement,
                                          &geotransformation);
     if (med_nb_node < 0) {
-      error() << "Can not read number of nodes (MEDmeshnEntity) err=" << med_nb_node;
+      error() << "Impossible de lire le nombre de nœuds (MEDmeshnEntity) err=" << med_nb_node;
       return IMeshReader::RTError;
     }
     nb_node = med_nb_node;
@@ -393,7 +394,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   // Les maillages MED peuvent contenir des polygones.
   // On construit donc les types correspondants.
-  // (NOTE: tous les sous-domaines doivent faire cela)
+  // (NOTE : tous les sous-domaines doivent faire cela)
   mesh->itemTypeMng()->buildPolygonTypes();
 
   IParallelMng* pm = mesh->parallelMng();
@@ -454,7 +455,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   if (is_read_items) {
     for (const MEDGroupInfo& g : m_med_groups) {
       Int32 nb_face_in_group = g.m_local_ids.size();
-      info() << "Check Group index=" << g.m_index << " nb_item=" << nb_face_in_group;
+      info() << "Vérification du groupe index=" << g.m_index << " nb_item=" << nb_face_in_group;
       if (nb_face_in_group == 0)
         continue;
       for (const String& name : g.m_names) {
@@ -489,7 +490,7 @@ _readAvailableTypes(med_idt fid, const char* meshname)
                                   MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
                                   &geotransformation);
   if (nb_geo < 0)
-    ARCANE_FATAL("Can not read number of geometric entities nb_geo={0}", nb_geo);
+    ARCANE_FATAL("Impossible de lire le nombre d'entités géométriques nb_geo={0}", nb_geo);
   info() << "MED: nb_geotype = " << nb_geo;
 
   // Boucle sur les types présents
@@ -502,13 +503,13 @@ _readAvailableTypes(med_idt fid, const char* meshname)
     med_int type_ret = MEDmeshEntityInfo(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, it,
                                          geotype_name.data(), &geotype);
     if (type_ret < 0)
-      ARCANE_FATAL("Can not read informations for geotype index={0} ret={1}", it, type_ret);
-    /* how many cells of type geotype ? */
+      ARCANE_FATAL("Impossible de lire les informations pour le géotype index={0} ret={1}", it, type_ret);
+    /* combien de mailles de type géotype ? */
     med_int nb_item = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype,
                                      MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
                                      &geotransformation);
     if (nb_item < 0)
-      ARCANE_FATAL("Can not read number of items for geotype={0} name={1} ret={2}",
+      ARCANE_FATAL("Impossible de lire le nombre d'éléments pour le géotype={0} nom={1} ret={2}",
                    geotype, geotype_name.data(), nb_item);
     info() << "MED: type=" << geotype << " '" << geotype_name.data() << "' nb_item=" << nb_item;
     m_med_geotypes_in_mesh.add(geotype);
@@ -551,8 +552,8 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
     if (arcane_type == IT_NullType) {
-      // Indique un type supporté par MED mais pas par Arcane
-      ARCANE_FATAL("MED type '{0}' is not supported by Arcane", iinfo.medType());
+      // Indique un type pris en charge par MED mais pas par Arcane
+      ARCANE_FATAL("Le type MED '{0}' n'est pas pris en charge par Arcane", iinfo.medType());
     }
     Int64 cells_infos_index = 0;
     Int64 med_connectivity_index = 0;
@@ -607,7 +608,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
         med_int f = med_family_values[i];
         auto x = m_med_families_map.find(f);
         if (x == m_med_families_map.end()) {
-          ARCANE_FATAL("Can not find family id '{0}' for cell '{1}' of geotype '{2}'",
+          ARCANE_FATAL("Impossible de trouver l'ID de famille '{0}' pour la maille '{1}' de géotype '{2}'",
                        f, i, iinfo.medType());
         }
         m_med_groups[x->second.m_index].m_unique_ids.add(current_cell_unique_id);
@@ -654,7 +655,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     if (item_dimension != (mesh_dimension - 1))
       continue;
     ItemTypeInfo* iti = itm->typeFromId(iinfo.arcaneType());
-    info() << "Reading faces geotype=" << geotype << " arcane_type=" << iinfo.arcaneType()
+    info() << "Lecture des faces géotype=" << geotype << " arcane_type=" << iinfo.arcaneType()
            << " " << iti->typeName();
 
     Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
@@ -664,8 +665,8 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
     if (arcane_type == IT_NullType) {
-      // Indique un type supporté par MED mais pas par Arcane
-      ARCANE_FATAL("MED type '{0}' is not supported by Arcane", iinfo.medType());
+      // Indique un type pris en charge par MED mais pas par Arcane
+      ARCANE_FATAL("Le type MED '{0}' n'est pas pris en charge par Arcane", iinfo.medType());
     }
 
     SmallArray<Int64> orig_nodes_id(nb_item_node);
@@ -696,18 +697,18 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
       //info() << "Nodes=" << ordered_nodes;
       Node first_node(MeshUtils::findOneItem(node_family, ordered_nodes[0]));
       if (first_node.null())
-        ARCANE_FATAL("Can not find node uid={0} for face index '{1}'", ordered_nodes[0], i);
+        ARCANE_FATAL("Impossible de trouver le nœud uid={0} pour l'indice de face '{1}'", ordered_nodes[0], i);
       Face face = MeshUtils::getFaceFromNodesUniqueId(first_node, ordered_nodes);
       if (face.null()) {
-        info() << "ERROR: Can not find face in mesh i=" << i << " nodes=" << ordered_nodes;
-        info() << "List of faces for node=" << ItemPrinter(first_node);
+        info() << "ERREUR: Impossible de trouver la face dans le maillage i=" << i << " nœuds=" << ordered_nodes;
+        info() << "Liste des faces pour le nœud=" << ItemPrinter(first_node);
         for (Face subface : first_node.faces()) {
           info() << "Face=" << ItemPrinter(subface);
           for (Node subnode : subface.nodes()) {
-            info() << "  Node=" << ItemPrinter(subnode);
+            info() << "  Nœud=" << ItemPrinter(subnode);
           }
         }
-        ARCANE_FATAL("Can not find face with nodes=", ordered_nodes);
+        ARCANE_FATAL("Impossible de trouver la face avec les nœuds=", ordered_nodes);
       }
       //info() << "Face=" << ItemPrinter(face);
 
@@ -717,14 +718,14 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
         med_int f = med_family_values[i];
         auto x = m_med_families_map.find(f);
         if (x == m_med_families_map.end()) {
-          ARCANE_FATAL("Can not find family id '{0}' for face '{1}' of geotype '{2}'",
+          ARCANE_FATAL("Impossible de trouver l'ID de famille '{0}' pour la face '{1}' de géotype '{2}'",
                        f, i, iinfo.medType());
         }
-        //info() << "Add face to group_index=" << x->second.m_index;
+        //info() << "Ajout de la face au groupe_index=" << x->second.m_index;
         m_med_groups[x->second.m_index].m_local_ids.add(face.localId());
       }
     }
-    info() << "END_READING_ITEMS";
+    info() << "FIN_LECTURE_DES_ENTITES";
   }
 }
 
@@ -746,7 +747,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
     int err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
                                       coordinates.data());
     if (err < 0) {
-      error() << "Can not read nodes coordinates err=" << err;
+      error() << "Impossible de lire les coordonnées des nœuds err=" << err;
       return IMeshReader::RTError;
     }
 
@@ -818,31 +819,31 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
                                         MED_INDEX_NODE, MED_NODAL, &coordinatechangement,
                                         &geotransformation);
     if (nb_index < 0)
-      ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_index);
+      ARCANE_FATAL("Impossible de lire le med_item_type MED '{0}' erreur={1}", med_item_type, nb_index);
 
-    info() << "MED: Reading items";
+    info() << "MED: Lecture des entités";
     info() << "MED: type=" << med_item_type << " nb_index=" << nb_index;
     if (nb_index < 1)
       return 0;
     nb_med_item = nb_index - 1;
     polygon_nb_nodes.resize(nb_med_item);
-    // how many nodes for the polygon connectivity ?
+    // Combien de nœuds pour la connectivité du polygone ?
     med_int nb_connectivity = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT,
                                              MED_CELL, MED_POLYGON, MED_CONNECTIVITY, MED_NODAL,
                                              &coordinatechangement, &geotransformation);
     if (nb_connectivity < 0)
-      ARCANE_FATAL("Can not get connectivity size for MED_POLYGON err={0}", nb_connectivity);
+      ARCANE_FATAL("Impossible d'obtenir la taille de connectivité pour MED_POLYGON err={0}", nb_connectivity);
 
     // La table \a indexes contient pour chaque maille l'indice de son premier
     // noeud dans la connectivité. Le nombre de noeuds de la i-ème entité
     // est donc égal à (indexes[i+1]-indexes[i]).
     UniqueArray<med_int> indexes(nb_index);
     connectivity.resize(nb_connectivity);
-    info() << "Reading polygons nb_connectivity=" << nb_connectivity;
+    info() << "Lecture des polygones nb_connectivity=" << nb_connectivity;
     int r = MEDmeshPolygonRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, MED_NODAL,
                              indexes.data(), connectivity.data());
     if (r < 0)
-      ARCANE_FATAL("Can not read connectivity for MED_POLYGON err={0}", r);
+      ARCANE_FATAL("Impossible de lire la connectivité pour MED_POLYGON err={0}", r);
     info() << "INDEXES=" << indexes;
     for (Int32 i = 0; i < nb_med_item; ++i)
       polygon_nb_nodes[i] = static_cast<Int16>(indexes[i + 1] - indexes[i]);
@@ -852,24 +853,24 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
                                    MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
                                    &geotransformation);
     if (nb_med_item < 0)
-      ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_med_item);
+      ARCANE_FATAL("Impossible de lire le med_item_type MED '{0}' erreur={1}", med_item_type, nb_med_item);
 
-    info() << "MED: Reading items";
+    info() << "MED: Lecture des entités";
     info() << "MED: type=" << med_item_type << " nb_item=" << nb_med_item;
     if (nb_med_item == 0)
       return 0;
 
     Int64 nb_node = iinfo.nbNode();
     if (nb_node == 0)
-      // Indique un élément qu'on ne sait pas traiter.
-      ARCANE_THROW(NotImplementedException, "Reading items with MED type '{0}'", med_item_type);
+      // Indique un élément que nous ne savons pas comment traiter.
+      ARCANE_THROW(NotImplementedException, "Lecture des entités avec le type MED '{0}'", med_item_type);
 
     connectivity.resize(nb_node * nb_med_item);
     int err = MEDmeshElementConnectivityRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,
                                            med_item_type, MED_NODAL, MED_FULL_INTERLACE,
                                            connectivity.data());
     if (err < 0)
-      ARCANE_FATAL("Can not read connectivity MED med_item_type '{0}' error={1}",
+      ARCANE_FATAL("Impossible de lire la connectivité MED med_item_type '{0}' erreur={1}",
                    med_item_type, err);
   }
   if (is_verbose)
@@ -880,13 +881,13 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
                                            &coordinatechangement, &geotransformation);
     info() << "nb_family=" << nb_med_family;
     if (nb_med_family < 0)
-      ARCANE_FATAL("Can not read family size for type med_item_type={0} error={1}", med_item_type, nb_med_family);
+      ARCANE_FATAL("Impossible de lire la taille de la famille pour le type med_item_type={0} erreur={1}", med_item_type, nb_med_family);
     if (nb_med_family > 0) {
       family_values.resize(nb_med_family);
       int r = MEDmeshEntityFamilyNumberRd(fid, meshname, MED_NO_DT, MED_NO_IT,
                                           MED_CELL, med_item_type, family_values.data());
       if (r < 0)
-        ARCANE_FATAL("Can not read family values for type med_item_type={0} error={1}", med_item_type, nb_med_family);
+        ARCANE_FATAL("Impossible de lire les valeurs de famille pour le type med_item_type={0} erreur={1}", med_item_type, nb_med_family);
       if (is_verbose)
         info() << "FAM: " << family_values;
     }
@@ -902,21 +903,21 @@ _readFamilies(med_idt fid, const char* meshname)
 {
   FixedArray<char, MED_NAME_SIZE + 1> familyname;
 
-  info() << "Read families";
+  info() << "Lecture des familles";
 
   // Récupère le nombre de familles
   med_int nb_family = MEDnFamily(fid, meshname);
   if (nb_family < 0)
-    ARCANE_FATAL("Can not read number of families (error={0})", nb_family);
+    ARCANE_FATAL("Impossible de lire le nombre de familles (erreur={0})", nb_family);
 
   info() << "MED: nb_family= " << nb_family;
   for (med_int i = 0; i < nb_family; i++) {
-    info() << "MED: Read family i=" << i;
+    info() << "MED: Lecture de la famille i=" << i;
 
     med_int nb_group = MEDnFamilyGroup(fid, meshname, i + 1);
     if (nb_group < 0)
-      ARCANE_FATAL("Can not read number of groups for family index={0}", i);
-    info() << "MED: family index=" << i << " nb_group=" << nb_group;
+      ARCANE_FATAL("Impossible de lire le nombre de groupes pour l'indice de famille={0}", i);
+    info() << "MED: indice de famille=" << i << " nb_group=" << nb_group;
 
     // Lit les groupes de la famille
     // Même s'il n'y a pas de groupes associés à la famille on continue
@@ -926,7 +927,7 @@ _readFamilies(med_idt fid, const char* meshname)
     UniqueArray<char> all_group_names(MED_LNAME_SIZE * nb_group + 1);
     med_int family_number = 0;
     if (MEDfamilyInfo(fid, meshname, i + 1, familyname.data(), &family_number, all_group_names.data()) < 0)
-      ARCANE_FATAL("Can not read group names from family index={0}", i);
+      ARCANE_FATAL("Impossible de lire les noms de groupes à partir de l'indice de famille={0}", i);
 
     MEDFamilyInfo med_family(family_number);
     Int32 group_index = m_med_groups.size();
@@ -951,7 +952,7 @@ _readFamilies(med_idt fid, const char* meshname)
       }
       String name(valid_name.view());
       med_group.m_names.add(name);
-      info() << "Family id=" << family_number << " group='" << name << "'";
+      info() << "ID de famille=" << family_number << " groupe='" << name << "'";
     }
 
     m_med_families_map.insert(std::make_pair(family_number, med_family));
@@ -1068,10 +1069,10 @@ class MEDCaseMeshReader
     {
       MEDMeshReader reader(m_trace_mng);
       String fname = m_read_info.fileName();
-      m_trace_mng->info() << "MED Reader (ICaseMeshReader) file_name=" << fname;
+      m_trace_mng->info() << "Lecteur MED (ICaseMeshReader) file_name=" << fname;
       IMeshReader::eReturnType ret = reader.readMesh(pm, fname);
       if (ret != IMeshReader::RTOk)
-        ARCANE_FATAL("Can not read MED File");
+        ARCANE_FATAL("Impossible de lire le fichier MED");
     }
 
    private:

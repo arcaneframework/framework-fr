@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -19,12 +19,11 @@
 #ifndef TESTS_SAMPLE_PROBLEM_HPP
 #define TESTS_SAMPLE_PROBLEM_HPP
 
-#include <complex>
-#include <type_traits>
-#include <cstddef>
 #include "arccore/alina/ValueTypeInterface.h"
 
-// Generates matrix for poisson problem in a unit cube.
+#include <vector>
+
+// Génère la matrice pour le problème de Poisson dans un cube unitaire.
 template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
 int sample_problem(ptrdiff_t n,
                    std::vector<ValueType>& val,

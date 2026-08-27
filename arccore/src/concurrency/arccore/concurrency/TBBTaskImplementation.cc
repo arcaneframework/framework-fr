@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2025 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@
 #include <new>
 #include <stack>
 #include <vector>
+#include <iostream>
 
 // Il faut définir cette macro pour que la classe 'blocked_rangeNd' soit disponible
 
@@ -334,6 +335,7 @@ using TBBTask = OneTBBTask;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
  * Ne pas utiliser l'observer locale au task_arena.
  * Utiliser l'observer global au scheduler.
@@ -368,6 +370,7 @@ class TBBTaskImplementation
 
     Integer m_task_index;
   };
+
   /*!
    * \brief Classe pour positionner TaskThreadInfo::taskIndex().
    *
@@ -645,6 +648,7 @@ class TBBTaskImplementation::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Exécuteur pour une boucle 1D.
  */
@@ -694,6 +698,7 @@ class TBBParallelFor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Exécuteur pour une boucle multi-dimension.
  */
@@ -749,6 +754,7 @@ class TBBMDParallelFor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Implémentation déterministe de ParallelFor.
  *
@@ -760,7 +766,7 @@ class TBBMDParallelFor
  * parallel for avec l'option statique: on découpe l'intervalle d'itération
  * en plusieurs blocs et chaque bloc est assigné à une tâche en fonction
  * d'un algorithme round-robin.
- * Pour déterminer le nombre de blocs, deux cas sont possibles:
+ * Pour déterminer le nombre de blocs, deux cas sont possibles :
  * - si \a m_grain_size n'est pas spécifié, on découpe l'intervalle
  * d'itération en un nombre de blocs équivalent au nombre de threads utilisés.
  * - si \a m_grain_size est spécifié, le nombre de blocs sera égal
@@ -1133,6 +1139,7 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Exécution d'une boucle N-dimensions.
  *

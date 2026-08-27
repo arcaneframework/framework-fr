@@ -4,14 +4,14 @@
 on:
   schedule:
     - cron: '12 0 * * *' # Tous les jours à 00:12.
-  # À exécuter lorsque l'on demande.
+  # À exécuter lorsque l'on le demande.
   workflow_dispatch:
   
 
 jobs:
   build:
     # Les commandes de configuration et de construction CMake sont agnostiques par rapport à la plateforme et devraient fonctionner de manière égale
-    # sur Windows ou Mac. Vous pouvez convertir cela en une construction matricielle si vous avez besoin
+    # sur Windows ou Mac. Vous pouvez convertir ceci en une construction matricielle si vous avez besoin
     # d'une couverture multiplateforme.
     # Voir : https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ubuntu coverity
@@ -19,12 +19,12 @@ jobs:
     container:
       image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
     steps:
-      - name: Display CPU Infos
+      - name: Affiche les infos CPU
         shell: bash
         run: |
           cat /proc/cpuinfo
 
-      - name: Set C++ compiler and default MPI
+      - name: Définis le compilateur C++ et le MPI par défaut
         shell: bash
         run: |
           source /root/scripts/use_openmpi.sh
@@ -50,8 +50,8 @@ jobs:
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
           -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON
 
-      # Préparation de ccache à partir de fichiers mis en cache github
-      - name: Prepare coverity
+      # Préparation de ccache à partir des fichiers mis en cache de GitHub
+      - name: Prépare Coverity
         id: coverity-hash
         # Désactivé pour `act`
         if: ${{ !env.ACT }}
@@ -63,7 +63,7 @@ jobs:
             -s --data "token=$COV_TOKEN&project=arcaneframework%2Fframework&md5=1"
           echo "m_md5=$(cat coverity-tool/md5-new)" >> $GITHUB_ENV
 
-      - name: Restore cached files
+      - name: Restaure les fichiers mis en cache
         uses: actions/cache@v5
         # Désactivé pour `act`
         if: ${{ !env.ACT }}
@@ -71,13 +71,13 @@ jobs:
           path: coverity-tool
           key: coverity-linux-${{ env.m_md5 }}
 
-      - name: Set up coverity
+      - name: Configure Coverity
         shell: bash
         env:
           COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
         run: |
           if cmp -s coverity-tool/md5-new coverity-tool/md5 ; then
-            echo "running from cache"
+            echo "exécution à partir du cache"
           else
             curl --silent https://scan.coverity.com/download/linux64 \
               --data "token=${COV_TOKEN}&project=arcaneframework%2Fframework" \
@@ -85,21 +85,23 @@ jobs:
           fi
           cp coverity-tool/md5-new coverity-tool/md5
 
-      - name: Build with coverity
+      - name: Build avec Coverity
         shell: bash
         # Construction, en utilisant cov-build et le répertoire cov-int comme sortie (obligatoire)
         run: |
+          apt-get update
+          apt-get install -y file
           export PATH="${PWD}/coverity-tool/bin:${PATH}"
-          cov-build --dir cov-int make -C build -j $(nproc)
+          cov-build --dir cov-int make -C build
 
-      - name: Upload log artifact
+      - name: Téléchargement de l'artefact de journal
         uses: actions/upload-artifact@v7
         with:
           name: coverity-artifact
           path: cov-int/build-log.txt
           retention-days: 3
 
-      - name: Submit results to Coverity Scan
+      - name: Soumission des résultats à Coverity Scan
         shell: bash
         env:
           COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}

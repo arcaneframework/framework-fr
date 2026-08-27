@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -23,10 +23,9 @@
 #include <numeric>
 #include <cassert>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/IO.h"
+#include "arccore/common/internal/ProgramOptions.h"
 
 extern "C" {
 #include <metis.h>
@@ -46,7 +45,7 @@ void pointwise_graph(int n, int block_size,
 
   assert(np * block_size == n);
 
-  // Create pointwise matrix
+  // Crée la matrice ponctuelle
   std::vector<int> ptr1(np + 1, 0);
   std::vector<int> marker(np, -1);
   for (int ip = 0, i = 0; ip < np; ++ip) {
@@ -82,7 +81,7 @@ void pointwise_graph(int n, int block_size,
     }
   }
 
-  // Transpose pointwise matrix
+  // Transpose la matrice ponctuelle
   int nnz = ptr1.back();
 
   std::vector<int> ptr2(np + 1, 0);
@@ -100,7 +99,7 @@ void pointwise_graph(int n, int block_size,
   std::rotate(ptr2.begin(), ptr2.end() - 1, ptr2.end());
   ptr2.front() = 0;
 
-  // Merge both matrices.
+  // Fusionne les deux matrices.
   std::fill(marker.begin(), marker.end(), -1);
   pptr.resize(np + 1, 0);
 
@@ -211,12 +210,12 @@ std::vector<int>
 partition(int n, int nparts, int block_size,
           const std::vector<int>& ptr, const std::vector<int>& col)
 {
-  // Pointwise graph
+  // Graphe ponctuel
   std::vector<idx_t> pptr;
   std::vector<idx_t> pcol;
   pointwise_graph(n, block_size, ptr, col, pptr, pcol);
 
-  // Pointwise partition
+  // Partition ponctuelle
   std::vector<idx_t> ppart = pointwise_partition(nparts, pptr, pcol);
 
   std::vector<int> part(n);
@@ -229,7 +228,7 @@ partition(int n, int nparts, int block_size,
 //---------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
 
   try {
     std::string ifile;
@@ -240,13 +239,13 @@ int main(int argc, char* argv[])
     po::options_description desc("Options");
 
     desc.add_options()("help,h", "show help");
-    desc.add_options()("input,i", po::value<std::string>(&ifile)->required(), "Input matrix");
-    desc.add_options()("output,o", po::value<std::string>(&ofile)->default_value(ofile), "Output file");
+    desc.add_options()("input,i", po::value<std::string>(&ifile)->required(), "Matrice d'entrée");
+    desc.add_options()("output,o", po::value<std::string>(&ofile)->default_value(ofile), "Fichier de sortie");
     desc.add_options()("binary,B",
                        po::bool_switch()->default_value(false),
-                       "When specified, treat input files as binary instead of as MatrixMarket. ");
-    desc.add_options()("nparts,n", po::value<int>(&nparts)->required(), "Number of parts");
-    desc.add_options()("block_size,b", po::value<int>(&block_size)->default_value(1), "Block size");
+                       "Lorsqu'il est spécifié, traiter les fichiers d'entrée comme binaires au lieu de MatrixMarket. ");
+    desc.add_options()("nparts,n", po::value<int>(&nparts)->required(), "Nombre de parties");
+    desc.add_options()("block_size,b", po::value<int>(&block_size)->default_value(1), "Taille du bloc");
 
     po::positional_options_description pd;
     pd.add("input", 1);
@@ -268,17 +267,17 @@ int main(int argc, char* argv[])
 
     if (binary) {
       std::ifstream f(ifile, std::ios::binary);
-      precondition(f.read((char*)&rows, sizeof(rows)), "Wrong file format?");
+      precondition(f.read((char*)&rows, sizeof(rows)), "Format de fichier incorrect ?");
       ptr.resize(rows + 1);
       for (size_t i = 0; i <= rows; ++i) {
         ptrdiff_t p;
-        precondition(f.read((char*)&p, sizeof(p)), "Wrong file format?");
+        precondition(f.read((char*)&p, sizeof(p)), "Format de fichier incorrect ?");
         ptr[i] = p;
       }
       col.resize(ptr.back());
       for (ptrdiff_t i = 0; i < ptr.back(); ++i) {
         ptrdiff_t p;
-        precondition(f.read((char*)&p, sizeof(p)), "Wrong file format?");
+        precondition(f.read((char*)&p, sizeof(p)), "Format de fichier incorrect ?");
         col[i] = p;
       }
     }
@@ -286,7 +285,7 @@ int main(int argc, char* argv[])
       std::vector<double> val;
       size_t cols;
       std::tie(rows, cols) = Alina::IO::mm_reader(ifile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice de système non carrée");
     }
 
     std::vector<int> part = partition(rows, nparts, block_size, ptr, col);
@@ -303,7 +302,7 @@ int main(int argc, char* argv[])
     }
   }
   catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Erreur: " << e.what() << std::endl;
     return 1;
   }
 }

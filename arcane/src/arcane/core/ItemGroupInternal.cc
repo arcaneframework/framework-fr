@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.cc                                        (C) 2000-2025 */
+/* ItemGroupInternal.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Partie interne à Arcane de ItemGroup.                                     */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/IItemFamily.h"
@@ -47,11 +48,11 @@ ItemGroupInternal()
 /*---------------------------------------------------------------------------*/
 
 ItemGroupInternal::
-ItemGroupInternal(IItemFamily* family,const String& name)
+ItemGroupInternal(IItemFamily* family, const String& name)
 : m_internal_api(this)
 , m_mesh(family->mesh())
 , m_item_family(family)
-, m_variable_name(String("GROUP_")+family->name()+name)
+, m_variable_name(String("GROUP_") + family->name() + name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
@@ -64,12 +65,12 @@ ItemGroupInternal(IItemFamily* family,const String& name)
 /*---------------------------------------------------------------------------*/
 
 ItemGroupInternal::
-ItemGroupInternal(IItemFamily* family,ItemGroupImpl* parent,const String& name)
+ItemGroupInternal(IItemFamily* family, ItemGroupImpl* parent, const String& name)
 : m_internal_api(this)
 , m_mesh(parent->mesh())
 , m_item_family(family)
 , m_parent(parent)
-, m_variable_name(String("GROUP_")+m_item_family->name()+name)
+, m_variable_name(String("GROUP_") + m_item_family->name() + name)
 , m_is_null(false)
 , m_kind(family->itemKind())
 , m_name(name)
@@ -86,7 +87,7 @@ ItemGroupInternal::
 {
   // (HP) TODO: vérifier qu'il n'y a plus d'observer à cet instant
   // Ceux des sous-groupes n'ont pas été détruits
-  for( const auto& i : m_observers ) {
+  for (const auto& i : m_observers) {
     delete i.second;
   }
   delete m_variable_items_local_id;
@@ -104,23 +105,23 @@ _init()
 
   // Si un maillage est associé et qu'on n'est un groupe enfant alors les données du groupe
   // sont conservées dans une variable.
-  if (m_mesh && !m_parent){
+  if (m_mesh && !m_parent) {
     int property = IVariable::PSubDomainDepend | IVariable::PPrivate;
-    VariableBuildInfo vbi(m_mesh,m_variable_name,property);
+    VariableBuildInfo vbi(m_mesh, m_variable_name, property);
     m_variable_items_local_id = new VariableArrayInt32(vbi);
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
 
   m_is_check_simd_padding = arcaneIsCheck();
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)){
-    m_is_check_simd_padding = (v.value()>0);
-    m_is_print_check_simd_padding = (v.value()>1);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CHECK_SIMDPADDING", true)) {
+    m_is_check_simd_padding = (v.value() > 0);
+    m_is_print_check_simd_padding = (v.value() > 1);
   }
 
-  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_APPLYSIMDPADDING", true)){
-    m_is_print_apply_simd_padding = (v.value()>0);
-    m_is_print_stack_apply_simd_padding = (v.value()>1);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_PRINT_APPLYSIMDPADDING", true)) {
+    m_is_print_apply_simd_padding = (v.value() > 0);
+    m_is_print_stack_apply_simd_padding = (v.value() > 1);
   }
 
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE", true)) {
@@ -194,11 +195,11 @@ resetSubGroups()
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupInternal::
-notifyExtendObservers(const Int32ConstArrayView * info)
+notifyExtendObservers(const Int32ConstArrayView* info)
 {
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
+  ARCANE_ASSERT((!m_need_recompute || m_is_all_items), ("Operation on invalid group"));
+  for (const auto& i : m_observers) {
+    IItemGroupObserver* obs = i.second;
     obs->executeExtend(info);
   }
   if (m_group_index_table.isUsed())
@@ -209,11 +210,11 @@ notifyExtendObservers(const Int32ConstArrayView * info)
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupInternal::
-notifyReduceObservers(const Int32ConstArrayView * info)
+notifyReduceObservers(const Int32ConstArrayView* info)
 {
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
+  ARCANE_ASSERT((!m_need_recompute || m_is_all_items), ("Operation on invalid group"));
+  for (const auto& i : m_observers) {
+    IItemGroupObserver* obs = i.second;
     obs->executeReduce(info);
   }
   if (m_group_index_table.isUsed())
@@ -224,11 +225,11 @@ notifyReduceObservers(const Int32ConstArrayView * info)
 /*---------------------------------------------------------------------------*/
 
 void ItemGroupInternal::
-notifyCompactObservers(const Int32ConstArrayView * info)
+notifyCompactObservers(const Int32ConstArrayView* info)
 {
-  ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
+  ARCANE_ASSERT((!m_need_recompute || m_is_all_items), ("Operation on invalid group"));
+  for (const auto& i : m_observers) {
+    IItemGroupObserver* obs = i.second;
     obs->executeCompact(info);
   }
   if (m_group_index_table.isUsed())
@@ -246,8 +247,8 @@ notifyInvalidateObservers()
 #endif /* NO_USER_WARNING */
   // Cela peut se produire en cas d'invalidation en cascade
   // ARCANE_ASSERT((!m_need_recompute),("Operation on invalid group"));
-  for( const auto& i : m_observers ) {
-    IItemGroupObserver * obs = i.second;
+  for (const auto& i : m_observers) {
+    IItemGroupObserver* obs = i.second;
     obs->executeInvalidate();
   }
   if (m_group_index_table.isUsed())
@@ -256,8 +257,9 @@ notifyInvalidateObservers()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que les localIds() sont contigüs.
+ * \brief Vérifie que les localIds() sont contigus.
  */
 void ItemGroupInternal::
 checkIsContiguous()
@@ -271,8 +273,8 @@ checkIsContiguous()
   Int32 first_lid = lids[0];
 
   bool is_bad = false;
-  for( Integer i=0, n=lids.size(); i<n; ++i ){
-    if (lids[i]!=(first_lid+i)){
+  for (Integer i = 0, n = lids.size(); i < n; ++i) {
+    if (lids[i] != (first_lid + i)) {
       is_bad = true;
       break;
     }
@@ -287,7 +289,7 @@ checkIsContiguous()
 void ItemGroupInternal::
 applySimdPadding()
 {
-  if (m_is_print_apply_simd_padding){
+  if (m_is_print_apply_simd_padding) {
     String stack;
     if (m_is_print_stack_apply_simd_padding)
       stack = String(" stack=") + platform::getStackTrace();
@@ -302,6 +304,7 @@ applySimdPadding()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Remplit les derniers éléments du groupe pour avoir un vecteur
  * SIMD complet.
@@ -331,10 +334,10 @@ applySimdPadding()
 void ItemGroupInternal::
 checkUpdateSimdPadding()
 {
-  if (m_simd_timestamp >= timestamp()){
+  if (m_simd_timestamp >= timestamp()) {
     // Vérifie que le padding est bon
-    if (m_is_check_simd_padding){
-      if (m_is_print_check_simd_padding && m_item_family){
+    if (m_is_check_simd_padding) {
+      if (m_is_print_check_simd_padding && m_item_family) {
         ITraceMng* tm = m_item_family->traceMng();
         tm->info() << "check padding name=" << fullName()
                    << " timestamp=" << timestamp()
@@ -355,7 +358,7 @@ checkUpdateSimdPadding()
 void ItemGroupInternal::
 _removeItems(SmallSpan<const Int32> items_local_id)
 {
-  if ( !((!m_need_recompute && !isAllItems()) || (m_transaction_mode && isAllItems())) )
+  if (!((!m_need_recompute && !isAllItems()) || (m_transaction_mode && isAllItems())))
     ARCANE_FATAL("Operation on invalid group");
 
   if (m_compute_functor && !m_transaction_mode)
@@ -363,23 +366,23 @@ _removeItems(SmallSpan<const Int32> items_local_id)
 
   IMesh* amesh = mesh();
   if (!amesh)
-    throw ArgumentException(A_FUNCINFO,"null group");
+    throw ArgumentException(A_FUNCINFO, "null group");
 
   ITraceMng* trace = amesh->traceMng();
-  if (isOwn() && amesh->meshPartInfo().nbPart()!=1)
-    ARCANE_THROW(NotSupportedException,"Cannot remove items if isOwn() is true");
+  if (isOwn() && amesh->meshPartInfo().nbPart() != 1)
+    ARCANE_THROW(NotSupportedException, "Cannot remove items if isOwn() is true");
 
   Int32 nb_item_to_remove = items_local_id.size();
 
   // N'est utile que si on a des observers
   UniqueArray<Int32> removed_local_ids;
 
-  if (nb_item_to_remove!=0) { // on ne peut tout de même pas faire de retour anticipé à cause des observers
+  if (nb_item_to_remove != 0) { // on ne peut tout de même pas faire de retour anticipé à cause des observers
 
     Int32Array& items_lid = mutableItemsLocalId();
     const Int32 old_size = items_lid.size();
     bool has_removed = false;
-   
+
     if (isAllItems()) {
       // Algorithme anciennement dans DynamicMeshKindInfo
       // Supprime des items du groupe all_items par commutation avec les 
@@ -387,7 +390,7 @@ _removeItems(SmallSpan<const Int32> items_local_id)
       // ie memoire persistante O(size groupe), algo O(remove items)
       has_removed = true;
       Integer nb_item = old_size;
-      for( Integer i=0, n=nb_item_to_remove; i<n; ++i ){
+      for (Integer i = 0, n = nb_item_to_remove; i < n; ++i) {
         Int32 removed_local_id = items_local_id[i];
         Int32 index = m_items_index_in_all_group[removed_local_id];
         --nb_item;
@@ -402,13 +405,13 @@ _removeItems(SmallSpan<const Int32> items_local_id)
       // Décalage de tableau
       // ie mémoire locale O(size groupe), algo O(size groupe)
       // Marque un tableau indiquant les entités à supprimer
-      UniqueArray<bool> remove_flags(maxLocalId(),false);
-      for( Int32 i=0; i<nb_item_to_remove; ++i )
+      UniqueArray<bool> remove_flags(maxLocalId(), false);
+      for (Int32 i = 0; i < nb_item_to_remove; ++i)
         remove_flags[items_local_id[i]] = true;
-    
+
       {
         Int32 next_index = 0;
-        for( Int32 i=0; i<old_size; ++i ){
+        for (Int32 i = 0; i < old_size; ++i) {
           Int32 lid = items_lid[i];
           if (remove_flags[lid]) {
             removed_local_ids.add(lid);
@@ -417,15 +420,15 @@ _removeItems(SmallSpan<const Int32> items_local_id)
           items_lid[next_index] = lid;
           ++next_index;
         }
-        if (next_index!=old_size) {
+        if (next_index != old_size) {
           has_removed = true;
           items_lid.resize(next_index);
         }
       }
     }
-  
+
     updateTimestamp();
-    if (arcaneIsCheck()){
+    if (arcaneIsCheck()) {
       trace->info(5) << "ItemGroupImpl::removeItems() group <" << name() << "> "
                      << " old_size=" << old_size
                      << " new_size=" << nbItem()
@@ -450,7 +453,7 @@ checkValid()
     return;
   }
 
-  // Les points suivants sont vérifiés:
+  // Les points suivants sont vérifiés
   // - une entité n'est présente qu'une fois dans le groupe
   // - les entités du groupe ne sont pas détruites
   UniqueArray<bool> presence_checks(maxLocalId());
@@ -461,10 +464,10 @@ checkValid()
   Integer items_size = items.size();
   Int32ConstArrayView items_lid(itemsLocalId());
 
-  for( Integer i=0, is=items_lid.size(); i<is; ++i ){
+  for (Integer i = 0, is = items_lid.size(); i < is; ++i) {
     Integer lid = items_lid[i];
-    if (lid>=items_size){
-      if (nb_error<10){
+    if (lid >= items_size) {
+      if (nb_error < 10) {
         msg->error() << "Wrong local index lid=" << lid << " max=" << items_size
                      << " var_max_size=" << maxLocalId();
       }
@@ -472,15 +475,15 @@ checkValid()
       continue;
     }
     ItemInternal* item = items[lid];
-    if (item->isSuppressed()){
-      if (nb_error<10){
+    if (item->isSuppressed()) {
+      if (nb_error < 10) {
         msg->error() << "Item " << ItemPrinter(item) << " in group "
                      << name() << " does not exist anymore";
       }
       ++nb_error;
     }
-    if (presence_checks[lid]){
-      if (nb_error<10){
+    if (presence_checks[lid]) {
+      if (nb_error < 10) {
         msg->error() << "Item " << ItemPrinter(item) << " in group "
                      << name() << " was found twice or more";
       }
@@ -489,11 +492,11 @@ checkValid()
     presence_checks[lid] = true;
   }
   if (isAllItems()) {
-    for( Integer i=0, n=items_lid.size(); i<n; ++i ){
+    for (Integer i = 0, n = items_lid.size(); i < n; ++i) {
       Int32 local_id = items_lid[i];
       Int32 index_in_all_group = m_items_index_in_all_group[local_id];
-      if (index_in_all_group!=i){
-        if (nb_error<10){
+      if (index_in_all_group != i) {
+        if (nb_error < 10) {
           msg->error() << A_FUNCINFO
                        << ": " << itemKindName(m_kind)
                        << ": incoherence between 'local_id' and index in the group 'All' "
@@ -505,12 +508,12 @@ checkValid()
       }
     }
   }
-  if (nb_error!=0) {
+  if (nb_error != 0) {
     String parent_name = "none";
     if (m_parent)
       parent_name = m_parent->name();
     ARCANE_FATAL("Error in group name='{0}' parent='{1}' nb_error={2}",
-                 name(),parent_name,nb_error);
+                 name(), parent_name, nb_error);
   }
 }
 
@@ -577,7 +580,7 @@ setMemoryRessourceForItemLocalId(eMemoryRessource mem)
 {
   VariableArrayInt32* v = m_p->m_variable_items_local_id;
   if (v)
-    VariableUtils::experimentalChangeAllocator(v->variable(),mem);
+    VariableUtils::experimentalChangeAllocator(v->variable(), mem);
 }
 
 /*---------------------------------------------------------------------------*/

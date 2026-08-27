@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Property.cc                                                 (C) 2000-2025 */
+/* Property.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des propriétés.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,7 @@
 //#include "arccore/common/ValueConvert.h"
 
 #include <cstdlib>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -200,7 +201,7 @@ _init()
   }
   ++global_arcane_nb_registerer;
 
-  { // Check integrity
+  { // Vérification de l'intégrité
     auto* p = global_arcane_first_registerer;
     Integer count = global_arcane_nb_registerer;
     while (p && count > 0) {
@@ -208,13 +209,13 @@ _init()
       --count;
     }
     if (p) {
-      std::cerr << "Arcane Fatal Error: Registerer '" << m_name
-                << "' conflict in registerer registration\n";
+      std::cerr << "Arcane Fatal Error: Conflit de registreur '" << m_name
+                << "' dans l'enregistrement des registreurs\n";
       std::abort();
     }
     else if (count > 0) {
-      std::cout << "Arcane Fatal Error: Registerer '" << m_name
-                << "' breaks registerer registration (inconsistent shortcut)\n";
+      std::cout << "Arcane Fatal Error: Le registreur '" << m_name
+                << "' rompt l'enregistrement des registreurs (raccourci incohérent)\n";
       std::abort();
     }
   }

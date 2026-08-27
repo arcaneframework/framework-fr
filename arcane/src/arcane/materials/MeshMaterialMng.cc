@@ -53,11 +53,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MaterialsGlobal.h
  *
  * Liste des déclarations globales pour les matériaux.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -230,14 +232,16 @@ build()
   // Indique si on utilise l'API accélérateur pour le calcul des entités
   // de ConstituentItemVectorImpl
   {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
+    bool force_enable = false;
+    if (const auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
       m_is_use_accelerator_for_constituent_item_vector = (v.value() != 0);
+      force_enable = m_is_use_accelerator_for_constituent_item_vector;
     }
     // N'active pas l'utilisation des RunQueue pour le calcul
     // des 'ComponentItemVector' si le multi-threading est actif. Actuellement
     // l'utilisation d'une même RunQueue n'est pas multi-thread (et donc
     // on ne peut pas créer des ComponentItemVector en concurrence)
-    if (TaskFactory::isActive())
+    if (!force_enable && TaskFactory::isActive())
       m_is_use_accelerator_for_constituent_item_vector = false;
     info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
   }
@@ -362,6 +366,7 @@ _addVariableIndexer(MeshMaterialVariableIndexer* var_idx)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Création d'un matériau.
  *
@@ -408,6 +413,7 @@ registerMaterialInfo(const String& name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Création d'un milieu.
  *
@@ -688,6 +694,7 @@ forceRecompute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Remise à jour des structures suite à une modification des mailles
  * de matériaux ou de milieux.
@@ -700,6 +707,7 @@ _endUpdate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Met à jour les références des variables.
  *
@@ -924,6 +932,7 @@ dumpInfos(std::ostream& o)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 // TODO: fusionner dumpInfos2() et dumpInfo().
 void MeshMaterialMng::
 dumpInfos2(std::ostream& o)
@@ -1369,7 +1378,7 @@ createAllCellToAllEnvCell()
 SmallSpan<const Int32> MeshMaterialMng::
 identitySelectionView()
 {
-  // NOTE: ce tableau pourrait peut-être être géré directement
+  // NOTE : ce tableau pourrait peut-être être géré directement
   // par la famille s'il y a un intérêt à l'utiliser dans d'autres contextes
   Int32 max_local_id = m_mesh_handle.mesh()->cellFamily()->maxLocalId();
   {

@@ -1,4 +1,4 @@
-name: IFPEN el8 foss/2025b
+﻿name: IFPEN el8 foss/2025b
 
 on:
   #push:
@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       ctest_options:
-        description: 'CTest options'
+        description: 'Options CTest'
         required: false
         default: ''
 
 env:
-  # Framework directories
+  # Répertoires du framework
   #BUILD_DIR: /__w/framework/framework/build
   #INSTALL_DIR: /__w/framework/framework/install
   #SOURCE_DIR: /__w/framework/framework/source
@@ -36,7 +36,10 @@ env:
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe: true
   PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
-  # To remove test output directory to reduce disk usage
+  OMPI_ALLOW_RUN_AS_ROOT: "1"
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+  PRTE_ALLOW_RUN_AS_ROOT: "1"
+  # Pour supprimer le répertoire de sortie des tests afin de réduire l'utilisation du disque
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
@@ -47,7 +50,7 @@ jobs:
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2025b-el8:latest
-      options: --user root  # Avoid to match github UID in container.
+      options: --user root  # Éviter de correspondre à l'UID de github dans le conteneur.
     strategy:
       fail-fast: false
 
@@ -55,12 +58,12 @@ jobs:
 
       # ccache
 
-      - name: Get date
+      - name: Récupère la date
         id: get-date
         shell: bash
         run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Restore cache
+      - name: Restaure le cache
         id: restore-cache
         uses: actions/cache/restore@v5
         with:
@@ -79,7 +82,7 @@ jobs:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
-      - name: Modules information
+      - name: Informations sur les modules
         id: modules_information
         if: |
           (success() || failure()) &&
@@ -87,7 +90,7 @@ jobs:
         shell: bash
         run: module --terse list 2>&1 | sort
 
-      - name: Configure
+      - name: Configuration
         id: configure
         if: |
           (success() || failure()) &&
@@ -119,7 +122,7 @@ jobs:
         shell: bash
         run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      - name: Upload test artifact
+      - name: Télécharge l'artefact de test
         id: upload-test-artifact
         uses: actions/upload-artifact@v7
         if: |
@@ -131,7 +134,7 @@ jobs:
           retention-days: 1
           include-hidden-files: true
 
-      - name: Save cache
+      - name: Sauvegarde le cache
         id: save-cache
         if: |
           (success() || failure()) &&
@@ -141,7 +144,7 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
 
-      - name: Clean
+      - name: Nettoyage
         id: clean
         if: always()
         run: |

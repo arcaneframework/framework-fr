@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicGenericWriter.cc                                       (C) 2000-2024 */
+/* BasicGenericWriter.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Ecriture simple pour les protections/reprises.                            */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,8 @@
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/IRessourceMng.h"
 #include "arcane/core/ItemGroup.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -118,20 +120,20 @@ writeItemGroup(const String& group_full_name, SmallSpan<const Int64> written_uni
   }
 
   String filename = BasicReaderWriterCommon::_getBasicGroupFile(m_path, group_full_name, m_rank);
-  ofstream writer(filename.localstr(),std::ios::out | std::ios::binary);
+  ofstream writer(filename.localstr(), std::ios::out | std::ios::binary);
 
   // Sauve la liste des unique_ids écrits
   {
     Integer nb_unique_id = written_unique_ids.size();
-    binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    binaryWrite(writer,asBytes(written_unique_ids));
+    binaryWrite(writer, asBytes(Span<const Int32>(&nb_unique_id, 1)));
+    binaryWrite(writer, asBytes(written_unique_ids));
   }
 
   // Sauve la liste des unique_ids souhaités par ce sous-domaine
   {
     Integer nb_unique_id = wanted_unique_ids.size();
-    binaryWrite(writer,asBytes(Span<const Int32>(&nb_unique_id, 1)));
-    binaryWrite(writer,asBytes(wanted_unique_ids));
+    binaryWrite(writer, asBytes(Span<const Int32>(&nb_unique_id, 1)));
+    binaryWrite(writer, asBytes(wanted_unique_ids));
   }
 }
 
@@ -179,9 +181,6 @@ endWrite()
     app->ioMng()->writeXmlFile(xdoc.get(), filename);
   }
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

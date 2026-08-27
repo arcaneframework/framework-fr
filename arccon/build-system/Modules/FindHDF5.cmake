@@ -1,10 +1,10 @@
 ﻿#
-# Find the Hdf5 includes and library
+# Trouve les includes et la bibliothèque Hdf5
 #
-# This module defines
-# HDF5_INCLUDE_DIR, where to find headers,
-# HDF5_LIBRARIES, the libraries to link against to use Hdf5.
-# HDF5_FOUND, If false, do not try to use Hdf5.
+# Ce module définit
+# HDF5_INCLUDE_DIR, où trouver les en-têtes,
+# HDF5_LIBRARIES, les bibliothèques à lier pour utiliser Hdf5.
+# HDF5_FOUND, Si faux, ne pas essayer d'utiliser Hdf5.
 
 include (${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 
@@ -13,6 +13,11 @@ arccon_return_if_package_found(HDF5)
 # Tente d'utiliser le module correspondant de CMake
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
+# Il semble que le fichier de configuration CMake pour HDF5 1.14
+# n'inclue pas ZLIB, ce qui entraîne des erreurs
+# lors de la configuration (comme 'ZLIB::ZLIB target not found').
+# Pour éviter cela, nous incluons manuellement ce paquet
+find_package(ZLIB QUIET)
 find_package(HDF5 CONFIG QUIET)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 

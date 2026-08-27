@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -20,11 +20,10 @@
 #include <string>
 #include <random>
 
-// To remove warnings about deprecated Eigen usage.
+// Pour supprimer les avertissements concernant l'utilisation obsolète d'Eigen.
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
@@ -42,14 +41,14 @@ typedef Arcane::Alina::backend::EigenBackend<double> Backend;
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
-// Use 32 bit indexing for backend.
+// Utilise l'indexation 32 bits pour le backend.
 using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 //using Backend = Arcane::Alina::BuiltinBackend<double>;
 #endif
 
-#include <arcane/utils/PlatformUtils.h>
-#include <arcane/utils/String.h>
-#include <arcane/utils/Convert.h>
+#include <arccore/base/PlatformUtils.h>
+#include <arccore/base/String.h>
+#include <arccore/base/Convert.h>
 
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/CoarseningRuntime.h"
@@ -59,8 +58,9 @@ using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
-
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "SampleProblemCommon.h"
 
@@ -166,10 +166,10 @@ scalar_solve(const Alina::PropertyTree& prm,
              std::vector<double>& x,
              bool reorder)
 {
-  std::cout << "Using scalar solve ptr_size=" << sizeof(ptrdiff_t)
-            << " ptr_type_size=" << sizeof(Backend::ptr_type)
-            << " col_type_size=" << sizeof(Backend::col_type)
-            << " value_type_size=" << sizeof(Backend::value_type)
+  std::cout << "Utilisation de la résolution scalaire ptr_size=" << sizeof(ptrdiff_t)
+            << " taille_type_ptr=" << sizeof(Backend::ptr_type)
+            << " taille_type_col=" << sizeof(Backend::col_type)
+            << " taille_type_valeur=" << sizeof(Backend::value_type)
             << "\n";
   auto& prof = Alina::Profiler::globalProfiler();
   Backend::params bprm;
@@ -269,7 +269,7 @@ solve(const Alina::PropertyTree& prm,
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_CALL_BLOCK_SOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
 #endif
   default:
-    precondition(false, "Unsupported block size");
+    precondition(false, "Taille de bloc non prise en charge");
     return {};
   }
 }
@@ -278,7 +278,7 @@ solve(const Alina::PropertyTree& prm,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;
@@ -286,81 +286,81 @@ int main(int argc, char* argv[])
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
+  desc.add_options()("help,h", "Affiche cette aide.")("prm-file,P",
                                                   po::value<string>(),
-                                                  "Parameter file in json format. ")(
+                                                  "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")("matrix,A",
                                     po::value<string>(),
-                                    "System matrix in the MatrixMarket format. "
-                                    "When not specified, solves a Poisson problem in 3D unit cube. ")(
+                                    "Matrice du système au format MatrixMarket. "
+                                    "Lorsqu'elle n'est pas spécifiée, elle résout un problème de Poisson dans un cube unitaire 3D. ")(
   "rhs,f",
   po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
+  "Le vecteur du membre de droite (RHS) au format MatrixMarket. "
+  "Lorsqu'il est omis, un vecteur de uns est utilisé par défaut. "
+  "Doit être fourni uniquement avec une matrice de système. ")(
   "f0",
   po::bool_switch()->default_value(false),
-  "Use zero RHS vector. Implies --random-initial and solver.ns_search=true")(
+  "Utiliser un vecteur RHS nul. Implique --random-initial et solver.ns_search=true")(
   "f1",
   po::bool_switch()->default_value(false),
-  "Set RHS = Ax where x = 1")(
+  "Définir RHS = Ax où x = 1")(
   "null,N",
   po::value<string>(),
-  "The near null-space vectors in the MatrixMarket format. "
-  "Should be a dense matrix of size N*M, where N is the number of "
-  "unknowns, and M is the number of null-space vectors. "
-  "Should only be provided together with a system matrix. ")(
+  "Les vecteurs proches de l'espace nul au format MatrixMarket. "
+  "Doit être une matrice dense de taille N*M, où N est le nombre de "
+  "variables inconnues et M est le nombre de vecteurs de l'espace nul. "
+  "Doit être fourni uniquement avec une matrice de système. ")(
   "coords,C",
   po::value<string>(),
-  "Coordinate matrix where number of rows corresponds to the number of grid nodes "
-  "and the number of columns corresponds to the problem dimensionality (2 or 3). "
-  "Will be used to construct near null-space vectors as rigid body modes. "
-  "Should only be provided together with a system matrix. ")(
+  "Matrice de coordonnées où le nombre de lignes correspond au nombre de nœuds de grille "
+  "et le nombre de colonnes correspond à la dimensionnalité du problème (2 ou 3). "
+  "Sera utilisée pour construire des vecteurs proches de l'espace nul comme modes de corps rigide. "
+  "Doit être fourni uniquement avec une matrice de système. ")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsqu'il est spécifié, traiter les fichiers d'entrée comme binaires au lieu de MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "scale,s",
   po::bool_switch()->default_value(false),
-  "Scale the matrix so that the diagonal is unit. ")(
+  "Mettre à l'échelle la matrice de sorte que la diagonale soit unitaire. ")(
   "block-size,b",
   po::value<int>()->default_value(1),
-  "The block size of the system matrix. "
-  "When specified, the system matrix is assumed to have block-wise structure. "
-  "This usually is the case for problems in elasticity, structural mechanics, "
-  "for coupled systems of PDE (such as Navier-Stokes equations), etc. ")(
+  "La taille du bloc de la matrice du système. "
+  "Lorsqu'elle est spécifiée, la matrice du système est supposée avoir une structure par blocs. "
+  "C'est généralement le cas pour les problèmes en élasticité, en mécanique des structures, "
+  "pour les systèmes couplés d'EDP (tels que les équations de Navier-Stokes), etc. ")(
   "size,n",
   po::value<int>()->default_value(32),
-  "The size of the Poisson problem to solve when no system matrix is given. "
-  "Specified as number of grid nodes along each dimension of a unit cube. "
-  "The resulting system will have n*n*n unknowns. ")(
+  "La taille du problème de Poisson à résoudre lorsqu'aucune matrice de système n'est fournie. "
+  "Spécifié comme le nombre de nœuds de grille le long de chaque dimension d'un cube unitaire. "
+  "Le système résultant aura n*n*n inconnues. ")(
   "anisotropy,a",
   po::value<double>()->default_value(1.0),
-  "The anisotropy value for the generated Poisson value. "
-  "Used to determine problem scaling along X, Y, and Z axes: "
+  "La valeur d'anisotropie pour la valeur de Poisson générée. "
+  "Utilisée pour déterminer la mise à l'échelle du problème le long des axes X, Y et Z : "
   "hy = hx * a, hz = hy * a.")(
   "single-level,1",
   po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
+  "Lorsqu'il est spécifié, la hiérarchie AMG n'est pas construite. "
+  "Au lieu de cela, le problème est résolu à l'aide d'un lisseur à un niveau comme préconditionneur. ")(
   "reorder,r",
   po::bool_switch()->default_value(false),
-  "When specified, the matrix will be reordered to improve cache-locality")(
+  "Lorsqu'il est spécifié, la matrice sera réordonnée pour améliorer la localité du cache")(
   "initial,x",
   po::value<double>()->default_value(0),
-  "Value to use as initial approximation. ")(
+  "Valeur à utiliser comme approximation initiale. ")(
   "random-initial",
   po::bool_switch()->default_value(false),
-  "Use random initial approximation. ")(
+  "Utiliser une approximation initiale aléatoire. ")(
   "output,o",
   po::value<string>(),
-  "Output file. Will be saved in the MatrixMarket format. "
-  "When omitted, the solution is not saved. ");
+  "Fichier de sortie. Sera enregistré au format MatrixMarket. "
+  "Lorsqu'il est omis, la solution n'est pas enregistrée. ");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
     else {
       size_t cols;
       std::tie(rows, cols) = io::mm_reader(Afile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice de système non carrée");
     }
 
     if (vm.count("rhs")) {
@@ -423,7 +423,7 @@ int main(int argc, char* argv[])
         std::tie(n, m) = io::mm_reader(bfile)(rhs);
       }
 
-      precondition(n == rows && m == 1, "The RHS vector has wrong size");
+      precondition(n == rows && m == 1, "Le vecteur RHS a une taille incorrecte");
     }
     else if (vm["f1"].as<bool>()) {
       rhs.resize(rows);
@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
         std::tie(m, nv) = io::mm_reader(nfile)(null);
       }
 
-      precondition(m == rows, "Near null-space vectors have wrong size");
+      precondition(m == rows, "Les vecteurs proches de l'espace nul ont une taille incorrecte");
     }
     else if (vm.count("coords")) {
       string cfile = vm["coords"].as<string>();
@@ -465,7 +465,7 @@ int main(int argc, char* argv[])
         std::tie(m, ndim) = io::mm_reader(cfile)(coo);
       }
 
-      precondition(m * ndim == rows && (ndim == 2 || ndim == 3), "Coordinate matrix has wrong size");
+      precondition(m * ndim == rows && (ndim == 2 || ndim == 3), "Matrice de coordonnées de taille incorrecte");
 
       nv = Alina::rigid_body_modes(ndim, coo, null);
     }
@@ -543,7 +543,7 @@ int main(int argc, char* argv[])
       Alina::IO::mm_write(vm["output"].as<string>(), &x[0], x.size());
     }
   }
-  std::cout << "Iterations: " << solver_result.nbIteration() << std::endl
-            << "Error:      " << solver_result.residual() << std::endl
+  std::cout << "Itérations: " << solver_result.nbIteration() << std::endl
+            << "Erreur:      " << solver_result.residual() << std::endl
             << prof << std::endl;
 }

@@ -1,4 +1,4 @@
-# Variable {#arcanedoc_core_types_axl_variable}
+﻿# Variable {#arcanedoc_core_types_axl_variable}
 
 [TOC]
 
@@ -522,9 +522,11 @@ l'élément. L'accès se fait via l'opérateur `operator()` car il permet
 d'avoir plusieurs arguments. A partir du C++23 il sera aussi possible
 d'utiliser l'opérateur `operator[]`.
 
-Avant d'utiliser ces variables, il est nécessaire d'appeler la méthode
-\arcane{MeshMDVariableRefT::reshape()}. Le nombre de valeurs à
-spécifier doit être identique à la dimension de la variable.
+\warning Avant d'utiliser ces variables, il est nécessaire d'appeler la
+méthode \arcane{MeshMDVariableRefT::reshape()}. La mémoire associée à la
+variable n'est pas allouée tant que vous n'appelez pas cette méthode.
+Le nombre de valeurs à spécifier doit être identique à la dimension dynamique
+de la variable.
 
 Exemple pour les variables multi-dimensionnelles scalaires:
 

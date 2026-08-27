@@ -14,21 +14,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arccore/base/ArccoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_COMPONENT_arcane_alina
-#define ARCCORE_ALINA_EXPORT ARCANE_EXPORT
+#define ARCCORE_ALINA_EXPORT ARCCORE_EXPORT
 #else
-#define ARCCORE_ALINA_EXPORT ARCANE_IMPORT
+#define ARCCORE_ALINA_EXPORT ARCCORE_IMPORT
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Always activate profiling at the moment
+// Activer toujours le profilage à ce moment.
 #define ARCCORE_ALINA_PROFILING
 
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ namespace Arcane::Alina
 
 namespace detail
 {
-// Backend with scalar value_type of highest precision.
+// Backend avec le type de valeur scalaire de la plus haute précision.
 template <class B1, class B2, class Enable = void>
 struct common_scalar_backend;
 }

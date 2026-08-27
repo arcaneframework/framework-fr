@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CSRMatrixView.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* View of a sparse matrix stored in CSR (Compressed Sparse Row) format.     */
+/* Vue d'une matrice creuse stockée au format CSR (Compressed Sparse Row).   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_CSRMATRIXVIEW_H
 #define ARCCORE_ALINA_CSRMATRIXVIEW_H
@@ -27,7 +27,7 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Index in the RowColumn list of a CSR Matrix.
+ * \brief Index dans la liste RowColumn d'une Matrice CSR.
  */
 template <typename IndexType_>
 class CSRRowColumnIndex
@@ -56,7 +56,7 @@ class CSRRowColumnIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Represents an iterator over the columns of a CSRRow.
+ * \brief Représente un itérateur sur les colonnes d'une CSRRow.
  */
 template <typename IndexType_>
 class CSRRowColumnIterator
@@ -94,7 +94,7 @@ class CSRRowColumnIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Represents a row of a CSR Matrix.
+ * \brief Représente une ligne d'une Matrice CSR.
  */
 template <typename IndexType_>
 class CSRRow
@@ -152,7 +152,7 @@ class SpanChooser<T, 8>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Iterator over rows of a CSR Matrix.
+ * \brief Itérateur sur les lignes d'une Matrice CSR.
  */
 template <typename IndexType_>
 class CSRRowRangeIterator
@@ -169,7 +169,7 @@ class CSRRowRangeIterator
 
  public:
 
-  //! Sentinel to detect end of iteration
+  //! Sentinelle pour détecter la fin de l'itération
   class Sentinel
   {
     friend CSRRowRangeIterator<IndexType>;
@@ -179,6 +179,10 @@ class CSRRowRangeIterator
     explicit Sentinel(IndexType v)
     : m_end(v)
     {}
+
+   public:
+
+    constexpr IndexType end() const { return m_end; }
 
    private:
 
@@ -213,7 +217,7 @@ class CSRRowRangeIterator
   }
   friend bool operator!=(const CSRRowRangeIterator& a, const Sentinel& b)
   {
-    return a.m_index != b.m_end;
+    return a.m_index != b.end();
   }
 
  private:
@@ -225,7 +229,7 @@ class CSRRowRangeIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Represents a range of rows of a CSR Matrix.
+ * \brief Représente une plage de lignes d'une Matrice CSR.
  */
 template <typename IndexType_>
 class CSRRowRange
@@ -272,7 +276,7 @@ class CSRRowRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sparse matrix stored in CSR (Compressed Sparse Row) format.
+ * \brief Matrice creuse stockée au format CSR (Compressed Sparse Row).
  */
 template <typename ValueType_, typename ColumnType_, typename RowIndexType_>
 class CSRMatrixView
@@ -302,12 +306,12 @@ class CSRMatrixView
 
  public:
 
-  //! Number of row
+  //! Nombre de lignes
   constexpr Int32 nbRow() const noexcept { return m_nb_row; }
-  //! Number of non-zero in the matrix
+  //! Nombre de valeurs non nulles dans la matrice
   constexpr RowIndexType nbNonZero() const noexcept { return m_nb_non_zero; }
 
-  //! Number of non-zero for the row \a row
+  //! Nombre de valeurs non nulles pour la ligne \a row
   constexpr Int32 nbNonZeroForRow(Int32 row) const
   {
     ARCCORE_CHECK_AT(row, m_nb_row);
@@ -326,12 +330,12 @@ class CSRMatrixView
     auto end = m_row_indexes[row + 1];
     return { begin, end };
   }
-  //! Range of all rows of the matrix
+  //! Plage de toutes les lignes de la matrice
   constexpr CSRRowRange<RowIndexType> rows() const
   {
     return CSRRowRange<RowIndexType>(m_row_indexes, 0, m_nb_row);
   }
-  //! Range of rows from interval [begin,begin+size[
+  //! Plage de lignes à partir de l'intervalle [begin,begin+size[
   constexpr CSRRowRange<RowIndexType> subrows(RowIndexType begin, RowIndexType size) const
   {
     return CSRRowRange<RowIndexType>(m_row_indexes, begin, begin + size);
@@ -371,12 +375,12 @@ class CSRMatrixView
     return m_values[i];
   }
 
-  //! Value of the matrix for the given RowColumnIndex \a rc_index
+  //! Valeur de la matrice pour l'index LigneColonne donné \a rc_index
   constexpr val_type& value(CSRRowColumnIndex<RowIndexType> rc_index) const
   {
     return m_values[rc_index];
   }
-  //! Value of the matrix for the given RowColumnIndex \a rc_index
+  //! Valeur de la matrice pour l'index LigneColonne donné \a rc_index
   constexpr col_type column(CSRRowColumnIndex<RowIndexType> rc_index) const
   {
     return m_columns[rc_index];

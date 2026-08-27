@@ -1,5 +1,5 @@
 ﻿# ----------------------------------------------------------------------------
-# Fonction pour créér une bibliothèque avec des sources.
+# Fonction pour créer une bibliothèque avec des sources.
 #
 # Par exemple:
 #
@@ -9,11 +9,11 @@
 #   FILES ArccoreGlobal.cc ArccoreGlobal.h ...
 # )
 #
-# Chaque fichier spécifié dans ${FILES} doit trouver dans le
+# Chaque fichier spécifié dans ${FILES} doit se trouver dans le
 # répertoire ${INPUT_PATH}/${RELATIVE_PATH}. FILES peut contenir
 # des sous-répertoires.
 
-# Introduce variables:
+# Introduire des variables:
 # * CMAKE_INSTALL_LIBDIR
 # * CMAKE_INSTALL_BINDIR
 # * CMAKE_INSTALL_INCLUDEDIR
@@ -88,7 +88,7 @@ function(arccore_add_library target)
 endfunction()
 
 # ----------------------------------------------------------------------------
-# Fonction pour créér un composant 'Arccore'
+# Fonction pour créer un composant 'Arccore'
 #
 # arccore_add_component_library(component_name
 #   FILES ...
@@ -114,7 +114,7 @@ function(arccore_add_component_library component_name)
     set(_LIB_NAME arccore_${component_name})
   else()
     set(_LIB_NAME ${ARGS_LIB_NAME})
-    message(STATUS "Adding component library '${component_name}' with library name '${_LIB_NAME}'")
+    message(STATUS "Ajout de la bibliothèque de composant '${component_name}' avec le nom de bibliothèque '${_LIB_NAME}'")
   endif()
 
   arccore_add_library(${_LIB_NAME}
@@ -136,7 +136,7 @@ function(arccore_add_component_library component_name)
 endfunction()
 
 # ----------------------------------------------------------------------------
-# Fonction pour créér l'exécutable de test d'un composant 'Arccore'
+# Fonction pour créer l'exécutable de test d'un composant 'Arccore'
 #
 # arccore_add_component_test_executable(component_name
 #   FILES ...
@@ -180,11 +180,11 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Fonction pour ajoute un répertoire contenant un composant 'Arccore'.
+# Fonction pour ajouter un répertoire contenant un composant 'Arccore'.
 #
 # arccore_add_component_directory(component_name)
 #
-# Cette fonction va regarder si un répertoire 'src/${X}/arccore/${X} existe
+# Cette fonction va vérifier si un répertoire 'src/${X}/arccore/${X}' existe
 # (avec ${X} valant ${component_name} et si c'est le cas, l'ajouter au
 # projet.
 # Si un répertoire 'src/${X}/tests' existe, il est aussi ajouté pour les
@@ -194,9 +194,9 @@ function(arccore_add_component_directory name)
   set(_BASE_DIR src/${name})
   set(_COMPONENT_DIR ${_BASE_DIR}/arccore/${name})
   set(_TEST_DIR ${_BASE_DIR}/tests)
-  message(STATUS "Check component '${name}' in directory '${_COMPONENT_DIR}'")
+  message(STATUS "Vérification du composant '${name}' dans le répertoire '${_COMPONENT_DIR}'")
   if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${_COMPONENT_DIR})
-    message(STATUS "Adding component '${name}' in directory '${_COMPONENT_DIR}'")
+    message(STATUS "Ajout du composant '${name}' dans le répertoire '${_COMPONENT_DIR}'")
     add_subdirectory(${_COMPONENT_DIR})
     if (ARCCORE_ENABLE_TESTS AND GTEST_FOUND)
       if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${_TEST_DIR}/CMakeLists.txt)
@@ -207,25 +207,59 @@ function(arccore_add_component_directory name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# Fonction pour positionner le chemin d'installation d'une cible
+# dans le même répertoire quel que soit son type (bibliothèque/exécutable)
+# et la configuration (debug, release, ...).
+# Par défaut, le répertoire est '${CMAKE_BINARY_DIR}/lib'
+#
+function(arccore_target_set_standard_path target)
+  set(options        )
+  set(oneValueArgs   PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (ARGS_PATH)
+    set(_libpath ${ARGS_PATH})
+  else()
+    set(_libpath ${CMAKE_BINARY_DIR}/lib)
+  endif()
+  message(STATUS "arcane_target_set_standard_path target='${target}'")
+  set_target_properties(${target}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
+    )
+endfunction()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Indique que les fichiers passés en argument doivent être compilés avec
 # le support accélérateur correspondant.
 macro(arccore_accelerator_add_source_files)
   if (ARCCORE_HAS_CUDA)
     foreach(_x ${ARGN})
-      message(STATUS "Add CUDA language to file '${_x}'")
+      message(STATUS "Ajout du langage CUDA au fichier '${_x}'")
       set_source_files_properties(${_x} PROPERTIES LANGUAGE CUDA)
     endforeach()
   endif()
   if (ARCCORE_HAS_HIP)
     foreach(_x ${ARGN})
-      message(STATUS "Add HIP language to file '${_x}'")
+      message(STATUS "Ajout du langage HIP au fichier '${_x}'")
       set_source_files_properties(${_x} PROPERTIES LANGUAGE HIP)
     endforeach()
   endif()
   if (ARCCORE_HAS_SYCL)
     foreach(_x ${ARGN})
-      message(STATUS "Add SYCL language to file '${_x}'")
+      message(STATUS "Ajout du langage SYCL au fichier '${_x}'")
       set_source_files_properties(${_x} PROPERTIES COMPILE_OPTIONS "${ARCCORE_CXX_SYCL_FLAGS}")
     endforeach()
   endif()

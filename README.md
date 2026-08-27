@@ -34,7 +34,8 @@ well as more environment-related aspects such as dataset configuration.
 > [!NOTE]
 > Ce dépôt est un clone du dépôt [framework](https://github.com/arcaneframework/framework) mais avec
 > une documentation en français. Les modifications sont portées sur ce dépôt environ une fois par
-> mois. Pour les contributions, il est nécessaire d'utiliser le dépôt original en anglais.
+> mois (la mise à jour des traductions est effectuée par IA). Pour les contributions, il est
+> nécessaire d'utiliser le dépôt original en anglais.
 
 ____
 

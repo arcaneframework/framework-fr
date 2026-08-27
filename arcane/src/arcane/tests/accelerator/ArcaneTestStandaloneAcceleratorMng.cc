@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,6 +23,9 @@
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
+
+#include <iostream>
+#include <iomanip>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -264,9 +267,9 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_args,
                                         const String& method_name)
 {
-  int r =0;
-  try{
-    r = _testStandaloneLauncher(cmd_line_args,method_name);
+  int r = 0;
+  try {
+    r = _testStandaloneLauncher(cmd_line_args, method_name);
   }
   catch (const Exception& ex) {
     std::cerr << "EXCEPTION: " << ex << "\n";

@@ -1,4 +1,4 @@
-set( ARCANE_SOURCES
+﻿set(ARCANE_SOURCES
   Accelerator.cc
   Accelerator.h
   AcceleratorGlobal.h
@@ -16,6 +16,7 @@ set( ARCANE_SOURCES
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
+  MDVariableViews.h
   NumArray.h
   NumArrayViews.h
   Reduce.h

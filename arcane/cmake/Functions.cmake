@@ -1,20 +1,20 @@
 ﻿# Ce fichier contient un ensemble de fonctions et macros pour Arcane
 
 # ----------------------------------------------------------------------------
-# Macro pour faire un find_package() de manière optionnel.
+# Macro pour effectuer un find_package() de manière optionnelle.
 #
-# Le but est de pouvoir désactiver automatiquement tous les packages
-# optionnel si demandé. Cela est utile par exemple si on veut garantir
-# qu'on ne va pas ajouter des packages trouvés automatiquement mais
+# Le but est de pouvoir désactiver automatiquement tous les paquets
+# optionnels si demandé. Cela est utile, par exemple, si l'on veut garantir
+# qu'on n'ajoute pas de paquets trouvés automatiquement mais
 # non demandés.
 #
-# Si la variable ARCANE_NO_DEFAULT_PACKAGE vaut TRUE, alors les packages
-# non requis seront indisponibles par défaut. Pour que ces packages
-# soient trouvés, il faut qu'ils soient dans la liste
-# ARCANE_REQUIRED_PACKAGE_LIST et dans ce cas le package est requis.
+# Si la variable ARCANE_NO_DEFAULT_PACKAGE vaut TRUE, alors les paquets
+# non requis seront indisponibles par défaut. Pour que ces paquets
+# soient trouvés, il faut qu'ils figurent dans la liste
+# ARCANE_REQUIRED_PACKAGE_LIST et, dans ce cas, le paquet est requis.
 #
-# NOTE: il faut que ce soit une macro et pas une fonction sinon les
-# résultats du find_package() ne sont pas transmis à l'appelant.
+# NOTE : il faut que ce soit une macro et non une fonction, sinon les
+# résultats de find_package() ne sont pas transmis à l'appelant.
 macro(arcane_find_package package_name)
   set(__arcane_disable_package false)
   set(__arcane_required_package false)
@@ -36,8 +36,8 @@ macro(arcane_find_package package_name)
   endif()
   find_package(${package_name} ${ARGN})
   # Si cette variable est définie, elle contient une liste de noms de
-  # cibles pour le package. Il faut qu'au moins une de ces cibles
-  # existe pour qu'on considère le package comme trouvé.
+  # cibles pour le paquet. Il faut qu'au moins une de ces cibles
+  # existe pour que le paquet soit considéré comme trouvé.
   if (ARCANE_PACKAGE_SEARCH_TARGETS_${package_name})
     set(__arcane_sub_target_found FALSE)
     message(STATUS "Found package search targets for'${package_name}'")
@@ -61,9 +61,9 @@ macro(arcane_find_package package_name)
 endmacro()
 
 # ----------------------------------------------------------------------------
-# Macro pour ajouter des fichiers 'axl' à la cible \a target.
+# Macro pour ajouter des fichiers 'axl' à la cible target.
 #
-# Par exemple:
+# Par exemple :
 #
 # arcane_add_axl_files(arcane_std RELATIVE_PATH arcane/std
 #   FILES
@@ -76,13 +76,13 @@ endmacro()
 #
 # L'option COPY_PATH permet de spécifier un répertoire où les fichiers
 # 'axl' seront copiés. Si cette option est spécifiée, les fichiers
-# seront aussi installés dans share/axl lors de l'installation.
+# seront également installés dans share/axl lors de l'installation.
 #
-# Les répertoires contenant les fichiers axl générés sont aussi
+# Les répertoires contenant les fichiers axl générés sont également
 # ajoutés à la liste des includes.
 #
-# NOTE: pour l'instant, cette macro ne supporte pas la génération des
-# fichiers pour le C# (l'option LANGUAGE n'est pas utilisée).
+# NOTE : pour l'instant, cette macro ne supporte pas la génération des
+# fichiers pour C# (l'option LANGUAGE n'est pas utilisée).
 #
 macro(arcane_add_axl_files target)
 
@@ -97,10 +97,10 @@ macro(arcane_add_axl_files target)
   if (NOT ARGS_INPUT_PATH)
     set(ARGS_INPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
-  # Pour être sur de construire les axl avant notre cible.
-  # Cela est nécessaire car CMake ne gère pas dépendances sur les
+  # Pour s'assurer de construire les axl avant notre cible.
+  # Cela est nécessaire car CMake ne gère pas les dépendances entre les
   # fichiers entre les sous-répertoires
-  # (utile uniquement si on compile Axlstar en même temps que Arcane)
+  # (utile uniquement si l'on compile Axlstar en même temps qu'Arcane)
   if (TARGET dotnet_axl_depend)
     add_dependencies(${target} dotnet_axl_depend)
   endif()
@@ -126,7 +126,7 @@ macro(arcane_add_axl_files target)
     # TRUE_IAXL            Euclidian3Geometry
 
     # Des erreurs surviennent lors de la génération de la documentation si le
-    # relative path n'est pas correct.
+    # chemin relatif n'est pas correct.
 
     set(_AXL_FILE ${ARGS_INPUT_PATH}/${TRUE_RELATIVE_PATH}/${TRUE_IAXL}.axl)
 
@@ -159,7 +159,7 @@ macro(arcane_add_axl_files target)
       # TODO: pouvoir changer le chemin d'installation.
       install(FILES ${ARGS_COPY_PATH}/${_TOCOPY_AXL_FILE} DESTINATION share/axl)
     endif()
-    # Ajoute répertoire où se trouve les 'axl' à la cible
+    # Ajoute le répertoire où se trouvent les 'axl' à la cible
     list(APPEND _INCLUDES_TO_ADD ${_OUT_AXL_PATH})
   endforeach()
   # Ajoute les répertoires de génération à la cible
@@ -170,7 +170,7 @@ macro(arcane_add_axl_files target)
 endmacro()
 
 # ----------------------------------------------------------------------------
-# Ajout SdC : marcros définies dans le config mais on en a besoin pour Alien dans le mono dépôt.
+# Ajout SdC : macros définies dans le config mais dont nous avons besoin pour Alien dans le mono-dépôt.
 # ----------------------------------------------------------------------------
 # Macro pour ajouter le fichier 'axlfilename' à la cible 'target'.
 macro(arcane_target_add_axl target axlfilename)
@@ -179,7 +179,7 @@ macro(arcane_target_add_axl target axlfilename)
   target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endmacro()
 # ----------------------------------------------------------------------------
-# Macro pour générer les _axl.h à partir des fichier axl
+# Macro pour générer les _axl.h à partir des fichiers axl
 macro(arcane_generate_axl filename)
   get_filename_component(_base_filename ${filename} NAME)
   get_filename_component(_base_dirname ${filename} DIRECTORY)
@@ -194,42 +194,18 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 # Fonction pour positionner le chemin d'installation d'une cible
-# dans le même répertoire quel que soit son type (library/executable)
+# dans le même répertoire quel que soit son type (bibliothèque/exécutable)
 # et la configuration (debug, release, ...).
 # Par défaut, le répertoire est '${CMAKE_BINARY_DIR}/lib'
 #
 function(arcane_target_set_standard_path target)
-  set(options        )
-  set(oneValueArgs   PATH)
-  set(multiValueArgs)
-
-  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  if (ARGS_PATH)
-    set(_libpath ${ARGS_PATH})
-  else()
-    set(_libpath ${CMAKE_BINARY_DIR}/lib)
-  endif()
-  message(STATUS "arcane_target_set_standard_path target='${target}'")
-  set_target_properties(${target}
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
-    )
+  arccore_target_set_standard_path(${target} ${ARGN})
 endfunction()
 
 # ----------------------------------------------------------------------------
-# Fonction pour créér une bibliothèque avec des sources.
+# Fonction pour créer une bibliothèque avec des sources.
 #
-# Par exemple:
+# Par exemple :
 #
 # arcane_add_library(arcane_std
 #   INTUT_PATH ...
@@ -238,16 +214,16 @@ endfunction()
 #   AXL_FILES ArcaneVerifier
 # )
 #
-# Chaque fichier spécifié dans ${FILES} doit trouver dans le
+# Chaque fichier spécifié dans ${FILES} doit se trouver dans le
 # répertoire ${INPUT_PATH}/${RELATIVE_PATH}. FILES peut contenir
 # des sous-répertoires. Les fichiers spécifiés dans ${AXL_FILES}
 # ne doivent pas contenir l'extension 'axl'.
 #
 # Les fichiers de FILES qui ont l'extension '.h' ou '.H' seront
 # installés dans le répertoire *include* de destination avec un
-# chemin relative donné par RELATIVE_PATH. Par convention, les fichiers qui
-# sont dans un sous-répertoire de nom 'internal' ou qui ont l'extension 'inst.h'
-# sont considérés comme interne et ne sont pas installés.
+# chemin relatif donné par RELATIVE_PATH. Par convention, les fichiers qui
+# sont dans un sous-répertoire nommé 'internal' ou qui ont l'extension 'inst.h'
+# sont considérés comme internes et ne sont pas installés.
 function(arcane_add_library target)
   set(options        )
   set(oneValueArgs   INPUT_PATH RELATIVE_PATH)
@@ -260,11 +236,11 @@ function(arcane_add_library target)
   foreach(isource ${ARGS_FILES})
     set(_FILE ${ARGS_INPUT_PATH}/${ARGS_RELATIVE_PATH}/${isource})
     #message(STATUS "FOREACH i='${_FILE}'")
-    # Regarde si le fichier est un fichier d'en-tête et si
-    # c'est le cas, l'installe automatiquement sauf dans les cas suivants:
-    # - s'il est dans un sous-répertoire de nom *internal* auquel cas il
+    # Vérifie si le fichier est un fichier d'en-tête et si
+    # c'est le cas, il l'installe automatiquement sauf dans les cas suivants :
+    # - s'il est dans un sous-répertoire nommé *internal*, auquel cas il
     #   est considéré comme interne à Arcane.
-    # - s'il a l'extension '.inst.h' auquel il s'agit d'un fichier contenant
+    # - s'il a l'extension '.inst.h', auquel cas il s'agit d'un fichier contenant
     #   la définition de classes templates à instancier explicitement.
     string(REGEX MATCH "\.inst\.h$" _OUT_INST_HEADER ${isource})
     if (NOT _OUT_INST_HEADER)
@@ -282,8 +258,8 @@ function(arcane_add_library target)
   #message(STATUS "TARGET=${target} FILES=${_FILES}")
   add_library(${target} ${_FILES})
   target_compile_definitions(${target} PRIVATE ARCANE_COMPONENT_${target})
-  # A terme, supprimer l'ajout de '${CMAKE_INSTALL_PREFIX}/lib' car '$ORIGIN'
-  # doit suffire mais il faut être sur qu'il est disponible sur toutes
+  # À terme, supprimer l'ajout de '${CMAKE_INSTALL_PREFIX}/lib' car '$ORIGIN'
+  # devrait suffire, mais il faut s'assurer qu'il est disponible sur toutes
   # les plateformes UNIX.
   # La propriété BUILD_RPATH_USE_ORIGIN devrait pouvoir faire la même chose
   set_target_properties(${target}
@@ -303,31 +279,31 @@ function(arcane_add_library target)
 endfunction()
 
 # ----------------------------------------------------------------------------
-# Fonction pour ajouter à la cible 'target' une liste de packages
+# Fonction pour ajouter à la cible 'target' une liste de paquets
 #
-# Usage:
+# Utilisation :
 #
 #  arcane_add_arccon_packages(target (PRIVATE|PUBLIC) <pkg1> <pkg2> ...)
 #
-# Par exemple:
+# Par exemple :
 #
 #  arcane_add_arccon_packages(arcane_std PRIVATE HDF5 TBB)
 #
-# La liste des packages est sans le préfix 'arccon::'.
+# La liste des paquets est sans le préfix 'arccon::'.
 #
 # Afin de supporter le fait que les noms des cibles puissent
 # évoluer en fonction des versions des produits, de CMake ou
-# de la configuration, on supporte plusieurs mécanismes pour
-# associer une cible à un package. Pour chaque package '<pkg>, la
-# recherche de la cible associé se fait comme suit:
+# de la configuration, nous supportons plusieurs mécanismes pour
+# associer une cible à un paquet. Pour chaque paquet '<pkg>, la
+# recherche de la cible associée se fait comme suit :
 #
-# 1. Si la variable 'ARCCON_TARGET_${pkg}' on considère qu'il
-#    s'agit du nom de la cible
-# 2. Sinon, on la cible recherchée sera 'arccon::${pkg}'
+# 1. Si la variable 'ARCCON_TARGET_${pkg}' est considérée comme
+#    le nom de la cible
+# 2. Sinon, la cible recherchée sera 'arccon::${pkg}'
 
-# En plus d'ajouter la liste des packages, cette fonction
-# ajoute aussi en public un argument '-rpath' pour chaque
-# répertoire contenant une bibliothèque des packages.
+# En plus d'ajouter la liste des paquets, cette fonction
+# ajoute également en public un argument '-rpath' pour chaque
+# répertoire contenant une bibliothèque de paquet.
 # Cela est nécessaire car actuellement avec CMake (3.11), les
 # bibliothèques INTERFACE n'assurent pas la transitivité des
 # chemins des bibliothèques dynamiques. Sans cette option, il
@@ -335,16 +311,16 @@ endfunction()
 # une mauvaise bibliothèque notamment s'il y a une version
 # installée par le système.
 #
-# Par exemple, si on a le package HDF5 dans /opt/hdf5 et
-# qu'il est aussi fourni par le système dans /usr/lib64.
-# Si une bibliothèuq A dépend de manière privée de HDF5, et
-# qu'un exécutable B dépend de A, on a:
+# Par exemple, si nous avons le paquet HDF5 dans /opt/hdf5 et
+# qu'il est également fourni par le système dans /usr/lib64.
+# Si une bibliothèque A dépend de manière privée de HDF5, et
+# qu'un exécutable B dépend de A, nous avons :
 #
 # (1) gcc -o libA.so ... /opt/hdf5/libhdf5.so
 # (2) gcc -o B ./libA.so
 #
-# Dans ce 'gcc' va cherche la version de hdf5 qui est dans
-# /usr/lib64. Pour éviter cela, il faut faire:
+# Dans ce 'gcc', il cherchera la version de hdf5 qui est dans
+# /usr/lib64. Pour éviter cela, il faut faire :
 #
 #  gcc -o B -Wl,-rpath,/otp/hdf5 ./libA.so
 #
@@ -373,13 +349,13 @@ endfunction()
 # ----------------------------------------------------------------------------
 # Macro pour enregistrer une cible qui est une bibliothèque.
 #
-# Cela permet de positionner aussi les RPATH et le préfix d'installation.
-# La cible est ajoutée à la variable ARCANE_LIBRARIES qui permettra donc
-# de connaitre l'ensemble des cibles de type bibliothèque définies
+# Cela permet également de positionner les RPATH et le préfixe d'installation.
+# La cible est ajoutée à la variable ARCANE_LIBRARIES, ce qui permettra donc
+# de connaître l'ensemble des cibles de type bibliothèque définies
 # dans Arcane.
 #
 # La cible est par défaut ajoutée à la cible interface 'arcane_full'.
-# sauf si un l'argument OPTIONAL est spécifié. Par exemple:
+# sauf si l'argument OPTIONAL est spécifié. Par exemple :
 #   arcane_register_library(toto)
 #   arcane_register_library(toto OPTIONAL)
 macro(arcane_register_library lib_name)
@@ -401,13 +377,13 @@ macro(arcane_register_library lib_name)
 endmacro()
 
 # ----------------------------------------------------------------------------
-# Fonction pour créér l'exécutable de test d'un composant 'Arcane'
+# Fonction pour créer l'exécutable de test d'un composant 'Arcane'
 #
 # arcane_add_component_test_executable(component_name
 #   FILES ...
 # )
 #
-# Par exemple:
+# Par exemple :
 #
 # arcane_add_component_test_executable(utils
 #   FILES Test1.cc Test2.cc
@@ -424,7 +400,7 @@ function(arcane_add_component_test_executable component_name)
   add_executable(${_EXE_NAME} ${ARGS_FILES})
 
   # Génère les exécutables dans le répertoire 'lib' du projet.
-  # Cela permet sous windows de trouver automatiquement les dll des composantes
+  # Cela permet sous Windows de trouver automatiquement les DLL des composantes
 
   set(_exepath ${CMAKE_BINARY_DIR}/lib)
   if (WIN32)

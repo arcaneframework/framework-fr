@@ -1,4 +1,4 @@
-set(ARCANE_SOURCES
+﻿set(ARCANE_SOURCES
   ArcaneBasicVerifierService.cc
   ArcaneCeaVerifierModule.cc
   ArcaneStdRegisterer.cc
@@ -56,6 +56,8 @@ set(ARCANE_SOURCES
   ProfilingInfo.cc
   ProfilingInfo.h
   MasterModule.cc
+  MeshCutService.cc
+  MeshSectionService.cc
   UnitTestModule.cc
   ArcaneStdRegisterer.h
   TextReader.h
@@ -155,4 +157,6 @@ set(AXL_FILES
   SplitSDMeshPartitioner
   KdiPostProcessor
   VtkPolyhedralMeshIO
+  MeshCut
+  MeshSection
   )

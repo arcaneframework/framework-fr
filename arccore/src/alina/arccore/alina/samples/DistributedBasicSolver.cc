@@ -7,20 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include <iostream>
-#include <vector>
-#include <string>
-
-#include <boost/program_options.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
@@ -33,14 +27,15 @@
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
 
-#include "arcane/utils/Exception.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/launcher/ArcaneLauncher.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/IProfilingService.h"
+#include "arccore/common/internal/ProgramOptions.h"
+
+#include "arccore/trace/ITraceMng.h"
 
 #include "AlinaSamplesCommon.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
 
 using namespace Arcane;
 
@@ -273,8 +268,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   tm->info() << "World size: " << comm.size;
 
-  // Read configuration from command line
-  namespace po = boost::program_options;
+  // Lire la configuration à partir de la ligne de commande
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   auto default_partitioner_type = Alina::eMatrixPartitionerType::merge;
@@ -282,28 +277,28 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   default_partitioner_type = Alina::eMatrixPartitionerType::parmetis;
 #endif
 
-  desc.add_options()("help,h", "show help")("matrix,A",
+  desc.add_options()("help,h", "affiche l'aide")("matrix,A",
                                             po::value<std::string>(),
-                                            "System matrix in the MatrixMarket format. "
-                                            "When not specified, a Poisson problem in 3D unit cube is assembled. ");
+                                            "Matrice système au format MatrixMarket. "
+                                            "Si non spécifié, un problème de Poisson dans un cube unitaire 3D est assemblé. ");
   desc.add_options()("partitioner,r",
                      po::value<Alina::eMatrixPartitionerType>()->default_value(
                      default_partitioner_type),
-                     "Repartition the system matrix");
+                     "Répartition de la matrice système");
   desc.add_options()("size,n",
                      po::value<ptrdiff_t>()->default_value(32),
-                     "domain size");
+                     "taille du domaine");
   desc.add_options()("prm-file,P", po::value<std::string>(),
-                     "Parameter file in json format. ");
+                     "Fichier de paramètres au format json. ");
   desc.add_options()("prm,p",
                      po::value<std::vector<std::string>>()->multitoken(),
-                     "Parameters specified as name=value pairs. "
-                     "May be provided multiple times. Examples:\n"
+                     "Paramètres spécifiés sous forme de paires nom=valeur. "
+                     "Peut être fourni plusieurs fois. Exemples :\n"
                      "  -p solver.tol=1e-3\n"
                      "  -p precond.coarse_enough=300");
   desc.add_options()("test-rebuild",
                      po::bool_switch()->default_value(false),
-                     "When specified, try to rebuild the solver before solving. ");
+                     "Lorsqu'il est spécifié, tente de reconstruire le solveur avant de résoudre. ");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -340,7 +335,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   prof.tic("assemble");
   Int64 matrix_size = vm["size"].as<ptrdiff_t>();
-  tm->info() << "Matrix size=" << matrix_size;
+  tm->info() << "Taille de la matrice=" << matrix_size;
   n = assemble_poisson3d(comm, matrix_size, 1, ptr, col, val, rhs);
   prof.toc("assemble");
 

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -21,8 +21,6 @@
 #include <string>
 #include <complex>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/ValueTypeComplex.h"
 #include "arccore/alina/Adapters.h"
@@ -34,10 +32,10 @@
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 using namespace Arcane;
 using namespace Arcane::Alina;
-
-namespace math = Alina::math;
 
 //---------------------------------------------------------------------------
 ptrdiff_t
@@ -159,22 +157,22 @@ int main(int argc, char* argv[])
   Alina::mpi_communicator comm(MPI_COMM_WORLD);
 
   if (comm.rank == 0)
-    std::cout << "World size: " << comm.size << std::endl;
+    std::cout << "Taille du monde: " << comm.size << std::endl;
 
-  // Read configuration from command line
-  namespace po = boost::program_options;
+  // Lit la configuration depuis la ligne de commande
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
+  desc.add_options()("help,h", "afficher l'aide")(
   "size,n",
   po::value<ptrdiff_t>()->default_value(128),
-  "domain size")("prm-file,P",
+  "taille du domaine")("prm-file,P",
                  po::value<std::string>(),
-                 "Parameter file in json format. ")(
+                 "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples:\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300");
 

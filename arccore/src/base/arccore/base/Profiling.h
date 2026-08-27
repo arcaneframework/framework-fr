@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Profiling.h                                                 (C) 2000-2025 */
+/* Profiling.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Classes pour gérer le profilage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@ class AcceleratorStatInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe permettant de récupérer le temps passé entre l'appel au
  * constructeur et au destructeur.
@@ -47,6 +48,7 @@ class ARCCORE_BASE_EXPORT ScopedStatLoop
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Statistiques d'exécution des boucles.
  */
@@ -74,7 +76,7 @@ class ARCCORE_BASE_EXPORT ForLoopStatInfoList
   ForLoopStatInfoListImpl* m_p = nullptr;
 };
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,6 +86,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe pour gérer le profiling d'une seule exécution d'une boucle.
  */
@@ -108,10 +111,10 @@ class ARCCORE_BASE_EXPORT ForLoopOneExecStat
   Int64 nbChunk() const { return m_nb_chunk; }
 
   /*!
-   * \brief Temps d'exécution (en nanoseconde).
+   * \brief Temps d'exécution (en nanosecondes).
    *
    * La valeur retournée n'est valide que si setBeginTime() et setEndTime()
-   * ont été appelés avant.
+   * ont été appelés précédemment.
    */
   Int64 execTime() const { return m_end_time - m_begin_time; }
 
@@ -136,6 +139,7 @@ class ARCCORE_BASE_EXPORT ForLoopOneExecStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Gestionnaire pour le profiling.
  *
@@ -150,11 +154,12 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
  public:
 
   /*!
-   * TODO: rendre obsolète. Utiliser à la place:
-   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+   * TODO: Déprécier. Utiliser
+   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance()
+   * à la place.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: Use _threadLocalForLoopInstance() instead")
-  static Impl::ForLoopStatInfoList* threadLocalInstance();
+  static Arcane::Impl::ForLoopStatInfoList* threadLocalInstance();
 
   /*!
    * \brief Positionne le niveau de profilage.
@@ -178,7 +183,7 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    *
    * Cette méthode ne doit pas être appelée s'il y a des boucles en cours d'exécution.
    */
-  static void visitLoopStat(const std::function<void(const Impl::ForLoopStatInfoList&)>& f);
+  static void visitLoopStat(const std::function<void(const Arcane::Impl::ForLoopStatInfoList&)>& f);
 
   /*!
    * \brief Visite la liste des statistiques sur accélérateur
@@ -188,9 +193,9 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    *
    * Cette méthode ne doit pas être appelée lorsque le profiling est actif.
    */
-  static void visitAcceleratorStat(const std::function<void(const Impl::AcceleratorStatInfoList&)>& f);
+  static void visitAcceleratorStat(const std::function<void(const Arcane::Impl::AcceleratorStatInfoList&)>& f);
 
-  static const Impl::ForLoopCumulativeStat& globalLoopStat();
+  static const Arcane::Impl::ForLoopCumulativeStat& globalLoopStat();
 
  public:
 
@@ -200,13 +205,13 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    * \internal.
    * Instance locale par thread du gestionnaire des statistiques de boucle
    */
-  static Impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+  static Arcane::Impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
 
   /*!
    * \internal.
    * Instance locale par thread du gestionnaire des statistiques pour accélérateur
    */
-  static Impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
+  static Arcane::Impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
 
  private:
 

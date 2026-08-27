@@ -1,4 +1,4 @@
-set(ARCANE_SOURCES
+﻿set(ARCANE_SOURCES
   ApplicationInfo.cc
   ApplicationInfo.h
   ArcaneCxx20.h
@@ -58,7 +58,6 @@ set(ARCANE_SOURCES
   HashAlgorithm.cc
   HashTable.cc
   HashTable.h
-  HPReal.cc
   HPReal.h
   InvalidArgumentException.cc
   InvalidArgumentException.h
@@ -91,6 +90,8 @@ set(ARCANE_SOURCES
   NumArrayUtils.cc
   NumericTraits.h
   NumMatrix.h
+  NumMatrixDataView.h
+  NumMatrix.cc
   NumVector.h
   Observable.h
   Observer.h
@@ -109,14 +110,12 @@ set(ARCANE_SOURCES
   Ptr.cc
   Ptr.h
   Ref.h
-  Real2.cc
   Real2.h
-  Real2x2.cc
   Real2x2.h
-  Real3.cc
   Real3.h
-  Real3x3.cc
+  Real3.cc
   Real3x3.h
+  Real3x3.cc
   SignalException.cc
   SignalException.h
   Simd.cc

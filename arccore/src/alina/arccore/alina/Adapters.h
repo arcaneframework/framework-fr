@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -24,19 +24,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <type_traits>
-#include <vector>
-#include <tuple>
-
-#include <boost/iterator/permutation_iterator.hpp>
-
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/MatrixOperationsImpl.h"
 #include "arccore/alina/CuthillMcKeeReorderer.h"
 
-#include <span>
+#include <type_traits>
+#include <vector>
+#include <tuple>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,7 +41,7 @@ namespace Arcane::Alina::backend
 {
 
 //---------------------------------------------------------------------------
-// Specialization of matrix interface
+// Spécialisation de l'interface de matrice
 //---------------------------------------------------------------------------
 template <typename N, typename PRng, typename CRng, typename VRng>
 struct value_type<std::tuple<N, PRng, CRng, VRng>>
@@ -239,7 +235,7 @@ struct block_matrix_adapter
 
   size_t nonzeros() const
   {
-    // Just an estimate:
+    // Juste une estimation :
     return backend::nonzeros(A) / (BlockSize * BlockSize);
   }
 
@@ -278,8 +274,8 @@ struct block_matrix_adapter
       if (done)
         return;
 
-      // While we are gathering the current value,
-      // base iteratirs are advanced to the next block-column.
+      // Pendant que nous rassemblons la valeur actuelle,
+      // les itérateurs de base sont avancés vers la colonne-bloc suivante.
       cur_val = math::zero<val_type>();
       col_type end = (cur_col + 1) * BlockSize;
       for (int i = 0; i < BlockSize; ++i) {
@@ -302,8 +298,8 @@ struct block_matrix_adapter
 
     row_iterator& operator++()
     {
-      // Base iterators are already at the next block-column.
-      // We just need to gather the current column and value.
+      // Les itérateurs de base sont déjà à la colonne-bloc suivante.
+      // Nous devons juste rassembler la colonne et la valeur actuelles.
       done = true;
 
       col_type end = (cur_col + 1) * BlockSize;
@@ -354,7 +350,7 @@ struct block_matrix_adapter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Convert scalar-valued matrix to a block-valued one.
+/// Convertit une matrice à valeurs scalaires en une matrice à valeurs de blocs.
 template <class BlockType, class Matrix>
 block_matrix_adapter<Matrix, BlockType> block_matrix(const Matrix& A)
 {
@@ -537,9 +533,9 @@ auto complex_range(Range& rng) -> Span<DataType>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Generates matrix rows as needed with help of user-provided functor.
+ * \brief Génère les lignes de matrice au besoin à l'aide d'un fonctionnel fourni par l'utilisateur.
  *
- * The generated rows are not stored anywhere.
+ * Les lignes générées ne sont stockées nulle part.
  */
 template <class RowBuilder>
 struct matrix_builder
@@ -608,7 +604,7 @@ struct matrix_builder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Convenience function returning an instance of matrix_builder<RowBuilder>
+/// Fonction de commodité retournant une instance de matrix_builder<RowBuilder>
 template <class RowBuilder>
 matrix_builder<RowBuilder> make_matrix(const RowBuilder& row_builder)
 {
@@ -689,6 +685,144 @@ struct reordered_matrix
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Itérateur d'accès aléatoire sur une séquence vue à travers une permutation.
+ *
+ * L'élément à l'offset \a i de la séquence sous-jacente \c base est
+ * \c base[perm[i]], où \c perm est un pointeur vers une table de permutation de
+ * \c ptrdiff_t. Ceci est un remplacement interne pour
+ * 'boost::permutation_iterator'.
+ */
+template <class BaseIterator>
+class permutation_iterator
+{
+ public:
+
+  typedef std::random_access_iterator_tag iterator_category;
+  typedef typename std::iterator_traits<BaseIterator>::value_type value_type;
+  typedef typename std::iterator_traits<BaseIterator>::difference_type difference_type;
+  typedef typename std::iterator_traits<BaseIterator>::reference reference;
+  typedef value_type* pointer;
+
+  permutation_iterator()
+  : m_base()
+  , m_perm(nullptr)
+  {}
+
+  permutation_iterator(BaseIterator base, const ptrdiff_t* perm)
+  : m_base(base)
+  , m_perm(perm)
+  {}
+
+  reference operator*() const
+  {
+    return m_base[*m_perm];
+  }
+
+  reference operator[](difference_type i) const
+  {
+    return m_base[m_perm[i]];
+  }
+
+  permutation_iterator& operator++()
+  {
+    ++m_perm;
+    return *this;
+  }
+
+  permutation_iterator operator++(int)
+  {
+    permutation_iterator tmp(*this);
+    ++m_perm;
+    return tmp;
+  }
+
+  permutation_iterator& operator--()
+  {
+    --m_perm;
+    return *this;
+  }
+
+  permutation_iterator operator--(int)
+  {
+    permutation_iterator tmp(*this);
+    --m_perm;
+    return tmp;
+  }
+
+  permutation_iterator& operator+=(difference_type n)
+  {
+    m_perm += n;
+    return *this;
+  }
+
+  permutation_iterator& operator-=(difference_type n)
+  {
+    m_perm -= n;
+    return *this;
+  }
+
+  friend permutation_iterator operator+(permutation_iterator it, difference_type n)
+  {
+    it += n;
+    return it;
+  }
+
+  friend permutation_iterator operator+(difference_type n, permutation_iterator it)
+  {
+    it += n;
+    return it;
+  }
+
+  friend permutation_iterator operator-(permutation_iterator it, difference_type n)
+  {
+    it -= n;
+    return it;
+  }
+
+  friend difference_type operator-(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm - b.m_perm;
+  }
+
+  friend bool operator==(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm == b.m_perm;
+  }
+
+  friend bool operator!=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm != b.m_perm;
+  }
+
+  friend bool operator<(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm < b.m_perm;
+  }
+
+  friend bool operator<=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm <= b.m_perm;
+  }
+
+  friend bool operator>(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm > b.m_perm;
+  }
+
+  friend bool operator>=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm >= b.m_perm;
+  }
+
+ private:
+
+  BaseIterator m_base;
+  const ptrdiff_t* m_perm;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <class Vector>
 struct reordered_vector
@@ -714,28 +848,28 @@ struct reordered_vector
     return x[perm[i]];
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::iterator>
   begin()
   {
-    return boost::make_permutation_iterator(std::begin(x), perm);
+    return permutation_iterator<typename std::decay_t<Vector>::iterator>(std::begin(x), perm);
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::const_iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::const_iterator>
   begin() const
   {
-    return boost::make_permutation_iterator(std::begin(x), perm);
+    return permutation_iterator<typename std::decay_t<Vector>::const_iterator>(std::begin(x), perm);
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::iterator>
   end()
   {
-    return boost::make_permutation_iterator(std::end(x), perm + size());
+    return permutation_iterator<typename std::decay_t<Vector>::iterator>(std::begin(x), perm + size());
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::const_iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::const_iterator>
   end() const
   {
-    return boost::make_permutation_iterator(std::end(x), perm + size());
+    return permutation_iterator<typename std::decay_t<Vector>::const_iterator>(std::begin(x), perm + size());
   }
 };
 

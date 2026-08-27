@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.cc                                             (C) 2000-2025 */
+/* RunQueueImpl.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Gestion d'une file d'exécution sur accélérateur.                          */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include "arccore/common/accelerator/KernelLaunchArgs.h"
 
 #include <unordered_set>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -260,6 +261,7 @@ _internalCreateOrGetRunCommandImpl()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Libère les commandes en cours d'exécution.
  *
@@ -301,6 +303,7 @@ _internalFreeRunningCommands()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Remet la commande dans le pool si possible.
  *
@@ -342,6 +345,7 @@ _putInCommandPool(RunCommandImpl* p)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Bloque jusqu'à ce que toutes les commandes soient terminées.
  */
@@ -354,6 +358,7 @@ _internalBarrier()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Réinitialise l'implémentation
  *

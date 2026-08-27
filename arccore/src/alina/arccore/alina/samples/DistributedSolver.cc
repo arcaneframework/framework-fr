@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -24,7 +24,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
@@ -47,6 +46,7 @@
 
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+#include "arccore/common/internal/ProgramOptions.h"
 
 #ifndef ARCCORE_ALINA_BLOCK_SIZES
 #  define ARCCORE_ALINA_BLOCK_SIZES (3)(4)
@@ -309,7 +309,7 @@ void solve_block(Alina::mpi_communicator comm,
 
   if (prm.get("precond.allow_rebuild", false)) {
     if (comm.rank == 0) {
-      std::cout << "Rebuilding the preconditioner..." << std::endl;
+      std::cout << "Reconstruction du préconditionneur..." << std::endl;
     }
 
     {
@@ -330,8 +330,8 @@ void solve_block(Alina::mpi_communicator comm,
   prof.toc("solve");
 
   if (comm.rank == 0) {
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl
               << prof << std::endl;
   }
 }
@@ -355,7 +355,7 @@ void solve_scalar(Alina::mpi_communicator comm,
   using Backend = Alina::backend::cuda<double>;
 #endif
 
-  std::cout << "Using scalar solve ptr_size=" << sizeof(ptrdiff_t)
+  std::cout << "Utilisation de la résolution scalaire ptr_size=" << sizeof(ptrdiff_t)
             << " ptr_type_size=" << sizeof(Backend::ptr_type)
             << " col_type_size=" << sizeof(Backend::col_type)
             << " value_type_size=" << sizeof(Backend::value_type)
@@ -401,13 +401,13 @@ void solve_scalar(Alina::mpi_communicator comm,
   }
 
   if (comm.rank == 0) {
-    std::cout << "SolverInfo:\n";
+    std::cout << "Infos Solveur:\n";
     std::cout << *solve << std::endl;
   }
 
   if (prm.get("precond.allow_rebuild", false)) {
     if (comm.rank == 0) {
-      std::cout << "Rebuilding the preconditioner..." << std::endl;
+      std::cout << "Reconstruction du préconditionneur..." << std::endl;
     }
 
     {
@@ -432,8 +432,8 @@ void solve_scalar(Alina::mpi_communicator comm,
   prof.toc("solve");
 
   if (comm.rank == 0) {
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl
               << prof << std::endl;
   }
 }
@@ -450,34 +450,34 @@ int main(int argc, char* argv[])
     std::cout << "World size: " << comm.size << std::endl;
 
   // Read configuration from command line
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")("matrix,A",
                                             po::value<std::string>(),
-                                            "System matrix in the MatrixMarket format. "
-                                            "When not specified, a Poisson problem in 3D unit cube is assembled. ")(
+                                            "Matrice système au format MatrixMarket. "
+                                            "Lorsqu'elle n'est pas spécifiée, un problème de Poisson dans un cube unitaire 3D est assemblé. ")(
   "rhs,f",
   po::value<std::string>()->default_value(""),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
+  "Le vecteur RHS au format MatrixMarket. "
+  "Lorsqu'il est omis, un vecteur de uns est utilisé par défaut. "
+  "Il doit être fourni uniquement avec une matrice système. ")(
   "Ap",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Pre-partitioned matrix (single file per MPI process)")(
+  "Matrice pré-partitionnée (un fichier par processus MPI)")(
   "fp",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Pre-partitioned RHS (single file per MPI process)")(
+  "RHS pré-partitionné (un fichier par processus MPI)")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsqu'il est spécifié, traitez les fichiers d'entrée comme binaires plutôt qu'en format MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "block-size,b",
   po::value<int>()->default_value(1),
-  "The block size of the system matrix. "
-  "When specified, the system matrix is assumed to have block-wise structure. "
-  "This usually is the case for problems in elasticity, structural mechanics, "
-  "for coupled systems of PDE (such as Navier-Stokes equations), etc. ")(
+  "La taille de bloc de la matrice système. "
+  "Lorsqu'elle est spécifiée, la matrice système est supposée avoir une structure par blocs. "
+  "C'est généralement le cas pour les problèmes en élasticité, en mécanique des structures, "
+  "pour les systèmes couplés d'EDP (tels que les équations de Navier-Stokes), etc. ")(
   "partitioner,r",
   po::value<Alina::eMatrixPartitionerType>()->default_value(
 #if defined(ARCCORE_ALINA_HAVE_PARMETIS)
@@ -486,21 +486,21 @@ int main(int argc, char* argv[])
   Alina::eMatrixPartitionerType::merge
 #endif
   ),
-  "Repartition the system matrix")(
+  "Répartition de la matrice système")(
   "size,n",
   po::value<ptrdiff_t>()->default_value(128),
-  "domain size")("prm-file,P",
+  "taille du domaine")("prm-file,P",
                  po::value<std::string>(),
-                 "Parameter file in json format. ")(
+                 "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")(
   "test-rebuild",
   po::bool_switch()->default_value(false),
-  "When specified, try to rebuild the solver before solving. ");
+  "Lorsqu'il est spécifié, essayez de reconstruire le solveur avant de résoudre. ");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -585,7 +585,7 @@ int main(int argc, char* argv[])
         std::tie(rows, cols) = Alina::IO::mm_reader(fparts[comm.rank])(rhs);
       }
 
-      comm.check(rhs.size() == static_cast<size_t>(n), "Wrong RHS size");
+      comm.check(rhs.size() == static_cast<size_t>(n), "Taille RHS incorrecte");
     }
     else {
       rhs.resize(n, 1);
@@ -622,6 +622,6 @@ int main(int argc, char* argv[])
     break;
   default:
     if (comm.rank == 0)
-      std::cout << "Unsupported block size!" << std::endl;
+      std::cout << "Taille de bloc non prise en charge !" << std::endl;
   }
 }

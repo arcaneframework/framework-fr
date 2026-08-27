@@ -38,6 +38,9 @@ class CommandLineArguments;
  *
  * Une seule instance de cette classe doit exister à un moment donné.
  *
+ * Cette classe est interne à %Arcane. Si vous souhaitez avoir une exécution
+ * autonome, utilisez ArcaneLauncher à la place.
+ *
  * Les instances de cette classe utilisent la valeur de
  * ArcaneMain::defaultApplicationInfo() pour s'initialiser et notamment
  * récupérer les arguments de la ligne de commande.
@@ -50,6 +53,7 @@ class CommandLineArguments;
 class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 {
   class Impl;
+
  public:
 
   ArcaneSimpleExecutor();
@@ -64,6 +68,8 @@ class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 
   int initialize();
   ISubDomain* createSubDomain(const String& case_file_name);
+  ISubDomain* createSubDomain(const String& case_file_name,
+                              Span<const std::byte> file_content);
   int runCode(IFunctor* f);
 
  private:
@@ -84,4 +90,4 @@ class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

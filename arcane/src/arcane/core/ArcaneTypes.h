@@ -38,11 +38,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ArcaneTypes.h
  *
  * \brief Déclarations des types généraux de Arcane.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -87,6 +89,7 @@ class ServiceInstanceRef;
  * \brief Référence à l'interface 'ISingletonServiceInstance'
  */
 typedef Ref<ISingletonServiceInstance> SingletonServiceInstanceRef;
+
 /*!
  * \brief Types interne à Arcane.
  *
@@ -95,15 +98,15 @@ typedef Ref<ISingletonServiceInstance> SingletonServiceInstanceRef;
  */
 namespace Internal
 {
-class IServiceFactory2;
-class AbstractServiceFactory;
-template<typename InterfaceType>
-class IServiceFactory2T;
-class ISingletonServiceFactory;
-class ServiceInfo;
-template<typename ServiceType>
-class ServiceAllInterfaceRegisterer;
-}
+  class IServiceFactory2;
+  class AbstractServiceFactory;
+  template <typename InterfaceType>
+  class IServiceFactory2T;
+  class ISingletonServiceFactory;
+  class ServiceInfo;
+  template <typename ServiceType>
+  class ServiceAllInterfaceRegisterer;
+} // namespace Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -128,6 +131,7 @@ class IMeshBase;
 class IMeshPartitionConstraint;
 class IUserDataList;
 class IMeshBuilder;
+class IMeshSection;
 class MeshHandle;
 class MeshHandleOrMesh;
 class MeshBuildInfo;
@@ -201,7 +205,7 @@ enum class eVariableComparerCompareMode;
 enum class eVariableComparerComputeDifferenceMethod;
 enum class eMeshStructure;
 enum class eMeshAMRKind;
-using  TimeLoopEntryPointInfoCollection = Collection<TimeLoopEntryPointInfo>;
+using TimeLoopEntryPointInfoCollection = Collection<TimeLoopEntryPointInfo>;
 using TimeLoopSingletonServiceInfoCollection = Collection<TimeLoopSingletonServiceInfo>;
 
 /*---------------------------------------------------------------------------*/
@@ -238,11 +242,11 @@ itemKindName(eItemKind kind);
 
 //! Opérateur de sortie sur un flot
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<< (std::ostream& ostr,eItemKind item_kind);
+operator<<(std::ostream& ostr, eItemKind item_kind);
 
 //! Opérateur d'entrée depuis un flot
 extern "C++" ARCANE_CORE_EXPORT std::istream&
-operator>> (std::istream& istr,eItemKind& item_kind);
+operator>>(std::istream& istr, eItemKind& item_kind);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -252,16 +256,16 @@ operator>> (std::istream& istr,eItemKind& item_kind);
 */
 static const Integer NULL_ITEM_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à une entité nulle
+//! Numéro correspondant à une entité locale nulle
 static const Integer NULL_ITEM_LOCAL_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à une entité nulle
+//! Numéro correspondant à une entité unique nulle
 static const Int64 NULL_ITEM_UNIQUE_ID = static_cast<Int64>(-1);
 
 //! Numéro correspondant à un sous-domaine nul
 static const Integer NULL_SUB_DOMAIN_ID = static_cast<Integer>(-1);
 
-//! Numéro correspondant à un rang nul (pour l'échange de message)
+//! Numéro correspondant à un rang nul (pour l'échange de messages)
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 //! Numéro du type d'entité inconnu ou null
@@ -400,6 +404,7 @@ dualItemKind(Integer type);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Phase d'une action temporelle.
  */
@@ -413,11 +418,11 @@ static const Integer NB_TIME_PHASE = 3;
 
 //! Opérateur de sortie sur un flot
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<< (std::ostream& ostr,eTimePhase time_phase);
+operator<<(std::ostream& ostr, eTimePhase time_phase);
 
 //! Opérateur d'entrée depuis un flot
 extern "C++" ARCANE_CORE_EXPORT std::istream&
-operator>> (std::istream& istr,eTimePhase& time_phase);
+operator>>(std::istream& istr, eTimePhase& time_phase);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -437,57 +442,57 @@ enum eMeshDirection
 
 //! Opérateur de sortie sur un flot
 extern "C++" ARCANE_CORE_EXPORT std::ostream&
-operator<<(std::ostream& o,eMeshDirection md);
+operator<<(std::ostream& o, eMeshDirection md);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ISubDomain;
 
-template<typename T> class SimplePropertyT;
+template <typename T> class SimplePropertyT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType>
+template <typename DataType>
 class IScalarDataT;
-template<typename DataType>
+template <typename DataType>
 class IArrayDataT;
-template<typename DataType>
+template <typename DataType>
 class IArray2DataT;
-template<typename DataType>
+template <typename DataType>
 class IMultiArray2DataT;
 
-template<typename DataType>
+template <typename DataType>
 class VariableScalarT;
-template<typename DataType>
+template <typename DataType>
 class VariableArrayT;
-template<typename DataType>
+template <typename DataType>
 class Array2VariableT;
 
-template<typename DataType>
+template <typename DataType>
 class VariableRefScalarT;
-template<typename DataType>
+template <typename DataType>
 class VariableRefArrayT;
-template<typename DataType>
+template <typename DataType>
 class VariableRefArray2T;
 // TODO: Ce type n'est plus utilisé. A supprimer fin 2025
-template<typename DataType>
+template <typename DataType>
 class MultiArray2VariableRefT;
 
-template<typename DataType>
+template <typename DataType>
 class ItemVariableScalarRefT;
-template<typename ItemType,class DataType>
+template <typename ItemType, class DataType>
 class MeshVariableScalarRefT;
-template<typename ItemType,class DataType>
+template <typename ItemType, class DataType>
 class MeshVariableArrayRefT;
-template<typename DataType>
+template <typename DataType>
 class ItemPartialVariableScalarRefT;
-template<typename ItemType,class DataType>
+template <typename ItemType, class DataType>
 class MeshPartialVariableScalarRefT;
-template<typename ItemTypeT, typename DataTypeT>
+template <typename ItemTypeT, typename DataTypeT>
 class SharedMeshVariableScalarRefT;
-template<typename DataTypeT>
+template <typename DataTypeT>
 class SharedItemVariableScalarRefT;
 
 /*---------------------------------------------------------------------------*/
@@ -497,6 +502,10 @@ template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT;
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT;
+template <typename ItemType, typename DataType_, int Row, int Column, typename Extents>
+class MeshMatrixMDVariableRefT;
+template <typename ItemType, typename DataType_, int Size, typename Extents>
+class MeshVectorMDVariableRefT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -625,8 +634,8 @@ class IDataStorageFactory;
 class DataStorageBuildInfo;
 class CaseDatasetSource;
 class IDataInternal;
-template<typename DataType> class IArrayDataInternalT;
-template<typename DataType> class IArray2DataInternalT;
+template <typename DataType> class IArrayDataInternalT;
+template <typename DataType> class IArray2DataInternalT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -646,23 +655,42 @@ typedef VariableRef* (*VariableFactoryVariableRefCreateFunc)(const VariableBuild
 
 namespace Accelerator
 {
-class IAcceleratorMng;
-class AcceleratorRuntimeInitialisationInfo;
-}
-using Accelerator::IAcceleratorMng;
+  class IAcceleratorMng;
+  class AcceleratorRuntimeInitialisationInfo;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableInView;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableOutView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableInView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableOutView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableInView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableOutView;
+} // namespace Accelerator
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
+using Accelerator::IAcceleratorMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 // Déclarations de types utilisés pour les classes 'friend'.
 namespace mesh
 {
-class DynamicMesh;
-class ItemFamily;
-class ItemSharedInfoWithType;
-class DynamicMeshKindInfos;
-class ItemDataList;
-}
+  class DynamicMesh;
+  class ItemFamily;
+  class ItemSharedInfoWithType;
+  class DynamicMeshKindInfos;
+  class ItemDataList;
+} // namespace mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -692,7 +720,7 @@ namespace Arcane
 typedef Collection<Ref<ICaseFunction>> CaseFunctionCollection;
 /*! \brief Tableau de fonctions du jeu de données. */
 typedef List<Ref<ICaseFunction>> CaseFunctionList;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* InterfaceImpl.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des interfaces.                                            */
+/* Implémentation des interfaces.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
@@ -137,6 +137,7 @@
 #include "arcane/core/MeshEvents.h"
 #include "arcane/core/IExternalPlugin.h"
 #include "arcane/core/IMeshSubdivider.h"
+#include "arcane/core/IMeshSection.h"
 
 #include "arcane/core/IMeshInitialAllocator.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
@@ -194,18 +195,18 @@ arcaneNamespaceURI()
 /*---------------------------------------------------------------------------*/
 
 void IDeflateService::
-compress(Span<const Byte> values,ByteArray& compressed_values)
+compress(Span<const Byte> values, ByteArray& compressed_values)
 {
-  return compress(values.smallView(),compressed_values);
+  return compress(values.smallView(), compressed_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void IDeflateService::
-decompress(Span<const Byte> compressed_values,Span<Byte> values)
+decompress(Span<const Byte> compressed_values, Span<Byte> values)
 {
-  return decompress(compressed_values.smallView(),values.smallView());
+  return decompress(compressed_values.smallView(), values.smallView());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -223,18 +224,18 @@ primaryMesh()
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* IItemFamilyModifier::
-allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info)
+allocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info)
 {
-  return ItemCompatibility::_itemInternal(allocOne(uid,type->itemTypeId(),mesh_info));
+  return ItemCompatibility::_itemInternal(allocOne(uid, type->itemTypeId(), mesh_info));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* IItemFamilyModifier::
-findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc)
+findOrAllocOne(Int64 uid, ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc)
 {
-  return ItemCompatibility::_itemInternal(findOrAllocOne(uid,type->itemTypeId(),mesh_info,is_alloc));
+  return ItemCompatibility::_itemInternal(findOrAllocOne(uid, type->itemTypeId(), mesh_info, is_alloc));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -274,26 +275,25 @@ void IPostProcessorWriter::
 setMesh([[maybe_unused]] IMesh* mesh)
 {
   // Utiliser variable d'environnement.
-  if (platform::getEnvironmentVariable("ARCANE_ALLOW_POSTPROCESSOR_SETMESH")=="1")
+  if (platform::getEnvironmentVariable("ARCANE_ALLOW_POSTPROCESSOR_SETMESH") == "1")
     return;
-  ARCANE_FATAL("This call is deprecated and does not do anything."
-               " You can temporarely disable this exception if you set the environment"
-               " variable ARCANE_ALLOW_POSTPROCESSOR_SETMESH to '1'");
+  ARCANE_FATAL("Cet appel est déprécié et ne fait rien."
+               " Vous pouvez désactiver temporairement cette exception si vous définissez la variable"
+               " d'environnement ARCANE_ALLOW_POSTPROCESSOR_SETMESH à '1'");
 }
 
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void IMeshModifier::
 addCells(const MeshModifierAddCellsArgs& args)
 {
-  addCells(args.nbCell(),args.cellInfos(),args.cellLocalIds());
+  addCells(args.nbCell(), args.cellInfos(), args.cellLocalIds());
 }
 
 void IMeshModifier::
 addFaces(const MeshModifierAddFacesArgs& args)
 {
-  addFaces(args.nbFace(),args.faceInfos(),args.faceLocalIds());
+  addFaces(args.nbFace(), args.faceInfos(), args.faceLocalIds());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -302,25 +302,25 @@ addFaces(const MeshModifierAddFacesArgs& args)
 void IVariable::
 synchronize(Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() avec des identifiants locaux spécifiques");
 }
 
 void IItemFamily::
 synchronize(VariableCollection, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() avec des identifiants locaux spécifiques");
 }
 
 void IVariableSynchronizer::
 synchronize(IVariable*, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() avec des identifiants locaux spécifiques");
 }
 
 void IVariableSynchronizer::
 synchronize(VariableCollection, Int32ConstArrayView)
 {
-  ARCANE_THROW(NotImplementedException,"synchronize() with specific local ids");
+  ARCANE_THROW(NotImplementedException, "synchronize() avec des identifiants locaux spécifiques");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -350,7 +350,7 @@ findAdjacencyItems(const ItemGroup& group,
 void IItemFamilyTopologyModifier::
 setBackAndFrontCells(FaceLocalId, CellLocalId, CellLocalId)
 {
-  ARCANE_THROW(NotSupportedException, "only supported for FaceFamily of unstructured mesh");
+  ARCANE_THROW(NotSupportedException, "uniquement pris en charge pour FaceFamily de maillage non structuré");
 }
 
 /*---------------------------------------------------------------------------*/

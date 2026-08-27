@@ -21,6 +21,7 @@
 
 #include <atomic>
 #include <vector>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,6 +31,7 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Arguments pour une copie de certains indices entre deux zones mémoire.
  */
@@ -59,6 +61,7 @@ class ARCCORE_COMMON_EXPORT IndexedMemoryCopyArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Arguments pour une copie de certains indices vers/depuis
  * une zone mémoire multiple.
@@ -78,7 +81,7 @@ class ARCCORE_COMMON_EXPORT IndexedMultiMemoryCopyArgs
   , m_queue(run_queue)
   {}
 
-  //! Constructor pour copyFrom
+  //! Constructeur pour copyFrom
   IndexedMultiMemoryCopyArgs(SmallSpan<const Int32> indexes,
                              SmallSpan<Span<std::byte>> multi_memory,
                              Span<const std::byte> source,
@@ -101,6 +104,7 @@ class ARCCORE_COMMON_EXPORT IndexedMultiMemoryCopyArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Interface d'un copieur mémoire spécialisé pour une taille de donnée.
  */
@@ -123,6 +127,7 @@ class ARCCORE_COMMON_EXPORT ISpecificMemoryCopy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Interface d'une liste d'instances de ISpecificMemoryCopy spécialisées.
  */
@@ -140,6 +145,7 @@ class ARCCORE_COMMON_EXPORT ISpecificMemoryCopyList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Liste d'instances de ISpecificMemoryCopy spécialisées.
  *
@@ -197,7 +203,7 @@ class SpecificMemoryCopyList
 
   void checkValid()
   {
-    // Vérifie que les taille sont correctes
+    // Vérifie que les tailles sont correctes
     for (Int32 i = 0; i < NB_COPIER; ++i) {
       auto* x = m_copier[i];
       if (x && (x->datatypeSize() != i))
@@ -298,6 +304,7 @@ class SpecificMemoryCopyBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Référence sur un copieur.
  *
@@ -353,12 +360,13 @@ class SpecificMemoryCopyRef
  private:
 
   ISpecificMemoryCopy* m_specialized_copier = nullptr;
-  SpecificType<std::byte, impl::ExtentValue<DynExtent>> m_generic_copier;
+  SpecificType<std::byte, Impl::ExtentValue<DynExtent>> m_generic_copier;
   ISpecificMemoryCopy* m_used_copier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe singleton contenant l'instance à utiliser pour les copies.
  *

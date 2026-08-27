@@ -18,6 +18,7 @@
 #include "arccore/base/PlatformUtils.h"
 
 #include <charconv>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +42,7 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Retourne une vue en supprimant les caratères blancs du début.
  *
@@ -64,26 +66,13 @@ StringView _removeLeadingSpaces(StringView s, Int64 pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StringViewInputStream::
-StringViewInputStream(StringView v)
-: m_view(v)
-, m_stream(this)
-{
-  auto b = v.bytes();
-  char* begin_ptr = const_cast<char*>(reinterpret_cast<const char*>(b.data()));
-  char* end_ptr = begin_ptr + b.size();
-  setg(begin_ptr, begin_ptr, end_ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 Int32 ConvertPolicy::m_verbosity = 0;
 bool ConvertPolicy::m_use_from_chars = true;
 bool ConvertPolicy::m_use_same_convert_for_all_real = false;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Converti \a s en un double.
  *
@@ -114,6 +103,7 @@ _getDoubleValue(double& v, StringView s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Converti une chaîne de caractères en un double.
  *

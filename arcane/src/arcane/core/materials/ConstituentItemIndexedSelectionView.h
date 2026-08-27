@@ -20,10 +20,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials::Impl
+namespace Arcane::Materials::MatImpl
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Caractéristiques pour le conteneur associé à
  * ConstituentItemIndexedSelectionView.
@@ -123,6 +125,7 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe de base pour ConstituentItemIndexedSelectionView.
  */
@@ -155,6 +158,7 @@ class ARCANE_CORE_EXPORT ConstituentItemIndexedSelectionViewBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue sur un sous ensemble d'un conteneur de ConstituentItem.
  *
@@ -175,7 +179,7 @@ class ConstituentItemIndexedSelectionView
 
   using ItemVecView = ContainerView_;
   using ThatClass = ConstituentItemIndexedSelectionView;
-  using TraitsType = Impl::ConstituentItemIndexedSelectionViewTraits<ContainerView_>;
+  using TraitsType = Arcane::Materials::MatImpl::ConstituentItemIndexedSelectionViewTraits<ContainerView_>;
   using ValueType = TraitsType::ValueType;
   static constexpr bool IsSpanContainer() { return TraitsType::IsSpan(); }
 
@@ -237,6 +241,7 @@ class ConstituentItemIndexedSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Enumérateur sur les éléments d'un ConstituentItemIndexedSelectionView.
  */
@@ -288,6 +293,7 @@ class ConstituentItemIndexedSelectionEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Selection sur un ComponentCellVectorView.
  */
@@ -312,6 +318,7 @@ class ComponentCellVectorSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Selection sur un EnvCellVectorView.
  */
@@ -336,6 +343,7 @@ class EnvCellVectorSelectionView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Selection sur un MatCellVectorView.
  */

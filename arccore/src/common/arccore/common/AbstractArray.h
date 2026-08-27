@@ -72,6 +72,8 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
   //! Nom de debug (nul si aucun nom spécifié)
   String debugName() const;
 
+  void printInfos(std::ostream& o);
+
  protected:
 
   ArrayMetaData* m_md = nullptr;
@@ -157,6 +159,7 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  * \brief Classe abstraite de base d'un vecteur.
@@ -406,7 +409,7 @@ class AbstractArray
 
  protected:
 
-  // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
+  // NOTE : Ces deux champs sont utilisés pour l'affichage TTF de totalview.
   // Si on modifie leur ordre il faut mettre à jour la partie correspondante
   // dans l'afficheur totalview de Arcane.
   T* m_ptr = nullptr;
@@ -571,13 +574,6 @@ class AbstractArray
   {
     _setMPCast(m_md->_changeAllocator(options, _currentMemoryInfo(), typeSize(), _nullRunQueue()));
     _updateReferences();
-  }
-
- public:
-
-  void printInfos(std::ostream& o)
-  {
-    o << " Infos: size=" << m_md->size << " capacity=" << m_md->capacity << '\n';
   }
 
  protected:

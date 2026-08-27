@@ -94,8 +94,8 @@ PETScLibrary::PETScLibrary(std::vector<Arccore::String> const& petsc_options,
                            bool use_device_memory)
 {
 
-  // Emulate argc,argv with dynamic options
-  // (since PetscOptionsInsertString cannot insert info options)
+  // Émule argc,argv avec des options dynamiques
+  // (car PetscOptionsInsertString ne peut pas insérer d'options d'information)
   int petsc_argc = petsc_options.size() + 1;
   const char** petsc_c_options = new const char*[petsc_argc];
   petsc_c_options[0] = NULL;
@@ -107,14 +107,14 @@ PETScLibrary::PETScLibrary(std::vector<Arccore::String> const& petsc_options,
   PetscInitialize(&petsc_argc, &argv, NULL, "PETSc Initialisation");
   delete[] petsc_c_options;
 
-  // Reduce memory due to log for graphical viewer
+  // Réduit la mémoire en raison du journal pour le visualiseur graphique
   PetscLogActions(PETSC_FALSE);
   PetscLogObjects(PETSC_FALSE);
 
   m_global_want_trace = use_trace ;
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR < 3) || (PETSC_VERSION_MAJOR < 3))
   if (use_trace) {
-    alien_info([&] { cout() << "PETSc options:"; });
+    alien_info([&] { cout() << "Options PETSc:"; });
     PetscOptionsPrint(stdout);
   }
 #endif /* PETSC_VERSION */
@@ -190,7 +190,7 @@ PETScInternalLinearSolver::init(int argc, char** argv)
 
   std::vector<Arccore::String> petsc_options;
   if (m_options->traceInfo()) {
-    // See PetscInitialize for details
+    // Voir PetscInitialize pour les détails
     // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
     petsc_options.push_back("-info");
     petsc_options.push_back("-log_trace");
@@ -221,22 +221,22 @@ PETScInternalLinearSolver::init(int argc, char** argv)
                                                                      use_mem_device)) ;
   alien_info([&] {
     if(use_exec_device)
-      cout()<<"PETSc Initialisation : Exec on Device ";
+      cout()<<"PETSc Initialisation : Exécution sur Périphérique ";
     else
-      cout()<<"PETSc Initialisation : Exec on Host ";
+      cout()<<"PETSc Initialisation : Exécution sur Hôte ";
     switch(m_options->memoryType())
     {
       case PETScOptionTypes::HostMemory:
-        cout()<<"                       use Host Memory";
+        cout()<<"                       utilisation de la mémoire Hôte";
         break ;
       case PETScOptionTypes::DeviceMemory:
-        cout()<<"                       use Device Memory";
+        cout()<<"                       utilisation de la mémoire Périphérique";
         break ;
       case PETScOptionTypes::ShareMemory:
-        cout()<<"                       use Share Memory";
+        cout()<<"                       utilisation de la mémoire Partagée";
         break ;
       default:
-        cout()<<"                       use Host Memory";
+        cout()<<"                       utilisation de la mémoire Hôte";
     }
   });
 
@@ -256,14 +256,14 @@ PETScInternalLinearSolver::init()
 
   std::vector<Arccore::String> petsc_options;
   if (m_options->traceInfo()) {
-    // See PetscInitialize for details
+    // Voir PetscInitialize pour les détails
     // http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/PetscInitialize.html
     petsc_options.push_back("-info");
     petsc_options.push_back("-log_trace");
     petsc_options.push_back("petsc.log");
   }
   if (m_options->cmdLineParam().size() > 0) {
-    petsc_options.push_back(" "); // separator
+    petsc_options.push_back(" "); // séparateur
     Arccore::String command = m_options->cmdLineParam()[0];
     petsc_options.push_back(command);
   }
@@ -288,22 +288,22 @@ PETScInternalLinearSolver::init()
 
   alien_info([&] {
     if(use_exec_device)
-      cout()<<"PETSc Initialisation : Exec on Device ";
+      cout()<<"PETSc Initialisation : Exécution sur Périphérique ";
     else
-      cout()<<"PETSc Initialisation : Exec on Host ";
+      cout()<<"PETSc Initialisation : Exécution sur Hôte ";
     switch(m_options->memoryType())
     {
       case PETScOptionTypes::HostMemory:
-        cout()<<"                       use Host Memory";
+        cout()<<"                       utilisation de la mémoire Hôte";
         break ;
       case PETScOptionTypes::DeviceMemory:
-        cout()<<"                       use Device Memory";
+        cout()<<"                       utilisation de la mémoire Périphérique";
         break ;
       case PETScOptionTypes::ShareMemory:
-        cout()<<"                       use Share Memory";
+        cout()<<"                       utilisation de la mémoire Partagée";
         break ;
       default:
-        cout()<<"                       use Host Memory";
+        cout()<<"                       utilisation de la mémoire Hôte";
     }
   });
 
@@ -349,7 +349,7 @@ bool
 PETScInternalLinearSolver::solve(
     const PETScMatrix& matrix, const PETScVector& rhs, PETScVector& sol)
 {
-  // Find zero second member
+  // Trouve le deuxième membre nul
   if (_isNull(rhs))
     return _solveNullRHS(sol);
 
@@ -360,15 +360,15 @@ PETScInternalLinearSolver::solve(
   if (m_verbose == VerboseTypes::high) {
     alien_info([&] {
       cout() << "|---------------------------------------------|";
-      cout() << "| Start Linear Solver #" << m_stat.solveCount();
+      cout() << "| Démarre le solveur linéaire #" << m_stat.solveCount();
     });
   }
 
   // m_stater.startSolveMeasure();
   KSP ksp;
 
-  checkError("Solver create", KSPCreate(PETSC_COMM_WORLD, &ksp));
-  checkError("Set solver operators", KSPSetOperators(ksp, A, A
+  checkError("Création du solveur", KSPCreate(PETSC_COMM_WORLD, &ksp));
+  checkError("Définis les opérateurs du solveur", KSPSetOperators(ksp, A, A
 #if ((PETSC_VERSION_MAJOR <= 3 && PETSC_VERSION_MINOR <= 3) || (PETSC_VERSION_MAJOR < 3))
                                          ,
                                          DIFFERENT_NONZERO_PATTERN
@@ -392,11 +392,11 @@ PETScInternalLinearSolver::solve(
         if (m_verbose == VerboseTypes::high ) {
             alien_info([&] {
               cout() << "|---------------------------------------------|";
-              cout() << "| Nearnull Space Option is activated          |";
-              cout() << "| Rigid Body Mode is activated                |";
-              cout() << "| BlockSize     : "<<bs;
-              cout() << "| Nb Interp Vec : "<<nvec;
-              cout() << "| Has constant  : "<<has_const;
+              cout() << "| L'option Espace Nul Proche est activée          |";
+              cout() << "| Le Mode Corps Rigide est activé                |";
+              cout() << "| Taille du Bloc     : "<<bs;
+              cout() << "| Nb Vecteurs d'Interp : "<<nvec;
+              cout() << "| Constante présente : "<<has_const;
               cout() << "|---------------------------------------------|";
             }) ;
         }
@@ -483,9 +483,15 @@ PETScInternalLinearSolver::solve(
 #else
     PetscViewerAndFormat* vf;
     PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf);
+#if PETSC_VERSION_GE(3, 25, 0)
     KSPMonitorSet(ksp,
         (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void*))KSPMonitorTrueResidualNorm,
-        vf, (PetscErrorCode(*)(void**))PetscViewerAndFormatDestroy);
+                  vf, (PetscCtxDestroyFn*)PetscViewerAndFormatDestroy);
+#else
+    KSPMonitorSet(ksp,
+        (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void*))KSPMonitorTrueResidualNorm,
+                  vf, (PetscErrorCode(*)(void**))PetscViewerAndFormatDestroy);
+#endif
 #endif
   }
 
@@ -549,7 +555,11 @@ PETScInternalLinearSolver::checkError(const Arccore::String& msg, int ierr)
 {
   if (ierr != 0) {
     const char* text;
-    char* specific;
+#if PETSC_VERSION_GE(3, 25, 0)
+      const char* specific;
+#else
+      char* specific;
+#endif
     PetscErrorMessage(ierr, &text, &specific);
     alien_fatal([&] {
       cout() << msg << " failed : " << text << " / " << specific << "[code=" << ierr
@@ -688,7 +698,7 @@ PETScInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_
 #include <alien/kernels/petsc/algebra/PETScLinearAlgebra.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScLinearSolverService.h>
 #include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
-// preconditionner
+// Préconditionneur
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigDiagonalService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigJacobiService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScPrecConfigNoPreconditionerService.h>
@@ -698,7 +708,7 @@ PETScInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_
 #include <ALIEN/axl/PETScPrecConfigJacobi_StrongOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_IOptions.h>
 #include <ALIEN/axl/PETScPrecConfigNoPreconditioner_StrongOptions.h>
-// solver
+// Solveur
 #include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigBiCGStabService.h>
 #include <alien/kernels/petsc/linear_solver/arcane/PETScSolverConfigLUService.h>
 #include <alien/kernels/petsc/linear_solver/IPETScKSP.h>
@@ -707,7 +717,7 @@ PETScInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_
 #include <ALIEN/axl/PETScSolverConfigBiCGStab_StrongOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_IOptions.h>
 #include <ALIEN/axl/PETScSolverConfigLU_StrongOptions.h>
-// root linear solver instance
+// instance de solveur linéaire racine
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 #include <ALIEN/axl/PETScLinearSolver_StrongOptions.h>
 
@@ -742,7 +752,7 @@ public :
     int max_iter = get<int>(options,"max-iter");
 
     std::shared_ptr<Alien::IPETScPC> prec = nullptr;
-    // preconditionner service
+    // service de preconditionneur
     std::string precond_type_s = get<std::string>(options,"petsc-precond");
     if (precond_type_s.compare("bjacobi") == 0)
     {
@@ -764,28 +774,28 @@ public :
     std::string solver = get<std::string>(options,"petsc-solver");
     if (solver.compare("bicgs") == 0)
     {
-      // solver service bicgs
+      // service de solveur bicgs
       using namespace PETScSolverConfigBiCGStabOptionsNames;
       auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigBiCGStab>(
           _numIterationsMax = max_iter, _stopCriteriaValue = tol, _preconditioner = prec);
-      // root petsc option
+      // option PETSc racine
       auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
           PETScLinearSolverOptionsNames::_solver =
               std::make_shared<Alien::PETScSolverConfigBiCGStabService>(
                   pm, options_solver));
-      // root petsc service
+      // service PETSc racine
       return new Alien::PETScLinearSolverService(pm, root_options);
     }
     if (solver.compare("lu") == 0)
     {
-      // solver service lu
+      // service de solveur lu
       using namespace PETScSolverConfigLUOptionsNames;
       auto options_solver = std::make_shared<StrongOptionsPETScSolverConfigLU>();
-      // root petsc option
+      // option PETSc racine
       auto root_options = std::make_shared<StrongOptionsPETScLinearSolver>(
           PETScLinearSolverOptionsNames::_solver =
               std::make_shared<Alien::PETScSolverConfigLUService>(pm, options_solver));
-      // root petsc service
+      // service PETSc racine
       return new Alien::PETScLinearSolverService(pm, root_options);
     }
     return nullptr ;

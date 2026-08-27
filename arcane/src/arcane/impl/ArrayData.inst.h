@@ -13,6 +13,8 @@
 
 #include "arcane/impl/internal/ArrayData.h"
 
+#include "arccore/common/AlignedMemoryAllocator.h"
+
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real2x2.h"
@@ -200,7 +202,7 @@ serialize(ISerializer* sbuf, IDataOperation* operation)
     Int64 total_size = nb_value * nb_count;
     m_trace->debug(Trace::High) << " ArrayDataT::serialize (full) reserve datatype="
                                 << data_type << " ids=" << nb_value << " totalsize=" << total_size;
-    sbuf->reserveInt64(2); // 1 pour magic number et 1 pour la taille
+    sbuf->reserveInt64(2); // 1 pour le nombre magique et 1 pour la taille
     sbuf->reserveSpan(data_type, total_size);
   } break;
   case ISerializer::ModePut: {
@@ -232,7 +234,7 @@ serialize(ISerializer* sbuf, IDataOperation* operation)
                                 << " ids=" << nb_value << " totalsize=" << total_size;
     switch (sbuf->readMode()) {
     case ISerializer::ReadReplace: {
-      m_value.resize(nb_value); // must resize using resizeFromGroup ?
+      m_value.resize(nb_value); // doit-on redimensionner en utilisant resizeFromGroup ?
 
       if (operation) {
         UniqueArray<BasicType> base_value(total_size);
@@ -254,10 +256,10 @@ serialize(ISerializer* sbuf, IDataOperation* operation)
     } break;
     case ISerializer::ReadAdd: {
       Int64 current_size = m_value.largeSize();
-      m_value.resize(current_size + nb_value); // must resize using resizeFromGroup ?
+      m_value.resize(current_size + nb_value); // doit-on redimensionner en utilisant resizeFromGroup ?
       Span<BasicType> base_value(reinterpret_cast<BasicType*>(m_value.data() + current_size), total_size);
       if (operation)
-        ARCANE_THROW(NotImplementedException, "ArrayData::serialize : Cannot deserialize using operation in ReadAdd mode");
+        ARCANE_THROW(NotImplementedException, "ArrayData::serialize : Impossible de désérialiser en utilisant une opération en mode ReadAdd");
       sbuf->getSpan(base_value);
       if (is_debug)
         for (Int64 i = 0; i < nb_value; ++i)
@@ -307,7 +309,7 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
       for (Integer i = 0, max_value = m_value.size(); i < nb_value; ++i)
         if (ids[i] > max_value)
           throw IndexOutOfRangeException(A_FUNCINFO,
-                                         String::format(" put,serialize : bad sizes i={0} ids[i]={1} nb_value={2} this={3}",
+                                         String::format(" put,serialize : tailles incorrectes i={0} ids[i]={1} nb_value={2} this={3}",
                                                         i, ids[i], max_value, this),
                                          i, 0, max_value);
     }
@@ -334,7 +336,7 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
       for (Integer i = 0, max_value = m_value.size(); i < nb_value; ++i)
         if (ids[i] > max_value)
           throw IndexOutOfRangeException(A_FUNCINFO,
-                                         String::format(" put,serialize : bad sizes i={0} ids[i]={1} nb_value={2} this={3}",
+                                         String::format(" put,serialize : tailles incorrectes i={0} ids[i]={1} nb_value={2} this={3}",
                                                         i, ids[i], max_value, this),
                                          i, 0, max_value);
     }
@@ -345,11 +347,11 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
       Int64 saved_nb_value = sbuf->getInt64();
 
       if (saved_magic_number != SERIALIZE_MAGIC_NUMBER)
-        ARCANE_FATAL("Internal errror: bad magic number for serialisation expected={0} current={1}",
+        ARCANE_FATAL("Internal errror: mauvais nombre magique pour la sérialisation attendu={0} actuel={1}",
                      SERIALIZE_MAGIC_NUMBER, saved_magic_number);
 
       if (saved_nb_value != nb_value)
-        ARCANE_FATAL("Internal errror: bad size for serialisation expected={0} found={1}",
+        ARCANE_FATAL("Internal errror: mauvaise taille pour la sérialisation attendue={0} trouvée={1}",
                      nb_value, saved_nb_value);
 
       UniqueArray<BasicType> base_value(total_size);
@@ -385,7 +387,7 @@ _serialize(ISerializer* sbuf, Span<const Int32> ids, IDataOperation* operation)
       }
     } break;
     case ISerializer::ReadAdd:
-      ARCANE_THROW(NotImplementedException, "ArrayData::serialize : Cannot deserialize with ReadAdd mode");
+      ARCANE_THROW(NotImplementedException, "ArrayData::serialize : Impossible de désérialiser avec le mode ReadAdd");
       break;
     }
   } break;
@@ -441,7 +443,7 @@ copy(const IData* data)
 {
   auto* true_data = dynamic_cast<const DataInterfaceType*>(data);
   if (!true_data)
-    ARCANE_THROW(ArgumentException, "Can not cast 'IData' to 'IArrayDataT'");
+    ARCANE_THROW(ArgumentException, "Impossible de caster 'IData' en 'IArrayDataT'");
   m_value.copy(true_data->view());
 }
 
@@ -453,7 +455,7 @@ swapValues(IData* data)
 {
   auto* true_data = dynamic_cast<ThatClass*>(data);
   if (!true_data)
-    ARCANE_THROW(ArgumentException, "Can not cast 'IData' to 'ArrayDataT'");
+    ARCANE_THROW(ArgumentException, "Impossible de caster 'IData' en 'ArrayDataT'");
   swapValuesDirect(true_data);
 }
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLoop.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Macros pour exécuter une boucle sur une commande.                         */
+/* Macros pour exécuter une boucle sur une commande.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_RUNCOMMANDLOOP_H
 #define ARCCORE_ACCELERATOR_RUNCOMMANDLOOP_H
@@ -165,17 +165,6 @@ class DoDirectSYCLLambdaArrayBounds
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator::Impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::Impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Applique la lambda \a func sur une boucle \a bounds.
  *
@@ -234,6 +223,7 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe pour conserver les arguments d'une RunCommand.
  *
@@ -263,6 +253,7 @@ class ArrayBoundRunCommand
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Classe pour gérer les paramètres supplémentaires des commandes.
  */
@@ -296,6 +287,7 @@ makeExtendedLoop(const LoopBoundType& bounds, RemainingArgs... args)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds.
  *
@@ -371,6 +363,26 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Applique la lambda \a func sur la plage d'itération donnée par \a bounds
+template <int N, typename IndexType_, typename Lambda> void
+launchRunCommand(RunCommand& command, SimpleForLoopRanges<N, IndexType_> bounds, Lambda func)
+{
+  Impl::_applyGenericLoop(command, bounds, func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Applique la lambda \a func sur la plage d'itération donnée par \a bounds
+template <int N, typename IndexType_, typename Lambda> void
+launchRunCommand(RunCommand& command, ComplexForLoopRanges<N, IndexType_> bounds, const Lambda& func)
+{
+  Impl::_applyGenericLoop(command, bounds, func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
 -> Impl::ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
@@ -430,29 +442,29 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Boucle sur accélérateur
+//! Boucle sur l'accélérateur
 #define RUNCOMMAND_LOOP(iter_name, bounds, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
-//! Boucle sur accélérateur
+//! Boucle sur l'accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...) \
   A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<N> iter_name)
 
-//! Boucle 2D sur accélérateur
+//! Boucle 2D sur l'accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<2> iter_name)
 
-//! Boucle 3D sur accélérateur
+//! Boucle 3D sur l'accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1, x2, x3) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<3> iter_name)
 
-//! Boucle 4D sur accélérateur
+//! Boucle 4D sur l'accélérateur
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<4> iter_name)
 
 /*!
- * \brief Boucle 1D sur accélérateur avec arguments supplémentaires.
+ * \brief Boucle 1D sur l'accélérateur avec arguments supplémentaires.
  *
  * Cette macro permet d'ajouter des arguments. Ces arguments peuvent être
  * des valeurs à réduire (telles que les classes Arcane::Accelerator::ReducerSum2,
@@ -464,7 +476,7 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 /*!
- * \brief Boucle sur accélérateur pour exécution avec un seul thread.
+ * \brief Boucle sur l'accélérateur pour une exécution avec un seul thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \

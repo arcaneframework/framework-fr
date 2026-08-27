@@ -23,9 +23,9 @@
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_COMPONENT_arcane_alina
-#define ARCCORE_ALINA_SAMPLES_EXPORT ARCANE_EXPORT
+#define ARCCORE_ALINA_SAMPLES_EXPORT ARCCORE_EXPORT
 #else
-#define ARCCORE_ALINA_SAMPLES_EXPORT ARCANE_IMPORT
+#define ARCCORE_ALINA_SAMPLES_EXPORT ARCCORE_IMPORT
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ class SampleMainContext;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Prototype for main functor
+// Prototype du fonctor principal
 typedef int (*MainFunction)(const SampleMainContext& ctx, int argc, char* argv[]);
 
 class ARCCORE_ALINA_SAMPLES_EXPORT SampleMainContext

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2025 */
+/* Runner.cc                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Gestion de l'exécution sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,8 @@
 #include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
 #include "arccore/common/accelerator/internal/RunnerImpl.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -320,7 +322,7 @@ isInitialized() const
 void Runner::
 setConcurrentQueueCreation(bool)
 {
-  // Toujours thread-safe;
+  // Toujours thread-safe ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,6 +498,7 @@ _internalApi()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Arrête tout les profiling en cours de tout les runtime.
  *

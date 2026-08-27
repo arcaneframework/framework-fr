@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HashTableMap.h                                              (C) 2000-2024 */
+/* HashTableMap.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Tableau associatif utilisant une table de hachage.                        */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/HashTable.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,7 +49,7 @@ class HashTableMapEnumeratorT;
 
  Pour des raisons de performance, il est préférable que la taille
  de la table (buckets) soit un nombre premier.
-*/
+ */
 template <typename KeyType, typename ValueType, typename KeyTraitsType = HashTraitsT<KeyType>>
 class HashTableMapT
 : public HashTableBase
@@ -437,7 +439,7 @@ class HashTableMapT
 
  private:
 
-  MultiBufferT<Data>* m_buffer; //!< Tampon d'allocation des valeurs
+  MultiBufferT<Data>* m_buffer = nullptr; //!< Tampon d'allocation des valeurs
   Data* m_first_free = nullptr; //!< Pointeur vers le premier Data utilisable
 
  public:
@@ -555,7 +557,7 @@ class HashTableMapT
   {
     // Retaille si besoin.
     if (m_count > m_max_count) {
-      //cout << "** BEFORE BUCKET RESIZE this=" << this << " count=" << m_count
+      //cout << "** AVANT REDIMENSIONNEMENT DU COMPARTIMENT this=" << this << " count=" << m_count
       //     << " bucket=" << m_nb_bucket << " m_max_count=" << m_max_count
       //     << " memory=" << (m_buckets.capacity()*sizeof(Data*)) << '\n';
       //_print(Printable());
@@ -569,11 +571,11 @@ class HashTableMapT
       }
       else
         resize(2 * m_nb_bucket, true);
-      //cout << "** AFTER BUCKET RESIZE this=" << this << " count=" << m_count
+      //cout << "** APRÈS REDIMENSIONNEMENT DU COMPARTIMENT this=" << this << " count=" << m_count
       //     << " bucket=" << m_nb_bucket  << " m_max_count=" << m_max_count
       //     << " memory=" << (m_buckets.capacity()*sizeof(Data*)) << '\n';
       //_print(Printable());
-      std::cout.flush();
+      //std::cout.flush();
     }
   }
 
@@ -585,7 +587,7 @@ class HashTableMapT
   {
     for (Integer z = 0, zs = m_buckets.size(); z < zs; ++z) {
       for (Data* i = m_buckets[z]; i; i = i->next()) {
-        cout << "* KEY=" << i->key() << " bucket=" << z << '\n';
+        std::cout << "* KEY=" << i->key() << " bucket=" << z << '\n';
       }
     }
   }
@@ -616,9 +618,10 @@ class HashTableMapT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Enumerateur sur un HashTableMap.
+ * \brief Énumérateur pour un HashTableMap.
  */
 template <typename KeyType, typename ValueType>
 class HashTableMapEnumeratorT

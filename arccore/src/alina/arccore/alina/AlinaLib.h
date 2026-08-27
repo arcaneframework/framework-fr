@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* AlinaLib.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Public API for Alina.                                      .              */
+/* API publique pour Alina.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_ALINALIB_H
 #define ARCCORE_ALINA_ALINALIB_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -36,69 +36,69 @@ struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
 
 typedef double(* AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
 
-//! Handle parameters.
+//! Gestion des paramètres.
 struct AlinaParameters;
 
-//! Handle preconditioner
+//! Gestion du préconditionneur
 struct AlinaPreconditioner;
 
-//! Sequential solver;
+//! Solveur séquentiel;
 struct AlinaSequentialSolver;
 
-//! Distributed solver;
+//! Solveur distribué;
 struct AlinaDistributedSolver;
 
 class ARCCORE_ALINA_EXPORT AlinaLib
 {
  public:
 
-  // Set integer parameter in a parameter list.
+  // Définit un paramètre entier dans une liste de paramètres.
   static void params_set_int(AlinaParameters* prm, const char* name, int value);
 
-  // Set floating point parameter in a parameter list.
+  // Définit un paramètre flottant dans une liste de paramètres.
   static void params_set_float(AlinaParameters* prm, const char* name, float value);
 
-  // Set floating point parameter in a parameter list.
+  // Définit un paramètre flottant dans une liste de paramètres.
   static void params_set_string(AlinaParameters* prm, const char* name, const char* value);
 
-  // Read parameters from a JSON file
+  // Lit les paramètres à partir d'un fichier JSON
   static void params_read_json(AlinaParameters* prm, const char* fname);
 
-  // Destroy parameter list.
+  // Détruit la liste de paramètres.
   static void params_destroy(AlinaParameters* prm);
 
-  // Create parameter list.
+  // Crée la liste de paramètres.
   static AlinaParameters* params_create();
 
-  // Create AMG preconditioner.
+  // Crée le préconditionneur AMG.
   static AlinaPreconditioner* preconditioner_create(int n,
                                                           const int* ptr,
                                                           const int* col,
                                                           const double* val,
                                                           AlinaParameters* parameters);
 
-  // Apply AMG preconditioner (x = M^(-1) * rhs).
+  // Applique le préconditionneur AMG (x = M^(-1) * rhs).
   static void preconditioner_apply(AlinaPreconditioner* amg, const double* rhs, double* x);
 
-  // Printout preconditioner structure
+  // Affiche la structure du préconditionneur
   static void preconditioner_report(AlinaPreconditioner* amg);
 
-  // Destroy AMG preconditioner
+  // Détruit le préconditionneur AMG
   static void preconditioner_destroy(AlinaPreconditioner* amg);
 
-  // Create iterative solver preconditioned by AMG.
+  // Crée le solveur itératif préconditionné par AMG.
   static AlinaSequentialSolver* solver_create(int n,
                                               const int* ptr,
                                               const int* col,
                                               const double* val,
                                               AlinaParameters* parameters);
 
-  // Solve the problem for the given right-hand side.
+  // Résoud le problème pour le côté droit donné.
   static AlinaConvergenceInfo solver_solve(AlinaSequentialSolver* solver,
                                 double const* rhs,
                                 double* x);
 
-  // Solve the problem for the given matrix and the right-hand side.
+  // Résoud le problème pour la matrice et le côté droit donnés.
   static AlinaConvergenceInfo solver_solve_matrix(AlinaSequentialSolver* solver,
                                        int const* A_ptr,
                                        int const* A_col,
@@ -106,29 +106,29 @@ class ARCCORE_ALINA_EXPORT AlinaLib
                                        double const* rhs,
                                        double* x);
 
-  // Printout solver structure
+  // Affiche la structure du solveur
   static void solver_report(AlinaSequentialSolver* solver);
 
-  // Destroy iterative solver.
+  // Détruit le solveur itératif.
   static void solver_destroy(AlinaSequentialSolver* solver);
 
-  // Create distributed solver.
+  // Crée le solveur distribué.
   static AlinaDistributedSolver* solver_mpi_create(MPI_Comm comm,
                                                    ptrdiff_t n,
-                                                   const ptrdiff_t* ptr,
-                                                   const ptrdiff_t* col,
+                                                   const int* ptr,
+                                                   const int* col,
                                                    const double* val,
                                                    int n_def_vec,
                                                    AlinaDefVecFunction def_vec_func,
                                                    void* def_vec_data,
                                                    AlinaParameters* params);
 
-  // Find solution for the given RHS.
+  // Trouve la solution pour le côté droit donné.
   static AlinaConvergenceInfo solver_mpi_solve(AlinaDistributedSolver* solver,
                                     double const* rhs,
                                     double* x);
 
-  // Destroy the distributed solver.
+  // Détruit le solveur distribué.
   static void solver_mpi_destroy(AlinaDistributedSolver* solver);
 };
 

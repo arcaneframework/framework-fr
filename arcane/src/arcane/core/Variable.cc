@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Variable.cc                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Classe gérant une variable.                                               */
+/* Classe gérant une variable.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_VARIABLE_CC
@@ -29,6 +29,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/Variable.h"
@@ -79,6 +80,7 @@ const char* IVariable::TAG_POST_PROCESSING_AT_THIS_ITERATION = "PostProcessingAt
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
  * \brief Partie privée d'une variable.
  */
@@ -266,7 +268,7 @@ class ItemGroupPartialVariableObserver
     const Integer old_size = id_to_index->size();
     const Integer group_size = group.size();
     if (group_size != (old_size + new_ids.size()))
-      ARCANE_FATAL("Inconsitent extended size");
+      ARCANE_FATAL("Inconsistent extended size");
     m_var->resizeFromGroup();
     //id_to_index->update();
   }
@@ -284,7 +286,7 @@ class ItemGroupPartialVariableObserver
     const Integer group_size = group.size();
 
     if (group_size != (old_size - removed_lids.size()))
-      ARCANE_FATAL("Inconsitent reduced size {0} vs {1}", group_size, old_size);
+      ARCANE_FATAL("Inconsistent reduced size {0} vs {1}", group_size, old_size);
     [[maybe_unused]] ItemVectorView view = group.view();
     Int32UniqueArray source;
     Int32UniqueArray destination;
@@ -532,6 +534,7 @@ dataType() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \todo traiter le cas PSubDomainPrivate.
  */
@@ -645,12 +648,12 @@ setUsed(bool is_used)
   if (m_p->m_is_used) {
     if (m_p->m_property & IVariable::PInShMem) {
       if (m_p->m_property & IVariable::PSubDomainPrivate) {
-        ARCANE_FATAL("Variable with PInShMem property must be in all sub-domains (PSubDomainPrivate property cannot be set with PInShMem)");
+        ARCANE_FATAL("Variable avec la propriété PInShMem doit être dans tous les sous-domaines (la propriété PSubDomainPrivate ne peut pas être définie avec PInShMem)");
       }
       if (m_p->m_data->_commonInternal()->numericData() == nullptr) {
-        ARCANE_FATAL("Variable without NumericData cannot change allocator");
+        ARCANE_FATAL("Variable sans NumericData ne peut pas changer d'allocateur");
       }
-      // TODO : Même si changeAllocator() avec le même allocateur déjà en
+      // TODO: Même si changeAllocator() avec le même allocateur déjà en
       //        place fait simplement un return, ça reste moche...
       IParallelMng* pm{};
       if (m_p->m_mesh_handle.hasMesh()) {
@@ -745,7 +748,7 @@ namespace
     return full_type_b.toString();
   }
 
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -919,7 +922,7 @@ _setData(const Ref<IData>& data)
 {
   m_p->m_data = data;
   if (!data.get()) {
-    ARCANE_FATAL("Invalid data: name={0} datatype={1} dimension={2} multitag={3}",
+    ARCANE_FATAL("Données invalides : nom={0} type de données={1} dimension={2} multitag={3}",
                  m_p->m_infos.fullName(), m_p->m_infos.dataType(),
                  m_p->m_infos.dimension(), m_p->m_infos.multiTag());
   }
@@ -968,7 +971,7 @@ dataFactoryMng() const
 void Variable::
 serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operation)
 {
-  debug(Trace::High) << "Serialize (partial) variable name=" << fullName();
+  debug(Trace::High) << "Sérialisation (partielle) de la variable nom=" << fullName();
   m_p->serializeHashId(sbuffer);
   m_p->m_data->serialize(sbuffer, ids, operation);
   // En mode lecture, les données sont modifiées
@@ -982,7 +985,7 @@ serialize(ISerializer* sbuffer, Int32ConstArrayView ids, IDataOperation* operati
 void Variable::
 serialize(ISerializer* sbuffer, IDataOperation* operation)
 {
-  debug(Trace::High) << "Serialize (full) variable name=" << fullName();
+  debug(Trace::High) << "Sérialisation (complète) de la variable nom=" << fullName();
 
   m_p->serializeHashId(sbuffer);
   m_p->m_data->serialize(sbuffer, operation);
@@ -999,7 +1002,7 @@ _resize(const VariableResizeArgs& resize_args)
 {
   eItemKind ik = itemKind();
   if (ik != IK_Unknown) {
-    ARCANE_FATAL("This call is invalid for item variable. Use resizeFromGroup() instead");
+    ARCANE_FATAL("Cet appel est invalide pour une variable d'élément. Utilisez resizeFromGroup() à la place");
   }
   _internalResize(resize_args);
   syncReferences();
@@ -1380,6 +1383,7 @@ changeGroupIds(Int32ConstArrayView old_to_new_ids)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vérifie qu'il est possible d'échanger les valeurs de l'instance
  * avec celle de \a rhs.

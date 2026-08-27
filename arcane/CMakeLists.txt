@@ -38,19 +38,19 @@ endif()
 # ----------------------------------------------------------------------------
 
 # A partir de 3.19:
-# find_program() requires permission to execute but not to read.
+# find_program() nécessite la permission d'exécution mais pas de lecture.
 if(POLICY CMP0109)
   cmake_policy(SET CMP0109 NEW)
 endif()
 
 # A partir de 3.19:
-# An imported target missing its location property fails during generation.
+# Une cible importée qui ne possède pas sa propriété de localisation échoue pendant la génération.
 if(POLICY CMP0111)
   cmake_policy(SET CMP0111 NEW)
 endif()
 
 # A partir de 3.27:
-# find_package() uses upper-case <PACKAGENAME>_ROOT variables.
+# find_package() utilise les variables <PACKAGENAME>_ROOT en majuscules.
 if(POLICY CMP0144)
   cmake_policy(SET CMP0144 NEW)
 endif()
@@ -62,7 +62,7 @@ endif()
 # TODO: utiliser CMAKE_CONFIGURATION_TYPE pour modifier les valeurs possibles
 # CMAKE_BUILD_TYPE et ainsi les faire correspondre à celles de Arcane.
 
-# NOTE: a terme, ARCANE_BUILD_TYPE ne sera plus utilisé et seul
+# NOTE: à terme, ARCANE_BUILD_TYPE ne sera plus utilisé et seul
 # ARCCORE_BUILD_MODE restera
 
 # Si 'ARCCORE_BUILD_MODE' est défini, on s'en sert pour positionner
@@ -411,7 +411,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/Functions.cmake)
 # ----------------------------------------------------------------------------
 
 set(ARCANE_COMPATIBILITY_DIRECTORY "${CMAKE_BINARY_DIR}/compatibility/include"
-  CACHE STRING "Path to generated headers for compatibilit" FORCE)
+  CACHE STRING "Chemin vers les en-têtes générés pour la compatibilité" FORCE)
 file(MAKE_DIRECTORY "${ARCANE_COMPATIBILITY_DIRECTORY}")
 
 # ----------------------------------------------------------------------------
@@ -429,8 +429,8 @@ if($ENV{ARCANE_WANT_PURIFY})
   SET(CMAKE_C_LINK_EXECUTABLE "purify ${ARCANE_PURIFY_OPTIONS} ${CMAKE_C_LINK_EXECUTABLE}")
 endif()
 
-MESSAGE(STATUS "Installation dir is ${CMAKE_INSTALL_PREFIX}")
-MESSAGE(STATUS "ARCANEBUILDROOT dir is ${ARCANEBUILDROOT}")
+MESSAGE(STATUS "Le répertoire d'installation est ${CMAKE_INSTALL_PREFIX}")
+MESSAGE(STATUS "Le répertoire ARCANEBUILDROOT est ${ARCANEBUILDROOT}")
 
 # Il faut positionner ces variables avant d'inclure le fichiers 'srcs.cmake.txt'
 # car il les utilise
@@ -540,7 +540,7 @@ endforeach()
 
 # ----------------------------------------------------------------------------
 # Recherche les packages disponibles
-message(STATUS "Infos from package finders")
+message(STATUS "Informations des détecteurs de packages")
 message(STATUS "----------------------------------------------------")
 include(FindPkgConfig)
 find_package(Glib REQUIRED)
@@ -581,10 +581,10 @@ endif()
 
 message(STATUS "----------------------------------------------------")
 
-# default package list
+# liste de packages par défaut
 set(ARCANE_PACKAGE_LIST ${ARCANE_ADDITIONAL_PACKAGES})
 
-# optional package list
+# liste de packages optionnels
 set(ARCANE_OPTIONAL_PACKAGE_LIST FLEXLM ${ARCANE_OPTIONAL_PACKAGE_LIST})
 
 message(STATUS "**** CHECK PACKAGE LIST ****")
@@ -678,14 +678,14 @@ if(ARCANE_WANT_LONGDOUBLE)
 endif()
 
 IF(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : not found")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME} : introuvable")
 ELSE(NOT FLEXLM_FOUND)
-  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME}         : ${FLEXLM_LIBRARIES}")
+  MESSAGE(STATUS "PACKAGE: ${FLEXLM_PROTECTION_NAME} : ${FLEXLM_LIBRARIES}")
 ENDIF(NOT FLEXLM_FOUND)
 
 IF(ARCANE_CONFIGURE_WANT_MPC)
   IF(NOT MPC_FOUND)
-    MESSAGE(FATAL_ERROR "PACKAGE: MPC enabled in configure but not found")
+    MESSAGE(FATAL_ERROR "PACKAGE: MPC activé dans le configure mais introuvable")
   ENDIF(NOT MPC_FOUND)
 ENDIF(ARCANE_CONFIGURE_WANT_MPC)
 
@@ -713,7 +713,7 @@ if (GTEST_FOUND)
 endif()
 
 # ----------------------------------------------------------------------------
-# Disabled in arcane.pc (check it if useful)
+# Désactivé dans arcane.pc (vérifiez si cela est utile)
 set(ARCANE_INCLUDE_LIST ${ARCANE_INCLUDE_LIST} ${GLIB_INCLUDE_DIRS})
 
 set(ARCANE_CORE_LIBRARY arcane_core)
@@ -948,15 +948,6 @@ add_subdirectory(src/arcane/accelerator)
 
 if (ARCANE_HAS_ACCELERATOR)
   add_subdirectory(src/arcane/accelerator/${ARCANE_ACCELERATOR_RUNTIME}/runtime)
-endif()
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-# Handling of Alina
-option (ARCANE_ENABLE_ALINA "Is Alina (linear algebra) component enabled?" OFF)
-if (ARCANE_ENABLE_ALINA)
-  # Source files are in Arccore at the moment but we need some parts of Arcane
-  add_subdirectory(../arccore/src/alina/arccore/alina alina)
 endif()
 
 # ----------------------------------------------------------------------------

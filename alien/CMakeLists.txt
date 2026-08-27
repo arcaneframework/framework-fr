@@ -1,4 +1,4 @@
-# Copyright 2023 IFPEN-CEA
+﻿# Copyright 2023 IFPEN-CEA
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ cmake_minimum_required(VERSION 3.18)
 Project(AlienRepo LANGUAGES C CXX VERSION 1.0)
 
 if(MSVC_TOOLSET_VERSION GREATER_EQUAL 143)
+  set(CMAKE_MSVC_INCREMENTAL_DEFAULT OFF PARENT_SCOPE) # Pour éviter un problème avec les fichiers ilk
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "/INCREMENTAL:NO")
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/INCREMENTAL:NO")
   set(BUILDSYSTEM_DLL_COPY_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
   if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
@@ -43,11 +46,11 @@ elseif (ALIEN_BUILD_COMPONENT STREQUAL alien_standalone)
     # Compile uniquement Alien/standalone.
     set(BUILD_ARCANE_INTERFACE FALSE)
 else()
-    message(FATAL_ERROR "Invalid value '${ALIEN_BUILD_COMPONENT}' for ALIEN_BUILD_COMPONENT"
+    message(FATAL_ERROR "Valeur invalide '${ALIEN_BUILD_COMPONENT}' pour ALIEN_BUILD_COMPONENT"
             "Valid values are: { 'all', 'alien_standalone'}")
 endif()
 
-# Common stuff
+# Éléments communs
 if (NOT ARCFRAMEWORK_ROOT)
     set(ARCFRAMEWORK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 endif ()
@@ -73,31 +76,31 @@ list(APPEND CMAKE_MODULE_PATH ${ARCFRAMEWORK_ROOT}/_common/build_all/cmake)
 find_package(BLAS REQUIRED)
 message(STATUS "[ Alien ] BLAS LIBRARIES: ${BLAS_LIBRARIES}")
 
-# TODO: use some AlienConfig.h to replace add_definitions(-DALIEN_USE_XXX)
+# TODO : utiliser AlienConfig.h pour remplacer add_definitions(-DALIEN_USE_XXX)
 set(CBLAS_INCLUDE_DIR CBLAS_INCLUDE_DIR-NOTFOUND)
 if(BLAS_LIBRARIES MATCHES mkl OR BLA_VENDOR MATCHES Intel)
-    # relative path for mkl_cblas.h change with mkl versions
+    # Le chemin relatif pour mkl_cblas.h change avec les versions de mkl
     find_path(CBLAS_INCLUDE_DIR mkl_cblas.h HINTS ENV MKLROOT PATH_SUFFIXES include mkl/include REQUIRED)
     add_definitions(-DALIEN_USE_MKL)
-    message(STATUS "[ Alien ] MKL BLAS detected")
-    message(STATUS "[ Alien ] mkl_cblas.h found in ${CBLAS_INCLUDE_DIR}")
+    message(STATUS "[ Alien ] MKL BLAS détecté")
+    message(STATUS "[ Alien ] mkl_cblas.h trouvé dans ${CBLAS_INCLUDE_DIR}")
 elseif(BLAS_LIBRARIES MATCHES FlexiBLAS OR BLAS_LIBRARIES MATCHES flexiblas OR BLA_VENDOR MATCHES FlexiBLAS)
-    # Flexiblas includes files are installed in include/flexiblas dir from root install
+    # Les fichiers d'inclusion de Flexiblas sont installés dans le répertoire include/flexiblas à partir de l'installation racine
     find_path(CBLAS_INCLUDE_DIR flexiblas/cblas.h HINTS ENV FLEXIBLAS_ROOT PATH_SUFFIXES include REQUIRED)
     add_definitions(-DALIEN_USE_FLEXIBLAS)
-    message(STATUS "[ Alien ] FlexiBLAS BLAS detected")
-    message(STATUS "[ Alien ] flexiblas/cblas.h found in ${CBLAS_INCLUDE_DIR}")
+    message(STATUS "[ Alien ] FlexiBLAS BLAS détecté")
+    message(STATUS "[ Alien ] flexiblas/cblas.h trouvé dans ${CBLAS_INCLUDE_DIR}")
 elseif(BLAS_LIBRARIES MATCHES OpenBLAS OR BLAS_LIBRARIES MATCHES openblas OR BLA_VENDOR MATCHES OpenBLAS)
     find_path(CBLAS_INCLUDE_DIR cblas.h HINTS ENV OPENBLAS_ROOT PATH_SUFFIXES openblas include REQUIRED)
-    # TODO: check if cblas.h is from  OpenBLAS
+    # TODO : vérifier si cblas.h provient d'OpenBLAS
     add_definitions(-DALIEN_USE_OPENBLAS)
-    message(STATUS "[ Alien ] OpenBLAS BLAS detected")
-    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
+    message(STATUS "[ Alien ] OpenBLAS BLAS détecté")
+    message(STATUS "[ Alien ] cblas.h trouvé dans ${CBLAS_INCLUDE_DIR}")
 else()
-    # supposes that other BLAS packages provide a cblas.h file
-    # we must be sure that the cblas found
+    # suppose que d'autres paquets BLAS fournissent un fichier cblas.h
+    # nous devons nous assurer que le cblas trouvé
     find_path(CBLAS_INCLUDE_DIR cblas.h REQUIRED)
-    message(STATUS "[ Alien ] cblas.h found in ${CBLAS_INCLUDE_DIR}")
+    message(STATUS "[ Alien ] cblas.h trouvé dans ${CBLAS_INCLUDE_DIR}")
 endif()
 
 add_subdirectory(standalone)
@@ -111,4 +114,3 @@ endif()
 if(BUILD_ARCANE_INTERFACE)
     add_subdirectory(ArcaneInterface)
 endif ()
-

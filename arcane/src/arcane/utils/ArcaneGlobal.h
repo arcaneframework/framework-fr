@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,16 +21,16 @@
 #include "arcane_core_config.h"
 
 #ifdef ARCCORE_OS_LINUX
-#  define ARCANE_OS_LINUX
-#  include <cstddef>
+#define ARCANE_OS_LINUX
+#include <cstddef>
 #endif
 
 #ifdef ARCCORE_OS_WIN32
-#  define ARCANE_OS_WIN32
+#define ARCANE_OS_WIN32
 #endif
 
 #ifdef ARCCORE_OS_MACOS
-#  define ARCANE_OS_MACOS
+#define ARCANE_OS_MACOS
 #endif
 
 #define ARCANE_EXPORT ARCCORE_EXPORT
@@ -40,24 +40,25 @@
 
 #define ARCANE_STD std
 
-// Tag var as a voluntary unused variable.
-// Works with any compiler but might be improved by using attribute.
+// Marque la variable comme une variable inutilisée volontairement.
+// Fonctionne avec n'importe quel compilateur, mais pourrait être amélioré en utilisant un attribut.
 #define ARCANE_UNUSED(var) ARCCORE_UNUSED(var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: supprimer l'inclusion de <iosfwd> et les using.
-// Pour l'instant (2022), on supprime ces inclusions uniquement pour Arcane.
+
+// TODO: supprimer l'inclusion de <iosfwd> et les déclarations using.
+// Pour l'instant (2022), ces inclusions sont supprimées uniquement pour Arcane.
 
 #ifndef ARCANE_NO_USING_FOR_STREAM
 #include <iosfwd>
-using std::istream;
-using std::ostream;
-using std::ios;
 using std::ifstream;
-using std::ofstream;
-using std::ostringstream;
+using std::ios;
+using std::istream;
 using std::istringstream;
+using std::ofstream;
+using std::ostream;
+using std::ostringstream;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -69,10 +70,14 @@ typedef ARCANE_TYPE_INT32 Int32;
 typedef ARCANE_TYPE_INT64 Int64;
 #endif
 
-#define ARCANE_BEGIN_NAMESPACE  namespace Arcane {
-#define ARCANE_END_NAMESPACE    }
-#define NUMERICS_BEGIN_NAMESPACE  namespace Numerics {
-#define NUMERICS_END_NAMESPACE    }
+#define ARCANE_BEGIN_NAMESPACE \
+  namespace Arcane \
+  {
+#define ARCANE_END_NAMESPACE }
+#define NUMERICS_BEGIN_NAMESPACE \
+  namespace Numerics \
+  {
+#define NUMERICS_END_NAMESPACE }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -187,15 +192,15 @@ const double cgrPI = 3.14159265358979323846;
 #define ARCANE_REAL(val) ARCCORE_REAL(val)
 
 #ifdef ARCCORE_REAL_NOT_BUILTIN
-#  define ARCANE_REAL_NOT_BUILTIN
+#define ARCANE_REAL_NOT_BUILTIN
 #endif
 
 #ifdef ARCCORE_REAL_LONG
-#  define ARCANE_REAL_LONG
+#define ARCANE_REAL_LONG
 #endif
 
 #ifdef ARCCORE_REAL_IS_DOUBLE
-#  define ARCANE_REAL_IS_DOUBLE
+#define ARCANE_REAL_IS_DOUBLE
 #endif
 
 /*!
@@ -246,7 +251,7 @@ using UniqueIdType = Int64;
 
 //! Encapsulation de la fonction C printf
 extern "C++" ARCANE_UTILS_EXPORT void
-arcanePrintf(const char*,...);
+arcanePrintf(const char*, ...);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -268,10 +273,10 @@ arcaneDebugPause(const char* msg);
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double arg_value,const char* func_name);
+_internalArcaneMathError(long double arg_value, const char* func_name);
 
 extern "C++" ARCANE_UTILS_EXPORT void
-_internalArcaneMathError(long double arg_value1,long double arg_value2,const char* func_name);
+_internalArcaneMathError(long double arg_value1, long double arg_value2, const char* func_name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -284,10 +289,10 @@ _internalArcaneMathError(long double arg_value1,long double arg_value2,const cha
  * \param func_name nom de la fonction mathématique.
  */
 ARCCORE_HOST_DEVICE inline void
-arcaneMathError(long double arg_value,const char* func_name)
+arcaneMathError(long double arg_value, const char* func_name)
 {
 #ifndef ARCCORE_DEVICE_CODE
-  _internalArcaneMathError(arg_value,func_name);
+  _internalArcaneMathError(arg_value, func_name);
 #else
   ARCANE_UNUSED(arg_value);
   ARCANE_UNUSED(func_name);
@@ -304,10 +309,10 @@ arcaneMathError(long double arg_value,const char* func_name)
  * \param func_name nom de la fonction mathématique.
  */
 ARCCORE_HOST_DEVICE inline void
-arcaneMathError(long double arg_value1,long double arg_value2,const char* func_name)
+arcaneMathError(long double arg_value1, long double arg_value2, const char* func_name)
 {
 #ifndef ARCCORE_DEVICE_CODE
-  _internalArcaneMathError(arg_value1,arg_value2,func_name);
+  _internalArcaneMathError(arg_value1, arg_value2, func_name);
 #else
   ARCANE_UNUSED(arg_value1);
   ARCANE_UNUSED(arg_value2);
@@ -317,6 +322,7 @@ arcaneMathError(long double arg_value1,long double arg_value2,const char* func_n
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Signale une fonction non implémentée.
  *
@@ -328,14 +334,14 @@ arcaneMathError(long double arg_value1,long double arg_value2,const char* func_n
  * \param msg message éventuel à afficher (0 si aucun)
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNotYetImplemented(const char* file,const char* func,unsigned long line,const char* msg);
+arcaneNotYetImplemented(const char* file, const char* func, unsigned long line, const char* msg);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Signale l'utilisation d'une fonction obsolète
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneDeprecated(const char* file,const char* func,unsigned long line,const char* text);
+arcaneDeprecated(const char* file, const char* func, unsigned long line, const char* text);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -423,7 +429,7 @@ arcaneCheckArraySize(int size);
  * Si ce n'est pas le cas, Sinon, lance une exception de type BadAlignmentException.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneCheckAlignment(const void* ptr,Integer alignment);
+arcaneCheckAlignment(const void* ptr, Integer alignment);
 
 /*!
  * \brief Vrai si on est en mode vérification.
@@ -431,9 +437,7 @@ arcaneCheckAlignment(const void* ptr,Integer alignment);
  * Ce mode est actif si la macro ARCANE_CHECK est définie
  * ou si la méthode arcaneSetCheck() a été positionnée a vrai.
  */
-extern "C++" ARCANE_UTILS_EXPORT 
-bool arcaneIsCheck();
-
+extern "C++" ARCANE_UTILS_EXPORT bool arcaneIsCheck();
 /*!
  * \brief Active ou désactive le mode vérification.
  *
@@ -441,20 +445,17 @@ bool arcaneIsCheck();
  * Sinon, il est possible de l'activer avec cette méthode. Cela permet
  * d'activer certains tests même en mode optimisé.
  */
-extern "C++" ARCANE_UTILS_EXPORT 
-void arcaneSetCheck(bool v);
+extern "C++" ARCANE_UTILS_EXPORT void arcaneSetCheck(bool v);
 
 /*!
  * \brief Vrai si la macro ARCANE_DEBUG est définie
  */
-extern "C++" ARCANE_UTILS_EXPORT
-bool arcaneIsDebug();
+extern "C++" ARCANE_UTILS_EXPORT bool arcaneIsDebug();
 
 /*!
  * \brief Vrai si arcane est compilé avec le support des threads ET qu'ils sont actifs
  */
-extern "C++" ARCANE_UTILS_EXPORT 
-bool arcaneHasThread();
+extern "C++" ARCANE_UTILS_EXPORT bool arcaneHasThread();
 
 /*!
  * \brief Active ou désactive le support des threads.
@@ -465,8 +466,7 @@ bool arcaneHasThread();
  * des threads existe sur la plate-forme et que Arcane a été compilé
  * avec ce support.
  */
-extern "C++" ARCANE_UTILS_EXPORT 
-void arcaneSetHasThread(bool v);
+extern "C++" ARCANE_UTILS_EXPORT void arcaneSetHasThread(bool v);
 
 /*!
  * \brief Retourne l'identifiant du thread courant.
@@ -474,27 +474,35 @@ void arcaneSetHasThread(bool v);
  * Retourne toujours 0 si arcaneHasThread() est faux.
  */
 extern "C++" ARCANE_UTILS_EXPORT
-Int64 arcaneCurrentThread();
+Int64
+arcaneCurrentThread();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_DEBUG
 extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
-#define ARCANE_DEBUGP(a,b)     if (_checkDebug(a)) { arcanePrintf b; }
+#define ARCANE_DEBUGP(a, b) \
+  if (_checkDebug(a)) { \
+    arcanePrintf b; \
+  }
 #else
-#define ARCANE_DEBUGP(a,b)
+#define ARCANE_DEBUGP(a, b)
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #ifdef __GNUG__
-#  define ARCANE_NOT_YET_IMPLEMENTED(a) \
-{ arcaneNotYetImplemented(__FILE__,__PRETTY_FUNCTION__,__LINE__,(a)); }
+#define ARCANE_NOT_YET_IMPLEMENTED(a) \
+  { \
+    arcaneNotYetImplemented(__FILE__, __PRETTY_FUNCTION__, __LINE__, (a)); \
+  }
 #else
-#  define ARCANE_NOT_YET_IMPLEMENTED(a) \
-{ arcaneNotYetImplemented(__FILE__,"(NoInfo)",__LINE__,(a)); }
+#define ARCANE_NOT_YET_IMPLEMENTED(a) \
+  { \
+    arcaneNotYetImplemented(__FILE__, "(NoInfo)", __LINE__, (a)); \
+  }
 #endif
 
 #define ARCANE_DEPRECATED ARCCORE_DEPRECATED
@@ -512,10 +520,6 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCANE_DEPRECATED_280 ARCANE_DEPRECATED
 #define ARCANE_DEPRECATED_2018 ARCANE_DEPRECATED
 #define ARCANE_DEPRECATED_2018_R(reason) [[deprecated(reason)]]
-
-#ifndef ARCCORE_DEPRECATED_2021
-#define ARCCORE_DEPRECATED_2021(reason) [[deprecated(reason)]]
-#endif
 
 #define ARCANE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
 
@@ -552,9 +556,9 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 // pour un fichier et est utilisé par exemple pour générer des noms
 // de variable globale pour l'enregistrement des services.
 // La macro a utiliser est ARCANE_JOIN_WITH_LINE(name).
-#define ARCANE_JOIN_HELPER2(a,b) a ## b
-#define ARCANE_JOIN_HELPER(a,b) ARCANE_JOIN_HELPER2(a,b)
-#define ARCANE_JOIN_WITH_LINE(a) ARCANE_JOIN_HELPER(a,__LINE__)
+#define ARCANE_JOIN_HELPER2(a, b) a##b
+#define ARCANE_JOIN_HELPER(a, b) ARCANE_JOIN_HELPER2(a, b)
+#define ARCANE_JOIN_WITH_LINE(a) ARCANE_JOIN_HELPER(a, __LINE__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -586,14 +590,14 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 // d'équivalent avec MSVC.
 #ifdef _MSC_VER
 //! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
-#  define ARCANE_ALIGNAS(value) __declspec(align(value))
+#define ARCANE_ALIGNAS(value) __declspec(align(value))
 //! Macro pour garantir l'alignement d'une classe sur \a value octets
-#  define ARCANE_ALIGNAS_PACKED(value) __declspec(align(value))
+#define ARCANE_ALIGNAS_PACKED(value) __declspec(align(value))
 #else
 //! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
-#  define ARCANE_ALIGNAS_PACKED(value) __attribute__ ((aligned (value),packed))
+#define ARCANE_ALIGNAS_PACKED(value) __attribute__((aligned(value), packed))
 //! Macro pour garantir l'alignement d'une classe sur \a value octets
-#  define ARCANE_ALIGNAS(value) __attribute__ ((aligned (value)))
+#define ARCANE_ALIGNAS(value) __attribute__((aligned(value)))
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -640,7 +644,7 @@ arcaneNullPointerError [[noreturn]] ();
  * via la macro ARCANE_CHECK_POINTER.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
+arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name, const char* text);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -674,35 +678,49 @@ arcaneSizeWithPadding(Integer size);
  * Macros utilisées pour le débug.
  */
 #ifdef ARCANE_DEBUG_ASSERT
-extern "C++" ARCANE_UTILS_EXPORT void _doAssert(const char*,const char*,const char*,size_t);
-template<typename T> inline T*
-_checkPointer(T* t,const char* file,const char* func,size_t line)
+extern "C++" ARCANE_UTILS_EXPORT void _doAssert(const char*, const char*, const char*, size_t);
+template <typename T> inline T*
+_checkPointer(T* t, const char* file, const char* func, size_t line)
 {
-  if (!t){
-    _doAssert("ARCANE_ASSERT",file,func,line);
+  if (!t) {
+    _doAssert("ARCANE_ASSERT", file, func, line);
     arcanePrintf("Bad Pointer");
   }
   return t;
 }
-#  ifdef __GNUG__
-#    define ARCANE_D_WHERE(a)  Arcane::_doAssert(a,__FILE__,__PRETTY_FUNCTION__,__LINE__)
-#    define ARCANE_DCHECK_POINTER(a) Arcane::_checkPointer((a),__FILE__,__PRETTY_FUNCTION__,__LINE__);
-#  else
-#    define ARCANE_D_WHERE(a)  Arcane::_doAssert(a,__FILE__,"(NoInfo)",__LINE__)
-#    define ARCANE_DCHECK_POINTER(a) Arcane::_checkPointer((a),__FILE__,"(NoInfo"),__LINE__);
-#  endif
-#  define ARCANE_CHECK_PTR(a) \
-   {if (!(a)){Arcane::arcanePrintf("Null value");ARCANE_D_WHERE("ARCANE_ASSERT");}}
-
-#  define ARCANE_ASSERT(a,b) \
-  {if (!(a)){ Arcane::arcanePrintf("Assertion '%s' fails:",#a); Arcane::arcanePrintf b; ARCANE_D_WHERE("ARCANE_ASSERT");}}
-#  define ARCANE_WARNING(a) \
-   { Arcane::arcanePrintf a; ARCANE_D_WHERE("ARCANE_WARNING"); }
+#ifdef __GNUG__
+#define ARCANE_D_WHERE(a) Arcane::_doAssert(a, __FILE__, __PRETTY_FUNCTION__, __LINE__)
+#define ARCANE_DCHECK_POINTER(a) Arcane::_checkPointer((a), __FILE__, __PRETTY_FUNCTION__, __LINE__);
 #else
-#  define ARCANE_CHECK_PTR(a)
-#  define ARCANE_ASSERT(a,b)
-#  define ARCANE_WARNING(a)
-#  define ARCANE_DCHECK_POINTER(a) (a);
+#define ARCANE_D_WHERE(a) Arcane::_doAssert(a, __FILE__, "(NoInfo)", __LINE__)
+#define ARCANE_DCHECK_POINTER(a) Arcane::_checkPointer((a),__FILE__,"(NoInfo"),__LINE__);
+#endif
+#define ARCANE_CHECK_PTR(a) \
+  { \
+    if (!(a)) { \
+      Arcane::arcanePrintf("Null value"); \
+      ARCANE_D_WHERE("ARCANE_ASSERT"); \
+    } \
+  }
+
+#define ARCANE_ASSERT(a, b) \
+  { \
+    if (!(a)) { \
+      Arcane::arcanePrintf("Assertion '%s' fails:", #a); \
+      Arcane::arcanePrintf b; \
+      ARCANE_D_WHERE("ARCANE_ASSERT"); \
+    } \
+  }
+#define ARCANE_WARNING(a) \
+  { \
+    Arcane::arcanePrintf a; \
+    ARCANE_D_WHERE("ARCANE_WARNING"); \
+  }
+#else
+#define ARCANE_CHECK_PTR(a)
+#define ARCANE_ASSERT(a, b)
+#define ARCANE_WARNING(a)
+#define ARCANE_DCHECK_POINTER(a) (a);
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -714,8 +732,8 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
  * la macro sont utilisés pour formatter un message d'erreur via la
  * méthode String::format().
  */
-#define ARCANE_THROW(exception_class,...) \
-  ARCCORE_THROW(exception_class,__VA_ARGS__)
+#define ARCANE_THROW(exception_class, ...) \
+  ARCCORE_THROW(exception_class, __VA_ARGS__)
 
 /*!
  * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
@@ -726,7 +744,7 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
  *
  * \sa ARCANE_THROW
  */
-#define ARCANE_THROW_IF(const, exception_class, ...)    \
+#define ARCANE_THROW_IF(const, exception_class, ...) \
   ARCCORE_THROW_IF(const, exception_class, __VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
@@ -760,10 +778,10 @@ _checkPointer(T* t,const char* file,const char* func,size_t line)
  * Sinon, retourne le pointeur.
  */
 static inline void*
-arcaneThrowIfNull(void* ptr,const char* ptr_name,const char* text)
+arcaneThrowIfNull(void* ptr, const char* ptr_name, const char* text)
 {
   if (!ptr)
-    arcaneThrowNullPointerError(ptr_name,text);
+    arcaneThrowNullPointerError(ptr_name, text);
   return ptr;
 }
 
@@ -776,10 +794,10 @@ arcaneThrowIfNull(void* ptr,const char* ptr_name,const char* text)
  * Sinon, retourne le pointeur.
  */
 static inline const void*
-arcaneThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
+arcaneThrowIfNull(const void* ptr, const char* ptr_name, const char* text)
 {
   if (!ptr)
-    arcaneThrowNullPointerError(ptr_name,text);
+    arcaneThrowNullPointerError(ptr_name, text);
   return ptr;
 }
 
@@ -791,11 +809,11 @@ arcaneThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
  * Si le pointeur est nul, appelle à arcaneThrowNullPointerError().
  * Sinon, retourne le pointeur.
  */
-template<typename T> inline T*
-arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
+template <typename T> inline T*
+arcaneThrowIfNull(T* ptr, const char* ptr_name, const char* text)
 {
   if (!ptr)
-    arcaneThrowNullPointerError(ptr_name,text);
+    arcaneThrowNullPointerError(ptr_name, text);
   return ptr;
 }
 
@@ -808,7 +826,7 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
  * \sa arcaneThrowIfNull().
  */
 #define ARCANE_CHECK_POINTER(ptr) \
-  arcaneThrowIfNull(ptr,#ptr,nullptr)
+  arcaneThrowIfNull(ptr, #ptr, nullptr)
 
 /*!
  * \brief Macro retournant le pointeur \a ptr s'il est non nul
@@ -816,8 +834,8 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
  *
  * \sa arcaneThrowIfNull().
  */
-#define ARCANE_CHECK_POINTER2(ptr,text)\
-  arcaneThrowIfNull(ptr,#ptr,text)
+#define ARCANE_CHECK_POINTER2(ptr, text) \
+  arcaneThrowIfNull(ptr, #ptr, text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -831,17 +849,17 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
  * \param max_size nombre d'éléments du tableau
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError [[noreturn]] (Int64 i,Int64 max_size);
+arcaneRangeError [[noreturn]] (Int64 i, Int64 max_size);
 
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
 static inline constexpr ARCCORE_HOST_DEVICE void
-arcaneCheckAt(Int64 i,Int64 max_size)
+arcaneCheckAt(Int64 i, Int64 max_size)
 {
 #ifndef ARCCORE_DEVICE_CODE
-  if (i<0 || i>=max_size)
-    arcaneRangeError(i,max_size);
+  if (i < 0 || i >= max_size)
+    arcaneRangeError(i, max_size);
 #else
   ARCANE_UNUSED(i);
   ARCANE_UNUSED(max_size);
@@ -849,9 +867,9 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 }
 
 #if defined(ARCANE_CHECK) || defined(ARCANE_DEBUG)
-#define ARCANE_CHECK_AT(a,b) ::Arcane::arcaneCheckAt((a),(b))
+#define ARCANE_CHECK_AT(a, b) ::Arcane::arcaneCheckAt((a), (b))
 #else
-#define ARCANE_CHECK_AT(a,b)
+#define ARCANE_CHECK_AT(a, b)
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -862,4 +880,4 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

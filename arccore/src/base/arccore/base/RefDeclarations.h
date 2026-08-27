@@ -16,9 +16,6 @@
 
 #include "arccore/base/BaseTypes.h"
 
-#include <type_traits>
-#include <memory>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,6 +54,7 @@ using Arccore::ExternalReferenceCounterAccessor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Structure servant à tagger les interfaces/classes qui utilisent
  * un compteur de référence interne.
@@ -85,6 +83,7 @@ constexpr int REF_TAG_REFERENCE_COUNTER = 1;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Fonction pour savoir quel type de compteur de référence
  * utilise une classe.
@@ -100,6 +99,7 @@ inline constexpr int arcaneImplGetRefTagId(void*)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Caractéristiques pour gérer les compteurs de référence.
  *
@@ -119,6 +119,7 @@ struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Accesseur des méthodes de gestion de compteurs de référence.
  *
@@ -152,6 +153,7 @@ class ReferenceCounterAccessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Macro pour déclarer les méthodes virtuelles gérant les compteurs
  * de référence.
@@ -191,11 +193,12 @@ class ReferenceCounterAccessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Macro pour déclarer qu'une classe utilise un compteur de
  * référence.
  *
- * La macro doit être utilisée en dehors de tout namespace. Par exemple:
+ * La macro doit être utilisée en dehors de tout namespace. Par exemple :
  *
  * \code
  * namespace MyNamespace

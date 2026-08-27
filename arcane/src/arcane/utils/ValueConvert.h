@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueConvert.h                                              (C) 2000-2025 */
+/* ValueConvert.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -23,11 +23,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::Impl
 {
 
-namespace impl
-{
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un std::istream pour un StringView.
  *
@@ -57,8 +57,9 @@ class ARCANE_UTILS_EXPORT StringViewInputStream
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la valeur de la chaîne \a s dans le type basique \a T
+ * \brief Convertit la valeur de la chaîne \a s dans le type de base \a T
  * et stocke la valeur dans \a v.
  *
  * \retval true en cas d'échec.
@@ -68,7 +69,7 @@ template <class T> inline bool
 builtInGetValueGeneric(T& v, StringView s)
 {
   T read_val = T();
-  impl::StringViewInputStream svis(s);
+  Arcane::Impl::StringViewInputStream svis(s);
   std::istream& sbuf = svis.stream();
   sbuf >> read_val;
   if (sbuf.fail() || sbuf.bad())
@@ -82,12 +83,19 @@ builtInGetValueGeneric(T& v, StringView s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la valeur de la chaîne \a s dans le type basique \a T
+ * \brief Convertit la valeur de la chaîne \a s dans le type de base \a T
  * et stocke la valeur dans \a v.
  *
  * \retval true en cas d'échec.
@@ -96,7 +104,7 @@ builtInGetValueGeneric(T& v, StringView s)
 template <class T> inline bool
 builtInGetValue(T& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Arcane::Impl::builtInGetValueGeneric(v, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,8 +186,9 @@ template <> ARCANE_UTILS_EXPORT bool builtInGetValue(StringUniqueArray& v, Strin
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la valeur de la chaîne \a s en un booléen
+ * \brief Convertit la valeur de la chaîne \a s en un booléen
  *
  * Stocke la valeur convertie dans \a v.
  *
@@ -205,8 +214,9 @@ builtInGetValue(bool& v, StringView s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la valeur de la chaîne \a s dans le type basique \a T
+ * \brief Convertit la valeur de la chaîne \a s dans le type de base \a T
  * et stocke la valeur dans \a v.
  *
  * \retval true en cas d'échec.
@@ -228,8 +238,9 @@ builtInGetValue(String& v, const String& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la valeur de la chaîne \a s dans le type basique \a T
+ * \brief Convertit la valeur de la chaîne \a s dans le type de base \a T
  * et stocke la valeur dans \a v.
  *
  * \retval true en cas d'échec.
@@ -413,5 +424,4 @@ inline const char* typeToName(const Int64Array&)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

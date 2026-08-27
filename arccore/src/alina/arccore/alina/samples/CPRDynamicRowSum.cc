@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -19,7 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #if defined(SOLVER_BACKEND_CUDA)
@@ -49,6 +48,8 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -163,7 +164,7 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");
@@ -171,30 +172,30 @@ int main(int argc, char* argv[])
   desc.add_options()("help,h", "show help")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsque spécifié, traite les fichiers d'entrée en binaire au lieu de MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "matrix,A",
   po::value<string>()->required(),
-  "The system matrix in MatrixMarket format")(
+  "La matrice système au format MatrixMarket")(
   "rhs,f",
   po::value<string>(),
-  "The right-hand side in MatrixMarket format")(
+  "Le côté droit en format MatrixMarket")(
   "weights,w",
   po::value<string>(),
-  "Equation weights in MatrixMarket format")(
+  "Poids des équations au format MatrixMarket")(
   "runtime-block-size,b",
   po::value<int>(),
-  "The block size of the system matrix set at runtime")(
+  "La taille de bloc de la matrice système définie à l'exécution")(
   "static-block-size,c",
   po::value<int>()->default_value(1),
-  "The block size of the system matrix set at compiletime")(
+  "La taille de bloc de la matrice système définie à la compilation")(
   "params,P",
   po::value<string>(),
-  "parameter file in json format")(
+  "fichier de paramètres au format json")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300");
 
@@ -242,7 +243,7 @@ int main(int argc, char* argv[])
     else {
       size_t cols;
       std::tie(rows, cols) = io::mm_reader(Afile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice système non carrée");
     }
 
     if (vm.count("rhs")) {
@@ -257,7 +258,7 @@ int main(int argc, char* argv[])
         std::tie(n, m) = io::mm_reader(bfile)(rhs);
       }
 
-      precondition(n == rows && m == 1, "The RHS vector has wrong size");
+      precondition(n == rows && m == 1, "Le vecteur RHS a une taille incorrecte");
     }
     else {
       rhs.resize(rows, 1.0);
@@ -295,7 +296,7 @@ int main(int argc, char* argv[])
 #endif
 
   default:
-    precondition(false, "Unsupported block size");
+    precondition(false, "Taille de bloc non prise en charge");
     break;
   }
 

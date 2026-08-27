@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ForLoopRanges.h                                             (C) 2000-2025 */
+/* ForLoopRanges.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Intervalles d'itérations pour les boucles.                                */
 /*---------------------------------------------------------------------------*/
@@ -25,36 +25,37 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 //! Applique le fonctor \a func sur une boucle 1D.
 template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
 void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
-  Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(MDIndex<1>(i0), remaining_args...);
-  Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 //! Applique le fonctor \a func sur une boucle 2D.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 //! Applique le fonctor \a func sur une boucle 3D.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 //! Applique le fonctor \a func sur une boucle 4D.
 template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
 {
-  arccoreSequentialFor(bounds,func);
+  arccoreSequentialFor(bounds, func);
 }
 
 /*---------------------------------------------------------------------------*/

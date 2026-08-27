@@ -39,6 +39,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <algorithm>
+#include <iostream>
 
 #include <cuda.h>
 
@@ -62,8 +63,8 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// A partir de CUDA 13, il y a un nouveau type cudaMemLocation
-// pour les méthodes telles cudeMemAdvise ou cudaMemPrefetch
+// À partir de CUDA 13, il existe un nouveau type cudaMemLocation
+// pour des méthodes telles que cudeMemAdvise ou cudaMemPrefetch
 #if defined(ARCCORE_USING_CUDA13_OR_GREATER)
 inline cudaMemLocation
 _getMemoryLocation(int device_id)
@@ -211,6 +212,7 @@ class UnifiedMemoryConcreteAllocator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Allocateur pour la mémoire unifiée.
  *
@@ -446,6 +448,7 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Map contenant l'occupation idéale pour un kernel donné.
  *
@@ -482,7 +485,7 @@ class OccupancyMap
               << " min_grid_size=" << min_grid_size << " nb_reg=" << func_attr.numRegs;
 
 #if CUDART_VERSION >= 12040
-    // cudaFuncGetName is only available in 12.4
+    // cudaFuncGetName n'est disponible qu'en 12.4
     const char* func_name = nullptr;
     cudaFuncGetName(&func_name, kernel_ptr);
     std::cout << " name=" << func_name << "\n";
@@ -640,7 +643,7 @@ class CudaRunQueueEvent
 
   Int64 elapsedTime(IRunQueueEventImpl* start_event) final
   {
-    // NOTE: Les évènements doivent avoir été créé avec le timer actif
+    // NOTE : Les événements doivent avoir été créés avec le timer activé
     ARCCORE_CHECK_POINTER(start_event);
     auto* true_start_event = static_cast<CudaRunQueueEvent*>(start_event);
     float time_in_ms = 0.0;

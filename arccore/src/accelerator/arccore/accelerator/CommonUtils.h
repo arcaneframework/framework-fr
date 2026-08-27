@@ -41,12 +41,14 @@
 // #ifdef ARCCORE_USE_LAMBDA_STORAGE
 
 #include <cstring>
+#include <limits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Accelerator::Impl
 {
+
 /*!
  * \brief Classe pour gérer la conservation d'une lambda dans un itérateur.
  *
@@ -90,6 +92,7 @@ class alignas(LambdaType) LambdaStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Gère l'allocation interne sur le device.
@@ -131,6 +134,7 @@ class ARCCORE_ACCELERATOR_EXPORT GenericDeviceStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Gère l'allocation interne sur le device.
@@ -149,6 +153,7 @@ class ARCCORE_ACCELERATOR_EXPORT DeviceStorageBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Gère l'allocation interne sur le device pour un type donné.
@@ -177,6 +182,7 @@ class DeviceStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Itérateur sur un index.
  *
@@ -299,6 +305,7 @@ class MaxOperator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Itérateur sur une lambda pour récupérer une valeur via un index.
  */
@@ -379,10 +386,11 @@ class GetterLambdaIterator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Itérateur sur une lambda pour positionner une valeur via un index.
  *
- * Le positionnement se fait via Setter::operator=().
+ * Le positionnement est effectué via Setter::operator=().
  */
 template <typename SetterLambda>
 class SetterLambdaIterator

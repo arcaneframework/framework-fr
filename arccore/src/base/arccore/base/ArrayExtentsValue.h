@@ -23,19 +23,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class T> constexpr ARCCORE_HOST_DEVICE
-T
+template <class T> constexpr ARCCORE_HOST_DEVICE T
 fastmod(T a, T b)
 {
   return a < b ? a : a - b * (a / b);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations pour une dimension fixe connue à la compilation.
  *
@@ -46,10 +47,14 @@ class ExtentValue
 {
  public:
 
+  using ExtentIndexType = IndexType_;
+
   static constexpr Int64 size() { return Size; };
-  static constexpr Int32 v = Size;
+  static constexpr ExtentIndexType v = Size;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation pour une dimension dynamique.
  *
@@ -60,11 +65,15 @@ class ExtentValue<DynExtent, IndexType_>
 {
  public:
 
+  using ExtentIndexType = IndexType_;
+
+ public:
+
   constexpr Int64 size() const { return v; }
 
  public:
 
-  IndexType_ v = 0;
+  ExtentIndexType v = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,42 +86,51 @@ class ArrayExtentsValue<IndexType_, X0>
 {
  public:
 
+  using ExtentIndexType = IndexType_;
   using ExtentsType = ExtentsV<IndexType_, X0>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
-  using MDIndexType = MDIndex<1>;
-  using LoopIndexType = MDIndex<1>;
+  using MDIndexType = MDIndex<1, IndexType_>;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using LoopIndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = MDIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = MDIndexType;
 
   ArrayExtentsValue() = default;
 
-  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+  template <Int32 I> constexpr ExtentIndexType constExtent() const
   {
     static_assert(I == 0, "Invalid value for i (i==0)");
     return m_extent0.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 1> asStdArray() const
+  constexpr std::array<ExtentIndexType, 1> asStdArray() const
   {
-    return std::array<Int32, 1>{ m_extent0.v };
+    return std::array<ExtentIndexType, 1>{ m_extent0.v };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  template <typename OtherExtentIndexType>
+  constexpr std::array<OtherExtentIndexType, 1> asOtherStdArray() const
+  {
+    return std::array<OtherExtentIndexType, 1>{
+      static_cast<OtherExtentIndexType>(m_extent0.v)
+    };
+  }
+
+  constexpr Int64 totalNbElement() const
   {
     return m_extent0.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(ExtentIndexType i) const
   {
     return { i };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
+  constexpr ExtentIndexType extent0() const { return m_extent0.v; };
 
   //! Liste des dimensions dynamiques
   constexpr DynamicDimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x = {};
+    std::array<ExtentIndexType, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -121,21 +139,21 @@ class ArrayExtentsValue<IndexType_, X0>
 
  protected:
 
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const ExtentIndexType> extents)
   {
     if constexpr (X0 == DynExtent)
       m_extent0.v = extents[0];
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
+  constexpr ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       m_extent0.v = dims[i++];
   }
 
-  constexpr std::array<Int32, 0> _removeFirstExtent() const
+  constexpr std::array<ExtentIndexType, 0> _removeFirstExtent() const
   {
     return {};
   }
@@ -147,7 +165,7 @@ class ArrayExtentsValue<IndexType_, X0>
 
  protected:
 
-  impl::ExtentValue<X0> m_extent0;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -160,12 +178,13 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 {
  public:
 
+  using ExtentIndexType = IndexType_;
   using ExtentsType = ExtentsV<IndexType_, X0, X1>;
-  using MDIndexType = MDIndex<2>;
-  using LoopIndexType = MDIndex<2>;
-  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+  using MDIndexType = MDIndex<2, IndexType_>;
+  using DynamicDimsType = ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using LoopIndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = MDIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -173,7 +192,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
  public:
 
-  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+  template <Int32 I> constexpr ExtentIndexType constExtent() const
   {
     static_assert(I >= 0 && I < 2, "Invalid value for I (0<=I<2)");
     if (I == 0)
@@ -181,30 +200,36 @@ class ArrayExtentsValue<IndexType_, X0, X1>
     return m_extent1.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 2> asStdArray() const
+  constexpr std::array<ExtentIndexType, 2> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  template <typename OtherExtentIndexType>
+  constexpr std::array<OtherExtentIndexType, 2> asOtherStdArray() const
+  {
+    return std::array<OtherExtentIndexType, 2>{ m_extent0.v, m_extent1.v };
+  }
+
+  constexpr Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(ExtentIndexType i) const
   {
-    Int32 i0 = i / m_extent1.v;
-    Int32 i1 = i % m_extent1.v;
+    ExtentIndexType i0 = i / m_extent1.v;
+    ExtentIndexType i1 = i % m_extent1.v;
     return { i0, i1 };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
+  constexpr ExtentIndexType extent0() const { return m_extent0.v; };
+  constexpr ExtentIndexType extent1() const { return m_extent1.v; };
 
   //! Liste des dimensions dynamiques
   constexpr DynamicDimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x = {};
+    std::array<ExtentIndexType, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -215,7 +240,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
  protected:
 
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const ExtentIndexType> extents)
   {
     if constexpr (X0 == DynExtent)
       m_extent0.v = extents[0];
@@ -224,7 +249,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
+  constexpr ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
@@ -233,9 +258,9 @@ class ArrayExtentsValue<IndexType_, X0, X1>
       m_extent1.v = dims[i++];
   }
 
-  constexpr std::array<Int32, 1> _removeFirstExtent() const
+  constexpr std::array<ExtentIndexType, 1> _removeFirstExtent() const
   {
-    return std::array<Int32, 1>{ m_extent1.v };
+    return std::array<ExtentIndexType, 1>{ m_extent1.v };
   }
 
   ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] MDIndexType idx) const
@@ -246,8 +271,8 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
  protected:
 
-  impl::ExtentValue<X0> m_extent0;
-  impl::ExtentValue<X1> m_extent1;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -260,12 +285,13 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 {
  public:
 
+  using ExtentIndexType = IndexType_;
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
-  using MDIndexType = MDIndex<3>;
-  using LoopIndexType = MDIndex<3>;
+  using MDIndexType = MDIndex<3, IndexType_>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using LoopIndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = MDIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -273,7 +299,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
  public:
 
-  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+  template <Int32 I> constexpr ExtentIndexType constExtent() const
   {
     static_assert(I >= 0 && I < 3, "Invalid value for I (0<=I<3)");
     if (I == 0)
@@ -283,33 +309,39 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
     return m_extent2.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 3> asStdArray() const
+  constexpr std::array<ExtentIndexType, 3> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v, m_extent2.v };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  template <typename OtherExtentIndexType>
+  constexpr std::array<OtherExtentIndexType, 3> asOtherStdArray() const
+  {
+    return std::array<OtherExtentIndexType, 3>{ m_extent0.v, m_extent1.v, m_extent2.v };
+  }
+
+  constexpr Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size() * m_extent2.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(ExtentIndexType i) const
   {
-    Int32 i0 = i / (m_extent1.v * m_extent2.v);
+    ExtentIndexType i0 = i / (m_extent1.v * m_extent2.v);
     i %= (m_extent1.v * m_extent2.v);
-    Int32 i1 = i / m_extent2.v;
-    Int32 i2 = i % m_extent2.v;
+    ExtentIndexType i1 = i / m_extent2.v;
+    ExtentIndexType i2 = i % m_extent2.v;
     return { i0, i1, i2 };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
+  constexpr ExtentIndexType extent0() const { return m_extent0.v; };
+  constexpr ExtentIndexType extent1() const { return m_extent1.v; };
+  constexpr ExtentIndexType extent2() const { return m_extent2.v; };
 
   //! Liste des dimensions dynamiques
   constexpr DynamicDimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x = {};
+    std::array<ExtentIndexType, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -322,7 +354,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
  protected:
 
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const ExtentIndexType> extents)
   {
     if constexpr (X0 == DynExtent)
       m_extent0.v = extents[0];
@@ -332,8 +364,8 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
       m_extent2.v = extents[2];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
+  //! Construit une instance avec N valeurs dynamiques.
+  constexpr ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
@@ -344,7 +376,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
       m_extent2.v = dims[i++];
   }
 
-  constexpr std::array<Int32, 2> _removeFirstExtent() const
+  constexpr std::array<ExtentIndexType, 2> _removeFirstExtent() const
   {
     return { m_extent1.v, m_extent2.v };
   }
@@ -358,13 +390,14 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
  protected:
 
-  impl::ExtentValue<X0> m_extent0;
-  impl::ExtentValue<X1> m_extent1;
-  impl::ExtentValue<X2> m_extent2;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
+  Arcane::Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Spécialisation pour contenir les dimensions d'un tableau à 4 dimensions.
  */
@@ -373,12 +406,13 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 {
  public:
 
+  using ExtentIndexType = IndexType_;
   using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
-  using MDIndexType = MDIndex<4>;
-  using LoopIndexType = MDIndex<4>;
+  using MDIndexType = MDIndex<4, IndexType_>;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using LoopIndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = MDIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -386,7 +420,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 
  public:
 
-  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE ExtentIndexType constExtent() const
   {
     static_assert(I >= 0 && I < 4, "Invalid value for I (0<=I<4)");
     if (I == 0)
@@ -398,38 +432,44 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
     return m_extent3.v;
   }
 
-  constexpr ARCCORE_HOST_DEVICE std::array<Int32, 4> asStdArray() const
+  constexpr ARCCORE_HOST_DEVICE std::array<ExtentIndexType, 4> asStdArray() const
   {
     return { m_extent0.v, m_extent1.v, m_extent2.v, m_extent3.v };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
+  template <typename OtherExtentIndexType>
+  constexpr std::array<OtherExtentIndexType, 4> asOtherStdArray() const
+  {
+    return std::array<OtherExtentIndexType, 4>{ m_extent0.v, m_extent1.v, m_extent2.v, m_extent3.v };
+  }
+
+  constexpr Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size() * m_extent2.size() * m_extent3.size();
   }
 
-  constexpr ARCCORE_HOST_DEVICE MDIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(ExtentIndexType i) const
   {
     // Compute base indices
-    Int32 i3 = impl::fastmod(i, m_extent3.v);
-    Int32 fac = m_extent3.v;
-    Int32 i2 = impl::fastmod(i / fac, m_extent2.v);
+    ExtentIndexType i3 = Arcane::Impl::fastmod(i, m_extent3.v);
+    ExtentIndexType fac = m_extent3.v;
+    ExtentIndexType i2 = Arcane::Impl::fastmod(i / fac, m_extent2.v);
     fac *= m_extent2.v;
-    Int32 i1 = impl::fastmod(i / fac, m_extent1.v);
+    ExtentIndexType i1 = Arcane::Impl::fastmod(i / fac, m_extent1.v);
     fac *= m_extent1.v;
-    Int32 i0 = i / fac;
+    ExtentIndexType i0 = i / fac;
     return { i0, i1, i2, i3 };
   }
 
-  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
-  constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extent3.v; };
+  constexpr ExtentIndexType extent0() const { return m_extent0.v; };
+  constexpr ExtentIndexType extent1() const { return m_extent1.v; };
+  constexpr ExtentIndexType extent2() const { return m_extent2.v; };
+  constexpr ExtentIndexType extent3() const { return m_extent3.v; };
 
   //! Liste des dimensions dynamiques
   constexpr DynamicDimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x = {};
+    std::array<ExtentIndexType, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -444,7 +484,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 
  protected:
 
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const ExtentIndexType> extents)
   {
     if constexpr (X0 == DynExtent)
       m_extent0.v = extents[0];
@@ -456,7 +496,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
       m_extent3.v = extents[3];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
+  //! Construit une instance avec N valeurs dynamiques.
   ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
@@ -470,7 +510,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
       m_extent3.v = dims[i++];
   }
 
-  constexpr std::array<Int32, 3> _removeFirstExtent() const
+  constexpr std::array<ExtentIndexType, 3> _removeFirstExtent() const
   {
     return { m_extent1.v, m_extent2.v, m_extent3.v };
   }
@@ -485,18 +525,18 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 
  protected:
 
-  impl::ExtentValue<X0> m_extent0;
-  impl::ExtentValue<X1> m_extent1;
-  impl::ExtentValue<X2> m_extent2;
-  impl::ExtentValue<X3> m_extent3;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
+  Arcane::Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
+  Arcane::Impl::ExtentValue<X3, ExtentIndexType> m_extent3;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -6,6 +6,7 @@
   TestReduce1.cc
   TestLoop1.cc
   TestMemoryBandwidth.cc
+  TestLambda.cc
 )
 
 set(ACCELERATOR_FILES
@@ -15,6 +16,7 @@ set(ACCELERATOR_FILES
   TestCooperativeLaunch_GridSync.cc
   TestCooperativeLaunch_Accelerator.cc
   TestCooperativeLaunch_Accelerator2.cc
+  TestLambda_Accelerator.cc
 )
 
 arccore_add_component_test_executable(accelerator
@@ -29,7 +31,7 @@ target_link_libraries(arccore_accelerator.tests PRIVATE
 )
 if (ARCCORE_ENABLE_TBB)
   target_compile_definitions(arccore_accelerator.tests PRIVATE ARCCORE_HAS_ACCELERATOR_THREAD)
-endif()
+endif ()
 
 gtest_discover_tests(arccore_accelerator.tests DISCOVERY_TIMEOUT 30)
 

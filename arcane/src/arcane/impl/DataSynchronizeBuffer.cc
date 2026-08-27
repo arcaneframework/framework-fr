@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataSynchronizeBuffer.cc                                    (C) 2000-2025 */
+/* DataSynchronizeBuffer.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Implémentation d'un buffer générique pour la synchronisation de données.  */
 /*---------------------------------------------------------------------------*/
@@ -21,9 +21,10 @@
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/utils/FixedArray.h"
-#include "arccore/trace/ITraceMng.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include <cstddef>
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,6 +160,7 @@ localIds(Int32 index) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Initialise les informations du buffer.
  *
@@ -232,6 +234,7 @@ barrier()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -250,6 +253,7 @@ _compute(ConstArrayView<Int32> datatype_sizes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -345,6 +349,7 @@ prepareSynchronize(bool is_compare_sync)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Compare les valeurs avant/après synchronisation.
  *
@@ -379,6 +384,7 @@ finalizeSynchronize()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * Les comparaisons ne sont pas supportées si on utilise les synchronisations
  * multiples.

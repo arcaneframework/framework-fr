@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@
 #include "arccore/message_passing/Stat.h"
 
 #include <cmath>
+#include <iomanip>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,11 +34,12 @@
 namespace Arcane::Parallel
 {
 
-namespace  MP = Arccore::MessagePassing;
+namespace MP = Arccore::MessagePassing;
 using MP::OneStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Statistiques sur le parallélisme.
  */
@@ -59,16 +61,16 @@ class Stat
     Real m_total_time = 0.0;
   };
 
-  using CumulativeStatMap = std::map<String,CumulativeStat>;
+  using CumulativeStatMap = std::map<String, CumulativeStat>;
 
-  //! Infos de sérialisation
+  //! Informations de sérialisation
   class SerializedStats
   {
    public:
 
     void save(const CumulativeStatMap& stat_map)
     {
-      for (auto& i : stat_map){
+      for (auto& i : stat_map) {
         const CumulativeStat& s = i.second;
         m_total_time_list.add(s.m_total_time);
         m_nb_message_list.add(s.m_nb_message);
@@ -185,7 +187,7 @@ dumpJSON(JSONWriter& writer)
   writer.writeKey("Stats");
   writer.beginArray();
   for (const OneStat& s : statList())
-    Parallel::dumpJSON(writer, s); // cumulative stats dump
+    Parallel::dumpJSON(writer, s); // dump des statistiques cumulées
   writer.endArray();
 }
 
@@ -195,7 +197,7 @@ dumpJSON(JSONWriter& writer)
 void Stat::
 saveValues(ITraceMng* tm, Properties* p)
 {
-  tm->info() << "Saving IParallelMng Stat values";
+  tm->info() << "Sauvegarde des valeurs IParallelMng Stat";
 
   CumulativeStatMap current_stat_map(m_previous_stat_map);
   _mergeStats(current_stat_map);
@@ -216,16 +218,16 @@ saveValues(ITraceMng* tm, Properties* p)
 void Stat::
 mergeValues(ITraceMng* tm, Properties* p)
 {
-  tm->info(4) << "Merging IParallelMng Stat values";
+  tm->info(4) << "Fusion des valeurs IParallelMng Stat";
 
   SerializedStats save_info;
 
   Int32 v = p->getInt32WithDefault("Version", 0);
-  // Ne fait rien si aucune info dans la protection
+  // Ne fait rien s'il n'y a pas d'informations dans la protection
   if (v == 0)
     return;
   if (v != 1) {
-    tm->info() << "Warning: can not merge IParallelMng stats values because checkpoint version is not compatible";
+    tm->info() << "Avertissement : impossible de fusionner les valeurs de statistiques IParallelMng car la version du point de contrôle n'est pas compatible";
     return;
   }
 
@@ -291,9 +293,9 @@ printCollective(IParallelMng* pm)
   _mergeStats(stat_map);
   _mergeStats(cumulative_stat_map);
 
-  tm->info() << "Message Passing Stats (Current Execution)";
+  tm->info() << "Statistiques de passage de messages (Exécution actuelle)";
   _printCollective(stat_map, pm);
-  tm->info() << "Message Passing Stats (Cumulative Execution)";
+  tm->info() << "Statistiques de passage de messages (Exécution cumulée)";
   _printCollective(cumulative_stat_map, pm);
 }
 
@@ -304,8 +306,8 @@ void Stat::
 _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
 {
   // Les instances \a s de tous les rangs peuvent ne pas avoir les mêmes
-  // statistiques. Pour éviter des blocages, on ne garde que les statistiques
-  // communes à tout le monde.
+  // statistiques. Pour éviter le blocage, nous ne conservons que les statistiques
+  // communes à tous.
 
   UniqueArray<String> input_strings;
 
@@ -315,19 +317,19 @@ _printCollective(const CumulativeStatMap& stat_map, IParallelMng* pm)
   MessagePassing::filterCommonStrings(pm, input_strings, common_strings);
   Int32 nb_rank = pm->commSize();
   ITraceMng* tm = pm->traceMng();
-  tm->info() << "Message Passing Stats (unit is second) "
+  tm->info() << " Statistiques de passage de messages (l'unité est la seconde) "
              << Trace::Width(48) << "min"
              << Trace::Width(7) << "max";
-  tm->info() << Trace::Width(55) << "average"
+  tm->info() << Trace::Width(55) << "moyenne"
              << Trace::Width(10) << "min"
              << Trace::Width(12) << "max"
-             << Trace::Width(10) << "rank"
-             << Trace::Width(7) << "rank"
+             << Trace::Width(10) << "rang"
+             << Trace::Width(7) << "rang"
              << Trace::Width(10) << "nb";
   for (const String& name : common_strings) {
     auto i = stat_map.find(name);
     if (i == stat_map.end())
-      ARCANE_FATAL("Internal error: string '{0}' not in stats", name);
+      ARCANE_FATAL("Erreur interne : la chaîne '{0}' n'est pas dans les statistiques", name);
     Real my_time = i->second.m_total_time;
     Real sum_time = 0.0;
     Real min_time = 0.0;

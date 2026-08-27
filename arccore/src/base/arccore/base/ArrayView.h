@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2025 */
+/* ArrayView.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Types définissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
@@ -30,12 +30,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class ConstArrayView;
-template<typename T> class ConstIterT;
-template<typename T> class IterT;
+template <typename T> class ConstArrayView;
+template <typename T> class ConstIterT;
+template <typename T> class IterT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  * \brief Vue modifiable d'un tableau d'un type \a T.
@@ -52,7 +53,7 @@ template<typename T> class IterT;
  UniqueArray ou SharedArray. Une vue n'est valide que tant que le conteneur associé n'est pas réalloué.
  De même, le contructeur et l'opérateur de recopie ne font que recopier les pointeurs
  sans réallouer la mémoire. Il faut donc les utiliser avec précaution.
- 
+
  Si %Arccore est compilé en mode vérification (ARCCORE_CHECK est défini), les accès
  par l'intermédiaire de l'opérateurs operator[]() sont vérifiés et une
  exception IndexOutOfRangeException est lancé si un débordement de
@@ -89,7 +90,7 @@ template<typename T> class IterT;
  \endcode
 
 */
-template<class T>
+template <class T>
 class ArrayView
 {
   template <typename T2, Int64 Extent> friend class Span;
@@ -119,9 +120,9 @@ class ArrayView
   typedef std::ptrdiff_t difference_type;
 
   //! Type d'un itérateur sur tout le tableau
-  typedef IterT< ArrayView<T> > iter;
+  typedef IterT<ArrayView<T>> iter;
   //! Type d'un itérateur constant sur tout le tableau
-  typedef ConstIterT< ArrayView<T> > const_iter;
+  typedef ConstIterT<ArrayView<T>> const_iter;
 
   typedef std::reverse_iterator<iterator> reverse_iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -129,25 +130,33 @@ class ArrayView
  public:
 
   //! Construit une vue vide.
-  constexpr ArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
+  constexpr ArrayView() noexcept
+  : m_size(0)
+  , m_ptr(nullptr)
+  {}
 
   //! Constructeur de recopie depuis une autre vue
   ArrayView(const ArrayView<T>& from) = default;
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  constexpr ArrayView(Integer asize,pointer ptr)  noexcept : m_size(asize), m_ptr(ptr) {}
+  constexpr ArrayView(Integer asize, pointer ptr) noexcept
+  : m_size(asize)
+  , m_ptr(ptr)
+  {}
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
-  template<std::size_t N>
-  constexpr ArrayView(std::array<T,N>& v)
-  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
+  template <std::size_t N>
+  constexpr ArrayView(std::array<T, N>& v)
+  : m_size(arccoreCheckArraySize(v.size()))
+  , m_ptr(v.data())
+  {}
 
   //! Opérateur de recopie
   ArrayView<T>& operator=(const ArrayView<T>& from) = default;
 
-  template<std::size_t N>
-  constexpr ArrayView<T>& operator=(std::array<T,N>& from)
+  template <std::size_t N>
+  constexpr ArrayView<T>& operator=(std::array<T, N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
@@ -158,9 +167,9 @@ class ArrayView
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  static constexpr ThatClass create(pointer ptr,Integer asize) noexcept
+  static constexpr ThatClass create(pointer ptr, Integer asize) noexcept
   {
-    return ThatClass(asize,ptr);
+    return ThatClass(asize, ptr);
   }
 
  public:
@@ -172,7 +181,7 @@ class ArrayView
    */
   constexpr reference operator[](Integer i)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -183,7 +192,7 @@ class ArrayView
    */
   constexpr const_reference operator[](Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -194,7 +203,7 @@ class ArrayView
    */
   constexpr reference operator()(Integer i)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -205,7 +214,7 @@ class ArrayView
    */
   constexpr const_reference operator()(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -216,7 +225,7 @@ class ArrayView
    */
   constexpr const_reference item(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -225,9 +234,9 @@ class ArrayView
    *
    * En mode \a check, vérifie les débordements.
    */
-  constexpr void setItem(Integer i,const_reference v)
+  constexpr void setItem(Integer i, const_reference v)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     m_ptr[i] = v;
   }
 
@@ -239,11 +248,11 @@ class ArrayView
   //! Itérateur sur le premier élément du tableau.
   constexpr iterator begin() noexcept { return iterator(m_ptr); }
   //! Itérateur sur le premier élément après la fin du tableau.
-  constexpr iterator end() noexcept { return iterator(m_ptr+m_size); }
+  constexpr iterator end() noexcept { return iterator(m_ptr + m_size); }
   //! Itérateur constant sur le premier élément du tableau.
   constexpr const_iterator begin() const noexcept { return const_iterator(m_ptr); }
   //! Itérateur constant sur le premier élément après la fin du tableau.
-  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr+m_size); }
+  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr + m_size); }
   //! Itérateur inverse sur le premier élément du tableau.
   constexpr reverse_iterator rbegin() noexcept { return std::make_reverse_iterator(end()); }
   //! Itérateur inverse sur le premier élément du tableau.
@@ -259,48 +268,49 @@ class ArrayView
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range()
   {
-    return ArrayRange<pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<pointer>(m_ptr, m_ptr + m_size);
   }
   //! Intervalle d'itération du premier au dernièr élément.
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<const_pointer>(m_ptr, m_ptr + m_size);
   }
 
  public:
-  //! Addresse du index-ème élément
+
+  //! Adresse du index-ème élément
   constexpr pointer ptrAt(Integer index)
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
-  //! Addresse du index-ème élément
+  //! Adresse du index-ème élément
   constexpr const_pointer ptrAt(Integer index) const
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
-  // Elément d'indice \a i. Vérifie toujours les débordements
+  // Élément à l'indice \a i. Vérifie toujours les débordements
   constexpr const_reference at(Integer i) const
   {
-    arccoreCheckAt(i,m_size);
+    arccoreCheckAt(i, m_size);
     return m_ptr[i];
   }
 
-  // Positionne l'élément d'indice \a i. Vérifie toujours les débordements
-  void setAt(Integer i,const_reference value)
+  // Définit l'élément à l'indice \a i. Vérifie toujours les débordements
+  void setAt(Integer i, const_reference value)
   {
-    arccoreCheckAt(i,m_size);
+    arccoreCheckAt(i, m_size);
     m_ptr[i] = value;
   }
 
   //! Remplit le tableau avec la valeur \a o
   void fill(const T& o) noexcept
   {
-    for( Integer i=0, n=m_size; i<n; ++i )
+    for (Integer i = 0, n = m_size; i < n; ++i)
       m_ptr[i] = o;
   }
 
@@ -309,7 +319,7 @@ class ArrayView
    */
   constexpr ConstArrayView<T> constView() const noexcept
   {
-    return ConstArrayView<T>(m_size,m_ptr);
+    return ConstArrayView<T>(m_size, m_ptr);
   }
 
   /*!
@@ -319,12 +329,12 @@ class ArrayView
    * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ArrayView<T> subView(Integer abegin,Integer asize) noexcept
+  constexpr ArrayView<T> subView(Integer abegin, Integer asize) noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ArrayView<T>(asize, m_ptr + abegin);
   }
 
   /*!
@@ -334,9 +344,9 @@ class ArrayView
    * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ThatClass subPart(Integer abegin,Integer asize) noexcept
+  constexpr ThatClass subPart(Integer abegin, Integer asize) noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   /*!
@@ -346,24 +356,24 @@ class ArrayView
    * Si (\a abegin+ \a asize) est supérieur à la taille du tableau,
    * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ConstArrayView<T> subConstView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subConstView(Integer abegin, Integer asize) const noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ConstArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ConstArrayView<T>(asize, m_ptr + abegin);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
+  constexpr ArrayView<T> subViewInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval)
+  constexpr ThatClass subPartInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
@@ -374,26 +384,26 @@ class ArrayView
    * nombre d'éléments courant. S'il est inférieur, les éléments du
    * tableau courant situés à la fin du tableau sont inchangés
    */
-  template<class U>
+  template <class U>
   void copy(const U& copy_array)
   {
     auto copy_size = copy_array.size();
     const_pointer copy_begin = copy_array.data();
     pointer to_ptr = m_ptr;
     Integer n = m_size;
-    if (copy_size<m_size)
+    if (copy_size < m_size)
       n = (Integer)copy_size;
-    for( Integer i=0; i<n; ++i )
+    for (Integer i = 0; i < n; ++i)
       to_ptr[i] = copy_begin[i];
   }
 
   //! Retourne \a true si le tableau est vide (dimension nulle)
-  constexpr bool empty() const noexcept { return m_size==0; }
+  constexpr bool empty() const noexcept { return m_size == 0; }
   //! \a true si le tableau contient l'élément de valeur \a v
   bool contains(const_reference v) const
   {
-    for( Integer i=0; i<m_size; ++i ){
-      if (m_ptr[i]==v)
+    for (Integer i = 0; i < m_size; ++i) {
+      if (m_ptr[i] == v)
         return true;
     }
     return false;
@@ -451,17 +461,17 @@ class ArrayView
 
   friend inline bool operator==(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
   {
-    return impl::areEqual(rhs,lhs);
+    return Arcane::Impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
   {
-    return !(rhs==lhs);
+    return !(rhs == lhs);
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ArrayView<T>& val)
   {
-    impl::dumpArray(o,val,500);
+    Arcane::Impl::dumpArray(o, val, 500);
     return o;
   }
 
@@ -481,14 +491,18 @@ class ArrayView
    * penser à la supprimer)
    */
   constexpr const_pointer _ptr() const noexcept { return m_ptr; }
-  
+
   /*!
    * \brief Modifie le pointeur et la taille du tableau.
    *
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  void _setArray(pointer v,Integer s) noexcept { m_ptr = v; m_size = s; }
+  void _setArray(pointer v, Integer s) noexcept
+  {
+    m_ptr = v;
+    m_size = s;
+  }
 
   /*!
    * \brief Modifie le pointeur du début du tableau.
@@ -513,22 +527,23 @@ class ArrayView
 
  private:
 
-  static constexpr Integer _min(Integer a,Integer b) noexcept
+  static constexpr Integer _min(Integer a, Integer b) noexcept
   {
-    return ( (a<b) ? a : b );
+    return ((a < b) ? a : b);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \ingroup Collection 
+ * \ingroup Collection
  * \brief Vue constante d'un tableau de type \a T.
  *
  * Cette classe fonctionne de la même manière que ArrayView à la seule
  * différence qu'il n'est pas possible de modifier les éléments du tableau.
  */
-template<class T>
+template <class T>
 class ConstArrayView
 {
   friend class Span<T>;
@@ -556,17 +571,22 @@ class ConstArrayView
   using const_value_type = typename std::add_const_t<value_type>;
 
   //! Type d'un itérateur constant sur tout le tableau
-  typedef ConstIterT< ConstArrayView<T> > const_iter;
+  typedef ConstIterT<ConstArrayView<T>> const_iter;
 
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
  public:
 
   //! Construit un tableau vide.
-  constexpr ConstArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
+  constexpr ConstArrayView() noexcept
+  : m_size(0)
+  , m_ptr(nullptr)
+  {}
   //! Construit un tableau avec \a s élément
-  constexpr ConstArrayView(Integer s,const_pointer ptr) noexcept
-  : m_size(s), m_ptr(ptr) {}
+  constexpr ConstArrayView(Integer s, const_pointer ptr) noexcept
+  : m_size(s)
+  , m_ptr(ptr)
+  {}
   //! Constructeur par copie.
   ConstArrayView(const ConstArrayView<T>& from) = default;
   /*!
@@ -574,12 +594,16 @@ class ConstArrayView
    * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
    */
   constexpr ConstArrayView(const ArrayView<T>& from) noexcept
-  : m_size(from.size()), m_ptr(from.data()) { }
+  : m_size(from.size())
+  , m_ptr(from.data())
+  {}
 
   //! Création depuis un std::array
-  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView(const std::array<X,N>& v)
-  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
+  template <std::size_t N, typename X, typename = std::enable_if_t<std::is_same_v<X, const_value_type>>>
+  constexpr ConstArrayView(const std::array<X, N>& v)
+  : m_size(arccoreCheckArraySize(v.size()))
+  , m_ptr(v.data())
+  {}
 
   /*!
    * \brief Opérateur de recopie.
@@ -594,26 +618,26 @@ class ConstArrayView
   constexpr ConstArrayView<T>& operator=(const ArrayView<T>& from)
   {
     m_size = from.size();
-    m_ptr  = from.data();
+    m_ptr = from.data();
     return (*this);
   }
 
   //! Opérateur de recopie
-  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from)
+  template <std::size_t N, typename X, typename = std::enable_if_t<std::is_same_v<X, const_value_type>>>
+  constexpr ConstArrayView<T>& operator=(const std::array<X, N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
     return (*this);
   }
- 
+
  public:
 
   //! Construit une vue sur une zone mémoire commencant par \a ptr et
   // contenant \a asize éléments.
-  static constexpr ThatClass create(const_pointer ptr,Integer asize) noexcept
+  static constexpr ThatClass create(const_pointer ptr, Integer asize) noexcept
   {
-    return ThatClass(asize,ptr);
+    return ThatClass(asize, ptr);
   }
 
  public:
@@ -625,12 +649,12 @@ class ConstArrayView
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ConstArrayView<T> subView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subView(Integer abegin, Integer asize) const noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ConstArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ConstArrayView<T>(asize, m_ptr + abegin);
   }
 
   /*!
@@ -640,9 +664,9 @@ class ConstArrayView
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ThatClass subPart(Integer abegin,Integer asize) const noexcept
+  constexpr ThatClass subPart(Integer abegin, Integer asize) const noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   /*!
@@ -652,28 +676,28 @@ class ConstArrayView
    * Si `(abegin+asize)` est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  constexpr ConstArrayView<T> subConstView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subConstView(Integer abegin, Integer asize) const noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr ConstArrayView<T> subViewInterval(Integer index,Integer nb_interval) const
+  constexpr ConstArrayView<T> subViewInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval) const
+  constexpr ThatClass subPartInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Addresse du index-ème élément
   constexpr const_pointer ptrAt(Integer index) const
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
   /*!
@@ -683,7 +707,7 @@ class ConstArrayView
    */
   constexpr const_reference operator[](Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -694,7 +718,7 @@ class ConstArrayView
    */
   constexpr const_reference operator()(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -705,7 +729,7 @@ class ConstArrayView
    */
   constexpr const_reference item(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -716,18 +740,18 @@ class ConstArrayView
   //! Itérateur sur le premier élément du tableau.
   constexpr const_iterator begin() const noexcept { return const_iterator(m_ptr); }
   //! Itérateur sur le premier élément après la fin du tableau.
-  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr+m_size); }
+  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr + m_size); }
   //! Itérateur inverse sur le premier élément du tableau.
   constexpr const_reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end()); }
   //! Itérateur inverse sur le premier élément après la fin du tableau.
   constexpr const_reverse_iterator rend() const noexcept { return std::make_reverse_iterator(begin()); }
   //! \a true si le tableau est vide (size()==0)
-  constexpr bool empty() const noexcept { return m_size==0; }
+  constexpr bool empty() const noexcept { return m_size == 0; }
   //! \a true si le tableau contient l'élément de valeur \a v
   bool contains(const_reference v) const
   {
-    for( Integer i=0; i<m_size; ++i ){
-      if (m_ptr[i]==v)
+    for (Integer i = 0; i < m_size; ++i) {
+      if (m_ptr[i] == v)
         return true;
     }
     return false;
@@ -762,37 +786,37 @@ class ConstArrayView
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<const_pointer>(m_ptr, m_ptr + m_size);
   }
 
  public:
 
   friend inline bool operator==(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
   {
-    return Arcane::impl::areEqual(rhs,lhs);
+    return Arcane::Impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
   {
-    return !(rhs==lhs);
+    return !(rhs == lhs);
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ConstArrayView<T>& val)
   {
-    Arcane::impl::dumpArray(o,val,500);
+    Arcane::Impl::dumpArray(o, val, 500);
     return o;
   }
 
  private:
 
-  Integer m_size; //!< Nombre d'éléments 
+  Integer m_size; //!< Nombre d'éléments
   const_pointer m_ptr; //!< Pointeur sur le début du tableau
 
  private:
 
-  static constexpr Integer _min(Integer a,Integer b) noexcept
+  static constexpr Integer _min(Integer a, Integer b) noexcept
   {
-    return ( (a<b) ? a : b );
+    return ((a < b) ? a : b);
   }
 };
 
@@ -806,16 +830,16 @@ class ConstArrayView
  * \a max_print, alors les (max_print/2) premiers et derniers
  * éléments sont affichés.
  */
-template<typename T> inline void
-dumpArray(std::ostream& o,ConstArrayView<T> val,int max_print)
+template <typename T> inline void
+dumpArray(std::ostream& o, ConstArrayView<T> val, int max_print)
 {
-  impl::dumpArray(o,val,max_print);
+  Arcane::Impl::dumpArray(o, val, max_print);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

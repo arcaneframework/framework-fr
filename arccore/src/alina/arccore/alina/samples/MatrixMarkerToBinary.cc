@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -20,14 +20,15 @@
 #include <string>
 #include <complex>
 
-#include <boost/program_options.hpp>
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/ValueTypeComplex.h"
 #include "arccore/alina/IO.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 using namespace Arcane;
 namespace io = Alina::IO;
-namespace po = boost::program_options;
+namespace po = Arcane::ProgramOptions;
 using Alina::precondition;
 
 //---------------------------------------------------------------------------

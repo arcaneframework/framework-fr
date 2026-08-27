@@ -9,7 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 4.1+ (mars 2026) {#arcanedoc_version410}
+## Version Arcane 4.1.16.0 (8 juillet 2026) {#arcanedoc_version410}
 
 ### Nouveautés/Améliorations
 
@@ -60,6 +60,19 @@ ___
   les variables (\pr{2482})
 - Ajoute support expérimental pour changer l'allocateur d'un
   \arcane{Array} (\pr{2493})
+- Ajoute la prise en charge des groupes et familles de faces et de mailles dans les fichiers MED, y compris
+  des options pour désactiver la création de groupes de faces et des tests pour les fichiers MED 3D de premier ordre
+  (\pr{2583}, \pr{2584}).
+- Ajoute la prise en charge de l'hexaèdre quadratique (`Hexaedron20`) dans les fichiers MED et utilise
+  le numérotage MED pour les nœuds (\pr{2585}, \pr{2586}).
+- Ajoute des modules de test simples de chaleur et de Poisson pour exercer les solveurs linéaires et
+  les maillages polygonaux (\pr{2591}, \pr{2593}).
+- Ajoute la prise en charge des mailles polygonales dans les maillages standards, le lecteur MED et l'ancien
+  écrivain VTK, y compris des tests pour les types de polygones et le module de chaleur simple
+  (\pr{2590}, \pr{2591}, \pr{2592}, \pr{2593}).
+- Ajoute la prise en charge des variables de maillage multidimensionnelles et des variables matricielles, avec
+  de nouveaux en-têtes et des vues en lecture seule de l'accélérateur pour `MeshVectorMDVariable` et
+  `MeshMatrixMDVariable` (\pr{2676}, \pr{2677}, \pr{2679}).
 
 ### API Accélérateur
 
@@ -103,6 +116,20 @@ ___
 - Ajoute support pour construire des \arcane{NumArray<T,MDDim1>}
   depuis un \arcane{Span} dont la mémoire peut être sur CPU ou GPU
   (\pr{2491})
+- Ajoute la fonction `launchRunCommand()` dans l'API d'accélérateur pour lancer `RunCommand`
+  pour des boucles simples ou complexes, et permet des lambdas non-const dans les boucles d'accélérateur (\pr{2670}).
+- Ajoute les méthodes `fill()` et `operator<<` pour `NumMatrix` et `NumVector`, et
+  utilise les concepts C++20 au lieu de SFINAE pour les variables multidimensionnelles et
+  `DataSetter`/`DataGetterSetter` (\pr{2675}).
+- Ajoute des méthodes pratiques `begin()`, `end()` et `data()` pour `NumArray` et
+  expose les méthodes `ArrayExtents::extents` publiquement pour faciliter l'utilisation des
+  tableaux multidimensionnels (\pr{2666}).
+- Ajoute la prise en charge de `NumArray` avec des types d'index autres que `Int32` (par exemple,
+  `Int64`, `size_t`) et améliore la prise en charge des étendues de tableau et de `MDIndex`
+  (\pr{2668}, \pr{2671}, \pr{2672}).
+- Ajoute de nouveaux exemples démontrant l'utilisation de l'accélérateur : sous-domaine autonome avec
+  boucles d'accélérateur, backends d'accélérateur mixtes et un mini exemple n-corps utilisant
+  uniquement %Arccore (\pr{2651}, \pr{2654}, \pr{2680}).
 
 ### Changements
 
@@ -130,6 +157,7 @@ ___
   un MPI "GPU-Aware" (\pr{2315})
 - Interdit d'appeler \arcane{IPrimaryMesh::allocateCells()} si
   \arcane{IMeshModifier::endUpdate()} a déjà été appelé (\pr{2354})
+- Corrige des problèmes mineurs dans les éléments d'échange polyédriques (\pr{2649})
 
 ### Interne
 
@@ -145,9 +173,8 @@ ___
 
 ### Compilation et Intégration Continue (CI)
 
-- Supprime support pour les vieilles versions de TBB (avant
-  OneTBB 2021) : \pr{2267}
-- Ajoute support pour des runners "self-hosted" (\pr{2279})
+- Supprime la prise en charge des anciennes versions de TBB (avant OneTBB 2021) : \pr{2267}
+- Ajoute la prise en charge des runners "auto-hébergés" (\pr{2279})
 - Supprime l'option CMake `ARCANE_ADD_RPATH_TO_LIBS` (\pr{2304})
 - Remplace l'option CMake `ARCCORE_USE_MPI` par `ARCCORE_ENABLE_MPI`
   (\pr{2305})
@@ -165,6 +192,16 @@ ___
   (\pr{2487}, \pr{2490})
 - Supprime par défaut l'affichage des méthodes obsolètes lors de la
   compilation (\pr{2488})
+- Met à jour les flux de travail CI et le système de construction pour Arcane et Alien, y compris
+  la prise en charge des images Ubuntu 26.04, des runners GPU, des tests AdaptiveCPP, du réglage
+  de l'environnement Intel MPI et des runners auto-hébergés (\pr{2540}, \pr{2545}, \pr{2548},
+  \pr{2549}, \pr{2555}, \pr{2563}, \pr{2565}, \pr{2653}, \pr{2655}).
+- Met à jour app_buildsystem et la prise en charge de VS2022, y compris les DLL .NET manquantes et
+  les corrections CMake pour Visual Studio 2022 (\pr{2561}, \pr{2562}).
+- Améliore la configuration de construction Lima et HDF5 lors de l'utilisation de MPI et de multiples
+  formats, garantissant le chargement et la compilation corrects des paquets (\pr{2560},
+  \pr{2572}, \pr{2661}).
+- Corrige la construction Windows avec vtk et supprime la construction incrémentale sur Alien (\pr{2678}).
 
 ### Arccore
 
@@ -178,6 +215,35 @@ ___
   lorsqu'on utilise une dimension statique (\pr{2241})
 - Déplace les classes gérant le JSON depuis `arcane_utils` vers
   `arccore_common` (\pr{2391})
+- Utilise des concepts au lieu de SFINAE pour vérifier les méthodes d'ajout/suppression dans la gestion
+  des références et supprime les arguments de modèle par défaut et `RefTraits` basés sur SFINAE pour \arccore{Ref} (\pr{2587}, \pr{2588}, \pr{2589}).
+- Utilise des concepts au lieu de SFINAE pour les utilitaires `NumVector` et `NumMatrix`
+  (\pr{2535}).
+- Ajoute `CSRMatrixView`, des itérateurs de plage de lignes et une prise en charge matricielle distribuée dans
+  le composant `alina`, y compris des corrections pour le backend séquentiel CUDA et les tailles de pointeur de solveur direct distribué (\pr{2576}, \pr{2578}, \pr{2579},
+  \pr{2580}, \pr{2581}, \pr{2582}).
+- Introduit le composant numérique `Alina`, supprime les solveurs distribués basés sur Eigen, et remplace l'utilisation d'OpenMP par la concurrence Arccore dans les opérations matricielles et les solveurs (\pr{2564}, \pr{2566}, \pr{2567}, \pr{2568}, \pr{2569},
+  \pr{2570}, \pr{2571}).
+- Ajoute la prise en charge de la concurrence Arccore dans les tests et les utilitaires matriciels, y compris
+  `MatrixOperationsImpl`, `CSRMatrixOperations`, `BuiltinBackend`, et les calculs de rayon spectral distribués (\pr{2568}, \pr{2569}).
+- Ajoute la prise en charge des variables d'environnement pour contrôler le ratio de noyau coopératif et
+  améliore la gestion du pool de mémoire de l'accélérateur en utilisant `Int64` pour les tailles et en déplaçant le dump de profilage de %Arcane à %Arccore (\pr{2529}, \pr{2550}, \pr{2543}).
+- Ajoute `AcceleratorInitializer` et des informations sur la bande passante de la mémoire du périphérique, ainsi que
+  des préréglages pour compiler uniquement %Arccore avec ou sans prise en charge de l'accélérateur
+  (\pr{2524}, \pr{2525}, \pr{2527}, \pr{2528}).
+- Ajoute la prise en charge de `NumArray` avec des types d'index autres que `Int32` et
+  des boucles séquentielles sur des indices `Int64` et `size_t`, y compris des tests pour
+  `arccoreSequentialFor()` et `NumArray` 1D (\pr{2668}, \pr{2671},
+  \pr{2672}).
+- Ajoute les méthodes `begin()`, `end()`, et `data()` pour `NumArray` et expose
+  les méthodes `ArrayExtents::extents*` publiquement (\pr{2666}).
+- Utilise `std::barrier` pour `StdThreadBarrier`, ajoute un service d'implémentation std-thread
+  hérité, et change `IThreadBarrier::wait()` pour retourner
+  `void` (\pr{2512}, \pr{2513}).
+- Utilise un mutex de trace dans `TraceMng::finishInitialize()` pour rendre l'initialisation
+  thread-safe (\pr{2511}).
+- Place `ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED` dans le cache CMake pour
+  simplifier la configuration (\pr{2568}).
 
 ### Alien
 
@@ -191,7 +257,24 @@ ___
 - Améliore le support GPU de plusieurs back-end (\pr{2409}, \pr{2410},
   \pr{2413}, \pr{2426}, \pr{2428}, \pr{2435}, \pr{2443}, \pr{2449},
   \pr{2453}, \pr{2458}, \pr{2473}, \pr{2485})
+- Corrige la régression de performance par rapport à IFPSolver et MCGSolver 2.5.5 et
+  corrige les vecteurs potentiellement non initialisés lors de l'utilisation de préconditionneurs dans
+  les opérations matvec (\pr{2594}, \pr{2593}).
+- Corrige la compilation avec PETSc 3.25+ et supprime un en-tête qui n'est plus présent dans
+  Trilinos 16 (\pr{2669}).
+- Ajoute BOM et met à jour les en-têtes dans Alien standalone ArcaneInterface, remplaçant
+  les énumérations anonymes par `enum class` pour une meilleure sécurité de type (\pr{2538}).
+- Ajoute la prise en charge du solveur direct local dans AlienCore, y compris des corrections de bugs dans
+  la gestion des vecteurs CSR et les tests DOK (\pr{2516}, \pr{2517}, \pr{2518}).
+- Ajoute la prise en charge du GPU dans le système de construction Alien et met à jour les scripts de construction Alien pour
+  une meilleure prise en charge du GPU (\pr{2514}).
 
+### Arctools
+- Refactorise les flux de travail de génération de documentation et crée l'outil ADoc dans le dossier arctools,
+  y compris les mises à jour de thème, la génération d'en-têtes, les ajouts à README et la prise en charge de Doxygen 1.14.0+
+  (\pr{2595}, \pr{2596}, \pr{2597}, \pr{2598}, \pr{2599}, \pr{2563}).
+- Corrige certains problèmes dans Neo pour la prise en charge des maillages polyédriques parallèles (\pr{2465},\pr{2466},\pr{2467},
+  \pr{2468},\pr{2474},\pr{2477},\pr{2645},\pr{2647})
 ___
 
 ## Arcane Version 4.0.0 (15 octobre 2025) {#arcanedoc_version4000}

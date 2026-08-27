@@ -157,6 +157,9 @@ install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 
 add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
 
+# Macro pour indiquer qu'on est en train de compiler le projet
+target_compile_definitions(arccore_build_compile_flags INTERFACE ARCCORE_COMPILING_FRAMEWORK)
+
 # ----------------------------------------------------------------------------
 # N'exporte pas par défaut les symboles
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
@@ -188,10 +191,10 @@ if (MSVC)
 endif()
 
 # ----------------------------------------------------------------------------
-# Create an interface library 'arccore_full' that groups all Arccore components.
+# Crée une bibliothèque d'interface 'arccore_full' qui regroupe tous les composants d'Arccore.
 add_library(arccore_full INTERFACE)
 install(TARGETS arccore_full EXPORT ${ARCCORE_EXPORT_TARGET})
-# FIXME: whether or not arccore_build_compile_flags has to be added to arccore_full.
+# FIXME : si arccore_build_compile_flags doit être ajouté à arccore_full.
 
 # ----------------------------------------------------------------------------
 # Les symboles des bibliothèques ne sont pas visibles sauf si demandé
@@ -272,8 +275,8 @@ if (ARCCORE_ENABLE_TESTS)
 endif()
 
 # ----------------------------------------------------------------------------
-# Configure installation layout.
-# Layout. This works for all platforms:
+# Configure le plan d'installation.
+# Ce plan fonctionne pour toutes les plateformes :
 #   * <prefix>/lib*/cmake/<PROJECT-NAME>
 #   * <prefix>/lib*/
 #   * <prefix>/include/
@@ -400,6 +403,13 @@ arccore_add_component_directory(serialize)
 arccore_add_component_directory(message_passing)
 if (ARCCORE_ENABLE_MPI)
   arccore_add_component_directory(message_passing_mpi)
+endif()
+
+# ----------------------------------------------------------------------------
+# Handling of Alina. At the moment it is experimental and not enabled by default
+option (ARCCORE_ENABLE_ALINA "Is Alina (linear algebra) component enabled?" OFF)
+if (ARCCORE_ENABLE_ALINA)
+  arccore_add_component_directory(alina)
 endif()
 
 # ----------------------------------------------------------------------------

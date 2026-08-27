@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDVariableUnitTest.cc                                       (C) 2000-2023 */
+/* MDVariableUnitTest.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Service de test des variables multi-dimension.                            */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,15 @@
 #include "arcane/utils/NumVector.h"
 #include "arcane/utils/NumMatrix.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/ServiceFactory.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/ServiceFactory.h"
+
+// Ces deux fichiers sont ajoutés pour s'assurer que ce fichier compile
+// même si 'axlstar' est ancien et ne les inclut pas.
+#include "arcane/core/MeshMatrixMDVariableRef.h"
+#include "arcane/core/MeshVectorMDVariableRef.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MDVariableUnitTest_axl.h"
@@ -36,6 +41,7 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Module de test des variables
  */
@@ -111,7 +117,7 @@ initializeTest()
 void MDVariableUnitTest::
 _testCustomVariable()
 {
-  info() << "TEST CUSTOM VARIABLE";
+  info() << "TEST VARIABLE PERSONNALISÉE";
 
   {
     // Teste variable 2D
@@ -121,14 +127,14 @@ _testCustomVariable()
       m_scalar_var2d(icell, 1, 2) = 3.0;
       Real x = m_scalar_var2d(icell, 1, 2);
       if (x != 3.0)
-        ARCANE_FATAL("Bad value (2)");
+        ARCANE_FATAL("Valeur incorrecte (2)");
     }
 
     // Teste vue 3D d'une variable avec shape 2D
     ENUMERATE_ (Cell, icell, allCells()) {
       Real x = m_scalar_var2d_as_3d(icell, 1, 2, 0);
       if (x != 3.0)
-        ARCANE_FATAL("Bad value (3)");
+        ARCANE_FATAL("Valeur incorrecte (3)");
     }
   }
   {
@@ -144,7 +150,7 @@ _testCustomVariable()
         Real ref_value = static_cast<Real>(i + 1);
         Real r = m_scalar_var1d(icell, i);
         if (r != ref_value)
-          ARCANE_FATAL("Bad value (4)");
+          ARCANE_FATAL("Valeur incorrecte (4)");
       }
     }
   }
@@ -158,7 +164,7 @@ _testCustomVariable()
       Real ref_value = static_cast<Real>(icell.itemLocalId() + 1);
       Real r = m_scalar_var0d(icell);
       if (r != ref_value)
-        ARCANE_FATAL("Bad value (4)");
+        ARCANE_FATAL("Valeur incorrecte (4)");
     }
   }
 }
@@ -169,7 +175,7 @@ _testCustomVariable()
 void MDVariableUnitTest::
 _testVectorMDVariable()
 {
-  info() << "TEST VECTOR VARIABLE";
+  info() << "TEST VARIABLE VECTEUR";
 
   // Variable 0D
   {
@@ -187,13 +193,13 @@ _testVectorMDVariable()
       Real rr1 = m_vector_var0d(icell)(1);
       Real rr2 = m_vector_var0d(icell)(2);
       if (rr0 != ref_value(0))
-        ARCANE_FATAL("Bad valueX (1)");
+        ARCANE_FATAL("ValeurX incorrecte (1)");
       if (rr1 != ref_value(1))
-        ARCANE_FATAL("Bad valueY (1)");
+        ARCANE_FATAL("ValeurY incorrecte (1)");
       if (rr2 != ref_value(2))
-        ARCANE_FATAL("Bad valueZ (1)");
+        ARCANE_FATAL("ValeurZ incorrecte (1)");
       if (r != ref_value)
-        ARCANE_FATAL("Bad value (1)");
+        ARCANE_FATAL("Valeur incorrecte (1)");
     }
   }
 
@@ -214,7 +220,7 @@ _testVectorMDVariable()
         RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
         RealN3 r = m_vector_var1d(icell, i);
         if (r != ref_value)
-          ARCANE_FATAL("Bad value (2)");
+          ARCANE_FATAL("Valeur incorrecte (2)");
       }
     }
   }
@@ -226,7 +232,8 @@ _testVectorMDVariable()
 void MDVariableUnitTest::
 _testMatrixMDVariable()
 {
-  info() << "TEST MATRIX VARIABLE";
+  ValueChecker vc(A_FUNCINFO);
+  info() << "TEST VARIABLE MATRICE";
 
   // Variable 0D
   {
@@ -248,19 +255,40 @@ _testMatrixMDVariable()
       Real rr11 = m_matrix_var0d(icell)(1, 1);
 
       if (rr00 != ref_value(0, 0))
-        ARCANE_FATAL("Bad valueXX (1)");
+        ARCANE_FATAL("ValeurXX incorrecte (1)");
       if (rr01 != ref_value(0, 1))
-        ARCANE_FATAL("Bad valueXY (1)");
+        ARCANE_FATAL("ValeurXY incorrecte (1)");
       if (rr10 != ref_value(1, 0))
-        ARCANE_FATAL("Bad valueYX (1)");
+        ARCANE_FATAL("ValeurYX incorrecte (1)");
       if (rr11 != ref_value(1, 1))
-        ARCANE_FATAL("Bad valueYY (1)");
+        ARCANE_FATAL("ValeurYY incorrecte (1)");
 
       if (r != ref_value)
-        ARCANE_FATAL("Bad value (5)");
+        ARCANE_FATAL("Valeur incorrecte (5)");
     }
   }
+  {
+    Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var2"));
+    Arcane::MeshMatrixMDVariableRefT<Cell, Real, 3, 4, MDDim0> cell_matrix_3x4(vbi);
+    constexpr int NbRow = 3;
+    constexpr int NbColumn = 4;
+    using NumMatrixType = NumMatrix<Real, 3, 4>;
+    cell_matrix_3x4.reshape({});
+    NumMatrixType null_matrix;
+    null_matrix.fill(0.0);
+    for (int i = 0; i < NbRow; ++i)
+      for (int j = 0; j < NbColumn; ++j)
+        if (null_matrix(i, j) != 0.0)
+          ARCANE_FATAL("Valeur incorrecte v='{0}' pour NumMatrix i={1} j={2}", null_matrix(i, j), i, j);
 
+    ENUMERATE_ (Cell, icell, allCells()) {
+      cell_matrix_3x4(icell).fill(0.0);
+      for (int i = 0; i < NbRow; ++i)
+        for (int j = 0; j < NbColumn; ++j)
+          if (cell_matrix_3x4(icell, i, j) != 0.0)
+            ARCANE_FATAL("Valeur incorrecte v='{0}' pour NumMatrix i={1} j={2}", cell_matrix_3x4(icell, i, j), i, j);
+    }
+  }
   // Variable 1D
   {
     const Int32 size2 = 7;
@@ -278,7 +306,7 @@ _testMatrixMDVariable()
         RealN2x2 ref_value({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
         RealN2x2 r = m_matrix_var1d(icell, i);
         if (r != ref_value)
-          ARCANE_FATAL("Bad value (5)");
+          ARCANE_FATAL("Valeur incorrecte (5)");
       }
     }
   }
@@ -304,11 +332,11 @@ _setAndTestShape(VarType& var_ref, std::array<Int32, VarType::nb_dynamic> reshap
 {
   var_ref.reshape(reshape_value);
   ArrayShape full_shape(var_ref.fullShape());
-  info() << "Shape name=" << var_ref.name() << " shape=" << full_shape;
+  info() << "Nom de la forme=" << var_ref.name() << " forme=" << full_shape;
   Span<const Int32> shape_span(expected_shape_array);
   ArrayShape expected_shape(shape_span);
   if (full_shape != expected_shape)
-    ARCANE_FATAL("Bad shape for variable '{0}' shape={1} expected={2}",
+    ARCANE_FATAL("Mauvaise forme pour la variable '{0}' forme={1} attendue={2}",
                  var_ref.name(), full_shape, expected_shape);
 }
 
@@ -321,7 +349,7 @@ samples1()
   //![SampleMDVariableScalar]
   // Déclare une variable 2D aux mailles de type Real
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // La déclaration équivalente dans le fichier AXL est :
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   // />
@@ -351,7 +379,7 @@ samples2()
   //![SampleMDVariableVector]
   // Déclare une variable 2D aux mailles d'un vecteur de 7 Real
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // La déclaration équivalente dans le fichier AXL est :
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   //           extent0="7"
@@ -384,13 +412,13 @@ samples3()
   //![SampleMDVariableMatrix]
   // Déclare une variable 1D aux mailles d'une matrix 2x5 de Real
   //
-  // La déclaration équivalente dans le fichier AXL est:
+  // La déclaration équivalente dans le fichier AXL est :
   // <variable field-name="cell_var_2d" name="Var1"
   //           data-type="real" item-kind="cell" shape-dim="2"
   //           extent0="2" extent1="5"
   // />
-  Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
-  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi);
+  Arcane::VariableBuildInfo vbi1(VariableBuildInfo(mesh(), "Var1"));
+  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi1);
 
   // Positionne la dimension à 9.
   // Chaque maille aura 9 valeurs de 2x5 = 10 réels
@@ -405,6 +433,39 @@ samples3()
 
     // Affiche la valeur du (1,4) de la matrice pour l'indice (6)
     info() << cell_var_2d(icell, 6)(1, 4);
+
+    // Une autre façon d'afficher la valeur de (1,4) de la matrice pour l'indice 6
+    info() << cell_var_2d(icell, 6, 1, 4);
+  }
+
+  // Déclare une variable 0D sur des mailles d'une matrice Real de 3x4
+  //
+  // La déclaration équivalente dans le fichier AXL est :
+  // <variable field-name="cell_matrix_3x4" name="Var1"
+  //           data-type="real" item-kind="cell" shape-dim="0"
+  //           extent0="3" extent1="4"
+  // />
+  Arcane::VariableBuildInfo vbi2(VariableBuildInfo(mesh(), "Var2"));
+  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 3, 4, MDDim0> cell_matrix_3x4(vbi2);
+
+  cell_matrix_3x4.reshape({});
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Arcane::NumMatrix<Real, 3, 4> v({ 1.1, 2.2, 3.3, 4.4 },
+                                    { 1.0, 2.0, 3.0, 4.0 },
+                                    { -1.0, -2.0, -3.0, -4.0 });
+
+    // Remplit la matrice pour la maille actuelle avec la valeur 0.0.
+    cell_matrix_3x4(icell).fill(0.0);
+
+    // Définit la valeur pour la maille actuelle
+    cell_matrix_3x4(icell) = v;
+
+    // Affiche la valeur de (2,3) de la matrice
+    info() << cell_matrix_3x4(icell)(2, 3);
+
+    // Une autre façon d'afficher la valeur de (1,2) de la matrice
+    info() << cell_matrix_3x4(icell, 1, 2);
   }
   //![SampleMDVariableMatrix]
 }

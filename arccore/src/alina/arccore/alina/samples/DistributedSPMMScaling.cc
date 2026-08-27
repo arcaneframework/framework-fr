@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -20,12 +20,13 @@
 #include <vector>
 
 #include <boost/scope_exit.hpp>
-#include <boost/program_options.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/DistributedMatrix.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "DomainPartition.h"
 
@@ -68,7 +69,7 @@ int main(int argc, char* argv[])
   // Read configuration from command line
   ptrdiff_t n = 128;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -23,7 +23,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #include "arccore/alina/PreconditionedSolver.h"
@@ -57,6 +56,7 @@ template <class T> using Backend = Arcane::Alina::BuiltinBackend<T>;
 
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+#include "arccore/common/internal/ProgramOptions.h"
 
 #ifndef ARCCORE_ALINA_BLOCK_SIZES
 #  define ARCCORE_ALINA_BLOCK_SIZES (3)(4)
@@ -121,7 +121,7 @@ void solve_schur(int pb, const Matrix& K, const std::vector<double>& rhs, Alina:
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_BLOCK_PSOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
 #endif
   default:
-    precondition(false, "Unsupported block size for pressure");
+    precondition(false, "Taille de bloc non prise en charge pour la pression");
   }
 }
 
@@ -149,7 +149,7 @@ void solve_schur(int ub, int pb, const Matrix& K, const std::vector<double>& rhs
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_BLOCK_USOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
 #endif
   default:
-    precondition(false, "Unsupported block size for flow");
+    precondition(false, "Taille de bloc non prise en charge pour le flux");
   }
 }
 
@@ -160,42 +160,41 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
+  desc.add_options()("help,h", "affiche l'aide")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsqu'il est spécifié, traitez les fichiers d'entrée comme binaires plutôt que comme MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "scale,s",
   po::bool_switch()->default_value(false),
-  "Scale the matrix so that the diagonal is unit. ")(
+  "Mettre à l'échelle la matrice de sorte que la diagonale soit unitaire. ")(
   "matrix,A",
   po::value<string>()->required(),
-  "The system matrix in MatrixMarket format")(
+  "La matrice du système au format MatrixMarket")(
   "rhs,f",
   po::value<string>(),
-  "The right-hand side in MatrixMarket format")(
+  "Le côté droit en format MatrixMarket")(
   "pmask,m",
   po::value<string>(),
-  "The pressure mask in MatrixMarket format. Or, if the parameter has "
-  "the form '%n:m', then each (n+i*m)-th variable is treated as pressure.")(
+  "Le masque de pression au format MatrixMarket. Ou, si le paramètre a la forme '%n:m', alors chaque variable (n+i*m)-ième est traitée comme une pression.")(
   "ub",
   po::value<int>()->default_value(1),
-  "Block-size of the 'flow'/'non-pressure' part of the matrix")(
+  "Taille de bloc de la partie 'flux'/'non-pression' de la matrice")(
   "pb",
   po::value<int>()->default_value(1),
-  "Block-size of the 'pressure' part of the matrix")(
+  "Taille de bloc de la partie 'pression' de la matrice")(
   "params,P",
   po::value<string>(),
-  "parameter file in json format")(
+  "fichier de paramètres au format json")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300");
 
@@ -236,7 +235,7 @@ int main(int argc, char* argv[])
     else {
       size_t cols;
       std::tie(rows, cols) = io::mm_reader(Afile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice de système non carrée");
     }
 
     if (vm.count("rhs")) {
@@ -251,7 +250,7 @@ int main(int argc, char* argv[])
         std::tie(n, m) = io::mm_reader(bfile)(rhs);
       }
 
-      precondition(n == rows && m == 1, "The RHS vector has wrong size");
+      precondition(n == rows && m == 1, "Le vecteur du côté droit a une taille incorrecte");
     }
     else {
       rhs.resize(rows, 1.0);
@@ -270,7 +269,7 @@ int main(int argc, char* argv[])
       default: {
         size_t n, m;
         std::tie(n, m) = Alina::IO::mm_reader(pmask)(pm);
-        precondition(n == rows && m == 1, "Mask file has wrong size");
+        precondition(n == rows && m == 1, "Le fichier de masque a une taille incorrecte");
         prm.put("precond.pmask", static_cast<void*>(&pm[0]));
       }
       }

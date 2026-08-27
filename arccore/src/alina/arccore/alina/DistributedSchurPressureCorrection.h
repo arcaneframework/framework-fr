@@ -7,15 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* DistributedSchurPressureCorrection.h                        (C) 2000-2026 */
 /*                                                                           */
-/* Distributed Schur complement pressure correction preconditioner.          */
+/* Préconditionneur de correction de pression par complément de Schur        */
+/* distribué.                                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_MPI_DISTRIBUTEDSCHURPRESSURECORRECTION_H
 #define ARCCORE_ALINA_MPI_DISTRIBUTEDSCHURPRESSURECORRECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -37,7 +38,7 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Distributed Schur complement pressure correction preconditioner.
+ * \brief Préconditionneur de correction de pression par complément de Schur distribué.
  */
 template <class USolver, class PSolver>
 class DistributedSchurPressureCorrection
@@ -140,7 +141,7 @@ class DistributedSchurPressureCorrection
         pmask.assign(static_cast<char*>(pm), static_cast<char*>(pm) + n);
       }
       else {
-        ARCANE_FATAL("Error in schur_complement parameters:  neither pmask_pattern, nor pmask is set");
+        ARCCORE_FATAL("Error in schur_complement parameters:  neither pmask_pattern, nor pmask is set");
       }
 
       p.check_params({ "usolver", "psolver", "type", "approx_schur", "simplec_dia", "pmask_size", "verbose" },

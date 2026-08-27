@@ -1,30 +1,47 @@
-﻿
+﻿#----------------------------------------------------------------------------
+# Boost est requis pour certains exemples
+#
+# TODO: désactiver les exemples nécessitant Boost s'il n'est pas trouvé
+#----------------------------------------------------------------------------
+
+find_package(Boost REQUIRED COMPONENTS
+  headers
+)
+
+if (NOT Boost_FOUND)
+  message(FATAL_ERROR
+    "[arccore_alina] Impossible de trouver Boost::headers pour compiler les exemples."
+    "Vous devez installer Boost::headers ou désactiver la compilation des exemples -DARCCORE_ALINA_BUILD_SAMPLES=FALSE lors de l'exécution de la commande cmake"
+    )
+endif()
+
 set(ARCCORE_ALINA_BLOCK_SIZES "3;4" CACHE STRING "Block sizes for block solvers in examples")
 set(ARCCORE_ALINA_BLOCK_SIZES_SEQ "")
 foreach(B ${ARCCORE_ALINA_BLOCK_SIZES})
   set(ARCCORE_ALINA_BLOCK_SIZES_SEQ "${ARCCORE_ALINA_BLOCK_SIZES_SEQ}(${B})")
 endforeach()
 
-# Add a library for common samples functions and types
+# Ajoute une bibliothèque pour les fonctions et types communs des exemples
 add_library(arccore_alina_samples_lib
   AlinaSamplesCommon.h
   AlinaSamplesCommon.cc
 )
-arcane_target_set_standard_path(arccore_alina_samples_lib)
+arccore_target_set_standard_path(arccore_alina_samples_lib)
 target_link_libraries(arccore_alina_samples_lib PRIVATE arcane_launcher arcane_full)
 target_link_libraries(arccore_alina_samples_lib PUBLIC arccore_alina)
+target_link_libraries(arccore_alina_samples_lib PRIVATE Boost::headers)
 target_include_directories(arccore_alina_samples_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(ALINA_SAMPLE_BUILD_DIR "${CMAKE_BINARY_DIR}/alina_samples")
 function(add_arccore_alina_example_no_test EXAMPLE SOURCES)
   add_executable(${EXAMPLE} ${SOURCES})
   set_target_properties(${EXAMPLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
-  target_link_libraries(${EXAMPLE} PUBLIC arccore_alina_samples_lib Boost::program_options)
+  target_link_libraries(${EXAMPLE} PUBLIC arccore_alina_samples_lib)
   target_include_directories(${EXAMPLE} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../tests")
   target_compile_definitions(${EXAMPLE} PUBLIC "ARCCORE_ALINA_BLOCK_SIZES=${ARCCORE_ALINA_BLOCK_SIZES_SEQ}")
 endfunction()
 
-# NOTE:
+# NOTE :
 # Certains tests utilisent OpenMP
 # On fixe en dur le nombre de threads sinon on utilise tous
 # les coeurs disponibles par défaut.
@@ -41,16 +58,18 @@ endfunction()
 add_arccore_alina_example_no_test(mm2bin MatrixMarkerToBinary.cc)
 add_arccore_alina_example_no_test(bin2mm BinaryToMatrixMarket.cc)
 
-arcane_find_package(Hypre)
+find_package(Hypre)
 
 add_arccore_alina_example(basic_solver BasicSolver.cc)
-target_sources(basic_solver PUBLIC HypreComparer.cc)
-arcane_add_arccon_packages(basic_solver PRIVATE Hypre)
-
+if (Hypre_FOUND)
+  target_sources(basic_solver PUBLIC HypreComparer.cc)
+  target_link_libraries(basic_solver PRIVATE arccon::Hypre)
+endif()
 add_arccore_alina_example(solver Solver.cc)
-target_sources(solver PUBLIC HypreComparer.cc)
-arcane_add_arccon_packages(solver PRIVATE Hypre)
-
+if (Hypre_FOUND)
+  target_sources(solver PUBLIC HypreComparer.cc)
+  target_link_libraries(solver PRIVATE arccon::Hypre)
+endif()
 add_arccore_alina_example(solver_complex SolverComplex.cc)
 add_arccore_alina_example(crs_builder AdapterCSRBuilder.cc)
 add_arccore_alina_example(custom_adapter CustomAdapter.cc)
@@ -67,17 +86,15 @@ add_arccore_alina_example_no_test(schurpc_mixed SCHURPreconditionerMixed.cc)
 add_arccore_alina_example_no_test(deflated_solver DeflatedSolver.cc)
 add_arccore_alina_example(poisson2d Poisson2D.cc)
 
-if (TARGET eigen_target)
+if (TARGET alina_eigen_target)
   add_arccore_alina_example(solver_eigen Solver.cc)
-  target_link_libraries(solver_eigen PUBLIC eigen_target)
+  target_link_libraries(solver_eigen PUBLIC alina_eigen_target)
   target_compile_definitions(solver_eigen PRIVATE SOLVER_BACKEND_EIGEN)
 
   add_arccore_alina_example_no_test(schurpc_mixed_eigen SCHURPreconditionerMixed.cc)
-  target_link_libraries(schurpc_mixed_eigen PUBLIC eigen_target)
+  target_link_libraries(schurpc_mixed_eigen PUBLIC alina_eigen_target)
   target_compile_definitions(schurpc_mixed_eigen PRIVATE BLOCK_TYPE_EIGEN)
 endif()
-
-add_arccore_alina_example(call_lib AlinaLibraryUsage.cc)
 
 if (TARGET cuda_target)
   enable_language(CUDA)
@@ -92,7 +109,6 @@ if (TARGET cuda_target)
       arccore_alina
       arccore_accelerator
       cuda_target
-      Boost::program_options
       )
     add_test(NAME alina_${example}_cuda COMMAND ${example}_cuda ${SAMPLE_MATRIX_ARGS})
   endfunction()
@@ -104,15 +120,14 @@ endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Handle samples using MPI
+# Gére les exemples utilisant MPI
 
 add_library(arccore_alina_mpi_example INTERFACE)
-target_link_libraries(arccore_alina_mpi_example INTERFACE
-  arccore_alina ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(arccore_alina_mpi_example INTERFACE arccore_alina)
 target_compile_definitions(arccore_alina_mpi_example INTERFACE "ARCCORE_ALINA_BLOCK_SIZES=${ARCCORE_ALINA_BLOCK_SIZES_SEQ}")
 
-if (TARGET eigen_target)
-  target_link_libraries(arccore_alina_mpi_example INTERFACE eigen_target)
+if (TARGET alina_eigen_target)
+  target_link_libraries(arccore_alina_mpi_example INTERFACE alina_eigen_target)
 endif()
 
 function(add_mpi_example_test target test_name nb_core)
@@ -136,8 +151,8 @@ function(add_mpi_example_no_test example sources)
   target_link_libraries(${example} PUBLIC arccore_alina_mpi_example)
 endfunction()
 
-# Il faut mettre 1 seul coeur pour certains tests
-# car ils utilisent openmp et sinon on se retrouve avec trop
+# Nous devons utiliser seulement 1 cœur pour certains tests
+# car ils utilisent openmp et sinon nous obtenons trop
 # de processus
 
 add_mpi_example(check_direct DistributedCheckDirect.cc 4)
@@ -158,7 +173,7 @@ add_mpi_example_test(mpi_basic_solver mpi_basic_solver_spectral_radius2 2 -p pre
 # Il faut un argument 'matrix' pour le test
 add_mpi_example_no_test(schur_pc_mpi DistributedSCHUR.cc)
 
-# Il faut un fichir de partition pour le test
+# Il faut un fichier de partition pour le test
 add_mpi_example_no_test(solve_mm_mpi DistributedMatrixMarketSolver.cc)
 
 # Exception dans boost lors du test
@@ -166,12 +181,12 @@ add_mpi_example_no_test(cpr_mpi DistributedCPR.cc)
 
 if (TARGET arccon::Parmetis)
   add_mpi_example_no_test(partition DistributedPartition.cc 2)
-  target_link_libraries(partition PUBLIC arccon::Parmetis ${Boost_PROGRAM_OPTIONS_LIBRARY})
+  target_link_libraries(partition PUBLIC arccon::Parmetis)
 endif()
 
-# At the moment the samples with CUDA and MPI do not work
-# because there is missing methods in the CUDA backend for
-# Distributed Matrix
+# Pour le moment, les exemples avec CUDA et MPI ne fonctionnent pas
+# car il manque des méthodes dans le backend CUDA pour
+# Matrice Distribuée
 set(DO_CUDA_MPI FALSE)
 if (DO_CUDA_MPI AND TARGET cuda_target)
   foreach(example DistributedRuntimeSDD DistributedRuntimeSDD3D DistributedSCHUR DistributedSolver)
@@ -184,7 +199,6 @@ if (DO_CUDA_MPI AND TARGET cuda_target)
       arccore_alina
       arccore_accelerator
       cuda_target
-      Boost::program_options
     )
   endforeach()
 endif()

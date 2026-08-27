@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayBounds.h                                               (C) 2000-2025 */
+/* ArrayBounds.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des itérations sur les tableaux N-dimensions                      */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Classe de base pour les limites d'un tableau multidimensionnel.
+ */
 template <typename Extents>
 class ArrayBoundsBase
 : private ArrayExtents<Extents>
@@ -35,11 +37,13 @@ class ArrayBoundsBase
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::getIndices;
-  using MDIndexType = typename BaseClass::MDIndexType;
-  using LoopIndexType = typename BaseClass::LoopIndexType;
-  using ArrayExtentType = Arcane::ArrayExtents<Extents>;
+  using BaseClass::dynamicExtents;
+  using MDIndexType = BaseClass::MDIndexType;
+  using LoopIndexType = BaseClass::LoopIndexType;
+  using ExtentIndexType = Extents::ExtentIndexType;
+  using ArrayExtentType = ArrayExtents<Extents>;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -49,51 +53,59 @@ class ArrayBoundsBase
   {
   }
 
-  constexpr explicit ArrayBoundsBase(const std::array<Int32, Extents::nb_dynamic>& v)
+  constexpr explicit ArrayBoundsBase(const std::array<ExtentIndexType, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
   }
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return this->totalNbElement(); }
+  constexpr Int64 nbElement() const { return this->totalNbElement(); }
+
+ protected:
+
+  using BaseClass::asOtherStdArray;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Représente les limites d'un tableau multidimensionnel.
+ */
 template <typename Extents>
 class ArrayBounds
 : public ArrayBoundsBase<Extents>
 {
+  template <typename OtherExtents> friend class ArrayBounds;
+
  public:
 
   using ExtentsType = Extents;
+  using ExtentIndexType = Extents::ExtentIndexType;
   using BaseClass = ArrayBoundsBase<ExtentsType>;
   using ArrayExtentsType = ArrayExtents<ExtentsType>;
+  using LoopIndexType = BaseClass::LoopIndexType;
 
  public:
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3, Int32 dim4)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2,
+                        ExtentIndexType dim3, ExtentIndexType dim4) requires(Extents::nb_dynamic == 4)
   : BaseClass(ArrayExtentsType(dim1, dim2, dim3, dim4))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2,
+                        ExtentIndexType dim3) requires(Extents::nb_dynamic == 3)
   : BaseClass(ArrayExtentsType(dim1, dim2, dim3))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2) requires(Extents::nb_dynamic == 2)
   : BaseClass(ArrayExtentsType(dim1, dim2))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
-  constexpr ArrayBounds(Int32 dim1)
+  constexpr ArrayBounds(ExtentIndexType dim1) requires(Extents::nb_dynamic == 1)
   : BaseClass(ArrayExtentsType(dim1))
   {
   }
@@ -103,9 +115,17 @@ class ArrayBounds
   {
   }
 
-  constexpr explicit ArrayBounds(std::array<Int32, Extents::nb_dynamic>& v)
+  constexpr explicit ArrayBounds(std::array<ExtentIndexType, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
+  }
+
+  //! Convertit en ArrayBound avec le même tampon d'Extents mais un type d'index différent
+  template <typename OtherArrayBounds> static constexpr ArrayBounds
+  fromOther(const OtherArrayBounds& rhs)
+  {
+    std::array<ExtentIndexType, Extents::nb_dynamic> x = rhs.template asOtherStdArray<ExtentIndexType>();
+    return ArrayBounds(x);
   }
 };
 
@@ -117,4 +137,4 @@ class ArrayBounds
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

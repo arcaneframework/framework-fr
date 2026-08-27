@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_ALINA_HAVE_EIGEN)
-// To remove warnings about deprecated Eigen usage.
+// Pour supprimer les avertissements concernant l'utilisation obsolète d'Eigen.
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #include "arccore/alina/DistributedEigenSparseLUDirectSolver.h"
@@ -31,7 +31,7 @@
 
 #include "AlinaSamplesCommon.h"
 
-#include <boost/program_options.hpp>
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -45,7 +45,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   tm->info() << "World size: " << comm.size;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")("size,n",
@@ -168,7 +168,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     std::vector<double> x2(chunk);
     solve(rhs, x2);
     prof.toc("solve");
-    // Compare values between skyline and eigen
+    // Compare les valeurs entre skyline et eigen
     Int32 nb_error = 0;
     for (Int32 i = 0; i < chunk; ++i) {
       Real x_ref = x[i];
@@ -185,7 +185,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
       }
     }
     if (nb_error != 0)
-      ARCCORE_FATAL("Error when comparing Eigen and SkylineLU nb_error={0}", nb_error);
+      ARCCORE_FATAL("Erreur lors de la comparaison d'Eigen et de SkylineLU nb_error={0}", nb_error);
   }
 #endif
 

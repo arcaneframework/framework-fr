@@ -16,6 +16,8 @@
 
 #include "arccore/common/MemoryAllocationArgs.h"
 
+#include <cstddef>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,6 +26,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Interface d'un allocateur pour la mémoire.
  *
@@ -102,7 +105,6 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    * d'éléments alloués suivant leur taille. Cela permet par exemple
    * pour les allocateurs alignés de garantir que le nombre d'éléments
    * alloués est un multiple de cet alignement.
-   * 
    */
   virtual Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const = 0;
 
@@ -114,7 +116,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    *
    * S'il n'y a aucune garantie, retourne 0.
    */
-  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const =0;
+  virtual std::size_t guaranteedAlignment(MemoryAllocationArgs args) const = 0;
 
   /*!
    * \brief Valeur de l'alignement garanti par l'allocateur.
@@ -122,7 +124,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    * \sa guaranteedAlignment()
    */
   ARCCORE_DEPRECATED_REASON("Y2024: Use guaranteedAlignment() instead")
-  virtual size_t guarantedAlignment(MemoryAllocationArgs args) const;
+  virtual std::size_t guarantedAlignment(MemoryAllocationArgs args) const;
 
   /*!
    * \brief Notifie du changement des arguments spécifiques à l'instance.
@@ -157,10 +159,9 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

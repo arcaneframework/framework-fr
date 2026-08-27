@@ -1,4 +1,4 @@
-name: IFPEN ubu2404 foss/2025b
+﻿name: IFPEN ubu2404 foss/2025b
 
 on:
   #push:
@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       ctest_options:
-        description: 'CTest options'
+        description: 'Options CTest'
         required: false
         default: ''
 
 env:
-  # Framework directories
+  # Répertoires du framework
   #BUILD_DIR: /__w/framework/framework/build
   #INSTALL_DIR: /__w/framework/framework/install
   #SOURCE_DIR: /__w/framework/framework/source
@@ -36,7 +36,10 @@ env:
   # OpenMPI
   OMPI_MCA_rmaps_base_oversubscribe: true
   PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
-  # To remove test output directory to reduce disk usage
+  OMPI_ALLOW_RUN_AS_ROOT: "1"
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+  PRTE_ALLOW_RUN_AS_ROOT: "1"
+  # Pour supprimer le répertoire de sortie des tests afin de réduire l'utilisation du disque
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
@@ -47,7 +50,7 @@ jobs:
     timeout-minutes: 120
     container:
       image: ghcr.io/arcaneframework/ifpen-arcenv-foss-2025b-ubuntu2404:latest
-      options: --user root  # Avoid to match github UID in container.
+      options: --user root  # Évite de correspondre à l'UID de github dans le conteneur.
     strategy:
       fail-fast: false
 
@@ -55,12 +58,12 @@ jobs:
 
       # ccache
 
-      - name: Get date
+      - name: Récupère la date
         id: get-date
         shell: bash
         run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Restore cache
+      - name: Restaure le cache
         id: restore-cache
         uses: actions/cache/restore@v5
         with:
@@ -70,7 +73,7 @@ jobs:
 
       # Installation
 
-      - name: Checkout
+      - name: Extraction
         id: checkout
         if: |
           (success() || failure())
@@ -79,7 +82,7 @@ jobs:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
 
-      - name: Modules information
+      - name: Informations sur les modules
         id: modules_information
         if: |
           (success() || failure()) &&
@@ -87,7 +90,7 @@ jobs:
         shell: bash
         run: module --terse list 2>&1 | sort
 
-      - name: Configure
+      - name: Configuration
         id: configure
         if: |
           (success() || failure()) &&
@@ -95,7 +98,7 @@ jobs:
         shell: bash
         run: cmake -S ${{ env.SOURCE_DIR }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} ${{ env.CM_CCACHE_OPTS }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DARCCORE_BUILD_MODE=Check -DREMOVE_UID_ON_DETACH=ON -DUSE_GTEST_DEATH_TEST=ON -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON -DALIEN_BUILD_COMPONENT=all -DALIEN_PLUGIN_HYPRE=ON -DALIEN_PLUGIN_PETSC=ON -DUSE_GRAPH_CONNECTIVITY_POLICY=ON -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
 
-      - name: Build
+      - name: Construction
         id: build
         if: |
           (success() || failure()) &&
@@ -103,7 +106,7 @@ jobs:
         shell: bash
         run: cmake --build ${{ env.BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
 
-      - name: Install
+      - name: Installation
         id: install
         if: |
           (success() || failure()) &&
@@ -119,7 +122,7 @@ jobs:
         shell: bash
         run: ctest --test-dir ${{ env.BUILD_DIR }} ${{ env.CT_OPTS }}
 
-      - name: Upload test artifact
+      - name: Téléchargement de l'artefact de test
         id: upload-test-artifact
         uses: actions/upload-artifact@v7
         if: |
@@ -131,7 +134,7 @@ jobs:
           retention-days: 1
           include-hidden-files: true
 
-      - name: Save cache
+      - name: Sauvegarde du cache
         id: save-cache
         if: |
           (success() || failure()) &&
@@ -141,7 +144,7 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key:  ${{ steps.restore-cache.outputs.cache-primary-key }}
 
-      - name: Clean
+      - name: Nettoyage
         id: clean
         if: always()
         run: |

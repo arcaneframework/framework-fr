@@ -1,12 +1,12 @@
+﻿#
+# Trouve les inclusions et la bibliothèque de FlexlmAPI
 #
-# Find the FlexlmAPI includes and library
-#
-# This module defines
-# FLEXLM_INCLUDE_DIR, where to find headers,
-# FLEXLM_LIBRARIES, the libraries to link against to use FlexlmAPI.
-# FLEXLM_LIBRARY_DIRS, the library path to link against to use FlexlmAPI.
-# FLEXLM_FOUND, If false, do not try to use FlexlmAPI.
-# FLEXLM_PROTECTION_NAME, return the protection name : FLEXLM
+# Ce module définit
+# FLEXLM_INCLUDE_DIR, où trouver les en-têtes,
+# FLEXLM_LIBRARIES, les bibliothèques à lier pour utiliser FlexlmAPI.
+# FLEXLM_LIBRARY_DIRS, le chemin de la bibliothèque à lier pour utiliser FlexlmAPI.
+# FLEXLM_FOUND, Si faux, ne pas essayer d'utiliser FlexlmAPI.
+# FLEXLM_PROTECTION_NAME, renvoie le nom de la protection : FLEXLM
 
 if(NOT FLEXLM_ROOT)
   set(FLEXLM_ROOT $ENV{FLEXLM_ROOT})
@@ -23,7 +23,7 @@ if(NOT FLEXLM_VENDOR)
   endif()
 endif()
 
-# HINTS can be removed when using find_package for flexlm
+# HINTS peut être supprimé lors de l'utilisation de find_package pour flexlm
 FIND_PATH(FLEXLM_INCLUDE_DIR FlexlmAPI.h HINTS ${FLEXLM_ROOT}/include)
 
 
@@ -32,7 +32,7 @@ SET(FLEXLM_LIBRARY_FAILED)
 
 # par l'inclusion de la lib noact, nous ne visons ici que FlexNet v11 et +
 IF(WIN32)
-  FOREACH(WANTED_LIB FlexlmAPI${FLEXLM_VENDOR} lmgr_dongle_stub lmgr libsb libnoact libcrvs)
+  FOREACH(WANTED_LIB FlexlmAPI${FLEXLM_VENDOR} lmgr_dongle_stub lmgr libsb libnoact libcrvs libpthread)
     FIND_LIBRARY(FLEXLM_SUB_LIBRARY_${WANTED_LIB} ${WANTED_LIB})
     # MESSAGE(STATUS "Look for FlexNet lib ${WANTED_LIB} : ${FLEXLM_SUB_LIBRARY_${WANTED_LIB}}")
     IF(FLEXLM_SUB_LIBRARY_${WANTED_LIB})
@@ -73,8 +73,6 @@ IF(FLEXLM_INCLUDE_DIR)
         advapi32.lib gdi32.lib comdlg32.lib comctl32.lib wsock32.lib shell32.lib
         Rpcrt4.lib oleaut32.lib Ole32.lib Wbemuuid.lib wintrust.lib crypt32.lib Ws2_32.lib psapi.lib Shlwapi.lib dhcpcsvc.lib
         userenv.lib legacy_stdio_definitions.lib vcruntime.lib ucrt.lib legacy_stdio_wide_specifiers.lib libvcruntime.lib)
-    else(WIN32)
-      SET(FLEXLM_LIBRARIES ${FLEXLM_LIBRARY} pthread)
     endif(WIN32)
     SET(FLEXLM_INCLUDE_DIRS ${FLEXLM_INCLUDE_DIR})
     LIST(REMOVE_DUPLICATES FLEXLM_LIBRARY_DIRS)

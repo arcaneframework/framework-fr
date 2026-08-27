@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshPolyhedralTestModule.cc                                  C) 2000-2026 */
 /*                                                                           */
-/* Test Module for custom mesh                                               */
+/* Module de test pour maillage personnalisé                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -50,7 +50,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   {
     auto mesh_handle = subDomain()->defaultMeshHandle();
     if (mesh_handle.hasMesh() && !options()->readOnly) {
-      info() << "-- Mesh name: " << mesh()->name();
+      info() << "-- Nom du maillage: " << mesh()->name();
       _testKind(mesh());
       _testDimensions(mesh());
       _testCoordinates(mesh());
@@ -62,7 +62,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
       _testConnectivity(mesh());
     }
     else
-      info() << "No Mesh";
+      info() << "Aucun maillage";
 
     subDomain()->timeLoopMng()->stopComputeLoop(true);
   }
@@ -96,20 +96,20 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
 void MeshPolyhedralTestModule::
 _testKind(IMesh* mesh)
 {
-  // Check mesh kind
+  // Vérifie le type de maillage
   if (mesh->meshKind().meshStructure() != eMeshStructure::Polyhedral) {
-    ARCANE_FATAL("Mesh kind for mesh {0} is not eMeshStructure::Polyhedral",mesh->name());
+    ARCANE_FATAL("Le type de maillage pour le maillage {0} n'est pas eMeshStructure::Polyhedral", mesh->name());
   }
-  // Set mesh kind (for test, done by mesh reader)
-  // So far for PolyhedralMesh must be : eMeshStructure::Polyhedral, eMeshAMRKind::Node
+  // Définis le type de maillage (pour le test, fait par le lecteur de maillage)
+  // Jusqu'à présent pour PolyhedralMesh doit être : eMeshStructure::Polyhedral, eMeshAMRKind::Node
   MeshKind kind;
   kind.setMeshStructure(eMeshStructure::Polyhedral);
   kind.setMeshAMRKind(eMeshAMRKind::None);
   mesh->_internalApi()->setMeshKind(kind);
-  // Finalize internalApi check. Dof tests done in DoFTester
+  // Finalise la vérification internalApi. Les tests DoF sont effectués dans DoFTester
   auto dof_mng = mesh->_internalApi()->dofConnectivityMng();
   if (!dof_mng)
-    ARCANE_FATAL("Cannot get DoFConnectivityMng from PolyhedralMesh");
+    ARCANE_FATAL("Impossible d'obtenir DoFConnectivityMng à partir de PolyhedralMesh");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,50 +118,50 @@ _testKind(IMesh* mesh)
 void MeshPolyhedralTestModule::
 _testEnumerationAndConnectivities(IMesh* mesh)
 {
-  info() << "- Polyhedral mesh test -";
-  info() << "- Mesh dimension " << mesh->dimension();
-  info() << "- Mesh nb cells  " << mesh->nbItem(IK_Cell) << " or " << mesh->nbCell();
-  info() << "- Mesh nb faces  " << mesh->nbItem(IK_Face) << " or " << mesh->nbFace();
-  info() << "- Mesh nb edges  " << mesh->nbItem(IK_Edge) << " or " << mesh->nbEdge();
-  info() << "- Mesh nb nodes  " << mesh->nbItem(IK_Node) << " or " << mesh->nbNode();
-  info() << "Cell family " << mesh->cellFamily()->name();
-  info() << "Node family " << mesh->nodeFamily()->name();
+  info() << "- Test de maillage polyédrique -";
+  info() << "- Dimension du maillage " << mesh->dimension();
+  info() << "- Nb de mailles " << mesh->nbItem(IK_Cell) << " ou " << mesh->nbCell();
+  info() << "- Nb de faces du maillage " << mesh->nbItem(IK_Face) << " ou " << mesh->nbFace();
+  info() << "- Nb d'arêtes du maillage " << mesh->nbItem(IK_Edge) << " ou " << mesh->nbEdge();
+  info() << "- Nb de nœuds du maillage " << mesh->nbItem(IK_Node) << " ou " << mesh->nbNode();
+  info() << "Famille de mailles " << mesh->cellFamily()->name();
+  info() << "Famille de nœuds " << mesh->nodeFamily()->name();
   auto all_cells = mesh->allCells();
-  // ALL CELLS
+  // TOUTES LES MAILLES
   ENUMERATE_CELL (icell, all_cells) {
-    debug(Trace::High) << "cell with index " << icell.index();
-    debug(Trace::High) << "cell with lid " << icell.localId();
-    debug(Trace::High) << "cell with uid " << icell->uniqueId().asInt64();
-    debug(Trace::High) << "cell number of nodes " << icell->nodes().size();
-    debug(Trace::High) << "cell number of faces " << icell->faces().size();
-    debug(Trace::High) << "cell number of edges " << icell->edges().size();
+    debug(Trace::High) << "maille avec index " << icell.index();
+    debug(Trace::High) << "maille avec lid " << icell.localId();
+    debug(Trace::High) << "maille avec uid " << icell->uniqueId().asInt64();
+    debug(Trace::High) << "maille nombre de nœuds " << icell->nodes().size();
+    debug(Trace::High) << "maille nombre de faces " << icell->faces().size();
+    debug(Trace::High) << "maille nombre d'arêtes " << icell->edges().size();
     for (Node node : icell->nodes()) {
-      debug(Trace::High) << "cell node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
+      debug(Trace::High) << "nœud maille lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
     for (Face face : icell->faces()) {
-      debug(Trace::High) << "cell face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
+      debug(Trace::High) << "face maille lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
     for (Edge edge : icell->edges()) {
-      debug(Trace::High) << "cell edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "arête maille lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
-  // ALL FACES
+  // TOUTES LES FACES
   ENUMERATE_FACE (iface, mesh->allFaces()) {
-    debug(Trace::High) << "face with index " << iface.index();
-    debug(Trace::High) << "face with lid " << iface.localId();
-    debug(Trace::High) << "face with uid " << iface->uniqueId().asInt64();
-    debug(Trace::High) << "face number of nodes " << iface->nodes().size();
-    debug(Trace::High) << "face number of cells " << iface->cells().size();
-    debug(Trace::High) << "face number of edges " << iface->edges().size();
-    debug(Trace::High) << "face back cell " << iface->backCell().localId();
-    debug(Trace::High) << "face front cell " << iface->frontCell().localId();
+    debug(Trace::High) << "face avec index " << iface.index();
+    debug(Trace::High) << "face avec lid " << iface.localId();
+    debug(Trace::High) << "face avec uid " << iface->uniqueId().asInt64();
+    debug(Trace::High) << "face nombre de nœuds " << iface->nodes().size();
+    debug(Trace::High) << "face nombre de mailles " << iface->cells().size();
+    debug(Trace::High) << "face nombre d'arêtes " << iface->edges().size();
+    debug(Trace::High) << "maille arrière de la face " << iface->backCell().localId();
+    debug(Trace::High) << "maille avant de la face " << iface->frontCell().localId();
     for (Node node : iface->nodes()) {
-      debug(Trace::High) << "face node lid " << node.localId() << " uid " << node.uniqueId().asInt64();
+      debug(Trace::High) << "nœud face lid " << node.localId() << " uid " << node.uniqueId().asInt64();
     }
     auto cell_index = 0;
     bool are_face_cells_ok = true;
     for (Cell cell : iface->cells()) {
-      debug(Trace::High) << "face cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
+      debug(Trace::High) << "maille face lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
       if (cell_index == 0) {
         if (iface->itemBase().flags() & ItemFlags::II_FrontCellIsFirst)
           are_face_cells_ok = are_face_cells_ok && cell.uniqueId() == iface->frontCell().uniqueId();
@@ -173,59 +173,65 @@ _testEnumerationAndConnectivities(IMesh* mesh)
       ++cell_index;
     }
     if (!are_face_cells_ok) {
-      ARCANE_FATAL("Problem with face cells.");
+      ARCANE_FATAL("Problème avec les mailles de la face.");
     }
     for (Edge edge : iface->edges()) {
-      debug(Trace::High) << "face edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "arête face lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
-    // check boundaryCell
-    if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {ARCANE_FATAL("A face with one cell is boundary.");}
+    // vérifie les mailles de frontière
+    if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {
+      ARCANE_FATAL("Une face avec une maille est une frontière.");
+    }
     if (iface->isSubDomainBoundary()) {
-      debug(Trace::High) << "face boundary cell lid " << iface->boundaryCell().localId();
-      debug(Trace::High) << "face boundary cell uid " << iface->boundaryCell().uniqueId().asInt64();
-      if (iface->boundaryCell().localId() == NULL_ITEM_LOCAL_ID) {ARCANE_FATAL("A boundary face's boundary cell is null.");}
-      if (iface->cells().size() > 1) {ARCANE_FATAL("A boundary face has only one cell.");}
+      debug(Trace::High) << "maille de frontière de la face lid " << iface->boundaryCell().localId();
+      debug(Trace::High) << "maille de frontière de la face uid " << iface->boundaryCell().uniqueId().asInt64();
+      if (iface->boundaryCell().localId() == NULL_ITEM_LOCAL_ID) {
+        ARCANE_FATAL("La maille de frontière d'une face est nulle.");
+      }
+      if (iface->cells().size() > 1) {
+        ARCANE_FATAL("Une face de frontière a plus d'une maille.");
+      }
     }
   }
-  // Check face flags
+  // Vérifie les drapeaux de la face
   _checkFlags(mesh);
-  // ALL NODES
+  // TOUS LES NŒUDS
   ENUMERATE_NODE (inode, mesh->allNodes()) {
-    debug(Trace::High) << "node with index " << inode.index();
-    debug(Trace::High) << "node with lid " << inode.localId();
-    debug(Trace::High) << "node with uid " << inode->uniqueId().asInt64();
-    debug(Trace::High) << "node number of faces " << inode->faces().size();
-    debug(Trace::High) << "node number of cells " << inode->cells().size();
-    debug(Trace::High) << "node number of edges " << inode->edges().size();
+    debug(Trace::High) << "nœud avec index " << inode.index();
+    debug(Trace::High) << "nœud avec lid " << inode.localId();
+    debug(Trace::High) << "nœud avec uid " << inode->uniqueId().asInt64();
+    debug(Trace::High) << "nœud nombre de faces " << inode->faces().size();
+    debug(Trace::High) << "nœud nombre de mailles " << inode->cells().size();
+    debug(Trace::High) << "nœud nombre d'arêtes " << inode->edges().size();
     for (Face face : inode->faces()) {
-      debug(Trace::High) << "node face lid " << face.localId() << " uid " << face.uniqueId().asInt64();
+      debug(Trace::High) << "face nœud lid " << face.localId() << " uid " << face.uniqueId().asInt64();
     }
     for (Cell cell : inode->cells()) {
-      debug(Trace::High) << "node cell lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
+      debug(Trace::High) << "maille nœud lid " << cell.localId() << " uid " << cell.uniqueId().asInt64();
     }
     for (Edge edge : inode->edges()) {
-      debug(Trace::High) << "node edge lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
+      debug(Trace::High) << "arête nœud lid " << edge.localId() << " uid " << edge.uniqueId().asInt64();
     }
   }
-  // ALL EDGES
+  // TOUTES LES ARÊTES
   ENUMERATE_EDGE (iedge, mesh->allEdges()) {
-    debug(Trace::High) << "edge with index " << iedge.index();
-    debug(Trace::High) << "edge with lid " << iedge.localId();
-    debug(Trace::High) << "edge with uid " << iedge->uniqueId().asInt64();
-    debug(Trace::High) << "edge number of faces " << iedge->faces().size();
-    debug(Trace::High) << "edge number of cells " << iedge->cells().size();
-    debug(Trace::High) << "edge number of nodes " << iedge->nodes().size();
+    debug(Trace::High) << "arête avec index " << iedge.index();
+    debug(Trace::High) << "arête avec lid " << iedge.localId();
+    debug(Trace::High) << "arête avec uid " << iedge->uniqueId().asInt64();
+    debug(Trace::High) << "arête nombre de faces " << iedge->faces().size();
+    debug(Trace::High) << "arête nombre de mailles " << iedge->cells().size();
+    debug(Trace::High) << "arête nombre de nœuds " << iedge->nodes().size();
     for (Face face : iedge->faces()) {
-      debug(Trace::High) << "edge face lid " << face.localId() << " uid " << face.uniqueId();
+      debug(Trace::High) << "face arête lid " << face.localId() << " uid " << face.uniqueId();
     }
     for (Cell cell : iedge->cells()) {
-      debug(Trace::High) << "edge cell lid " << cell.localId() << " uid " << cell.uniqueId();
+      debug(Trace::High) << "maille arête lid " << cell.localId() << " uid " << cell.uniqueId();
     }
     for (Node node : iedge->nodes()) {
-      debug(Trace::High) << "edge node lid " << node.localId() << " uid " << node.uniqueId();
+      debug(Trace::High) << "nœud arête lid " << node.localId() << " uid " << node.uniqueId();
     }
   }
-  // Active items : no AMR available with polyhedral mesh but must return all items
+  // Éléments actifs : aucun AMR disponible avec maillage polyédrique mais doit retourner tous les éléments
   bool is_active_ok = (mesh->allActiveCells().size() == mesh->allCells().size());
   is_active_ok &= (mesh->ownActiveCells().size() == mesh->ownCells().size());
   is_active_ok &= (mesh->allActiveFaces().size() == mesh->allFaces().size());
@@ -237,7 +243,7 @@ _testEnumerationAndConnectivities(IMesh* mesh)
   is_active_ok &= (mesh->allLevelCells(1).empty());
   is_active_ok &= (mesh->ownLevelCells(1).empty());
   if (!is_active_ok)
-    ARCANE_FATAL("Polyhedral mesh implem does not handle correctly activeCells methods. Should return all items.");
+    ARCANE_FATAL("L'implémentation du maillage polyédrique ne gère pas correctement les méthodes activeCells. Doit retourner tous les éléments.");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,102 +251,102 @@ _testEnumerationAndConnectivities(IMesh* mesh)
 
 void MeshPolyhedralTestModule::_testVariables(IMesh* mesh)
 {
-  // test variables
-  info() << " -- test variables -- ";
-  // cell variable
+  // teste les variables
+  info() << " -- variables de test -- ";
+  // variable de maille
   m_cell_variable.fill(1);
   _checkVariable(m_cell_variable, mesh->allCells());
-  // node variable
+  // variable de nœud
   m_node_variable.fill(1);
   _checkVariable(m_node_variable, mesh->allNodes());
-  // face variable
+  // variable de face
   m_face_variable.fill(1);
   _checkVariable(m_face_variable, mesh->allFaces());
-  // edge variable
+  // variable d'arête
   m_edge_variable.fill(1);
   _checkVariable(m_edge_variable, mesh->allEdges());
-  // Check variables defined in mesh file
-  // Cell variables
+  // Vérifie les variables définies dans le fichier de maillage
+  // Variables de maille
   for (const auto& variable_name : options()->getCheckCellVariableReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableCellReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allCells());
   }
   for (const auto& variable_name : options()->getCheckCellVariableInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allCells());
   }
   for (const auto& variable_name : options()->getCheckCellVariableArrayInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableCellArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allCells());
   }
   for (const auto& variable_name : options()->getCheckCellVariableArrayReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableCellArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allCells());
   }
-  // Node variables
+  // Variables de nœud
   for (const auto& variable_name : options()->getCheckNodeVariableReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableNodeReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allNodes());
   }
   for (const auto& variable_name : options()->getCheckNodeVariableInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableNodeInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allNodes());
   }
   for (const auto& variable_name : options()->getCheckNodeVariableArrayInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableNodeArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allNodes());
   }
   for (const auto& variable_name : options()->getCheckNodeVariableArrayReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableNodeArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allNodes());
   }
-  // Face variables
+  // Variables de face
   for (const auto& variable_name : options()->getCheckFaceVariableReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableFaceReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allFaces());
   }
   for (const auto& variable_name : options()->getCheckFaceVariableInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableFaceInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkVariable(var, mesh->allFaces());
   }
   for (const auto& variable_name : options()->getCheckFaceVariableArrayInteger()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableFaceArrayInteger var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allFaces());
   }
   for (const auto& variable_name : options()->getCheckFaceVariableArrayReal()) {
     if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableFaceArrayReal var{ VariableBuildInfo(mesh, variable_name) };
     _checkArrayVariable(var, mesh->allFaces());
   }
   for (const auto& variable_with_ref_option : options()->checkCellVariableIntegerWithRefValue()) {
     String variable_name = variable_with_ref_option->getVarName();
-    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh,variable_name ))
-      ARCANE_FATAL("Cannot find mesh array variable {0}", variable_name);
+    if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh, variable_name))
+      ARCANE_FATAL("Impossible de trouver la variable de maillage {0}", variable_name);
     VariableCellInteger var{ VariableBuildInfo(mesh, variable_name) };
-    _checkVariableWithRefValue(var, mesh->allCells(),variable_with_ref_option->getVarRefSum());
+    _checkVariableWithRefValue(var, mesh->allCells(), variable_with_ref_option->getVarRefSum());
   }
 }
 
@@ -350,44 +356,44 @@ void MeshPolyhedralTestModule::_testVariables(IMesh* mesh)
 void MeshPolyhedralTestModule::
 _testGroups(IMesh* mesh)
 {
-  // AllItems groups
-  ARCANE_ASSERT((!mesh->findGroup("AllCells").null()), ("Group AllCells has not been created"));
-  ARCANE_ASSERT((!mesh->findGroup("AllNodes").null()), ("Group AllNodes has not been created"));
-  ARCANE_ASSERT((!mesh->findGroup("AllFaces").null()), ("Group AllFaces has not been created"));
-  ARCANE_ASSERT((!mesh->findGroup("AllEdges").null()), ("Group AllEdges has not been created"));
-  // OwnItems groups
+  // Groupes AllItems
+  ARCANE_ASSERT((!mesh->findGroup("AllCells").null()), ("Le groupe AllCells n'a pas été créé"));
+  ARCANE_ASSERT((!mesh->findGroup("AllNodes").null()), ("Le groupe AllNodes n'a pas été créé"));
+  ARCANE_ASSERT((!mesh->findGroup("AllFaces").null()), ("Le groupe AllFaces n'a pas été créé"));
+  ARCANE_ASSERT((!mesh->findGroup("AllEdges").null()), ("Le groupe AllEdges n'a pas été créé"));
+  // Groupes OwnItems
   if (!Arcane::AbstractModule::subDomain()->parallelMng()->isParallel()) {
     ValueChecker vc{ A_FUNCINFO };
-    vc.areEqual(mesh->allCells().size(), mesh->ownCells().size(), "All and own cell group size differ in sequential.");
-    vc.areEqual(mesh->allFaces().size(), mesh->ownFaces().size(), "All and own face group size differ in sequential.");
-    vc.areEqual(mesh->allEdges().size(), mesh->ownEdges().size(), "All and own edge group size differ in sequential.");
-    vc.areEqual(mesh->allNodes().size(), mesh->ownNodes().size(), "All and own node group size differ in sequential.");
+    vc.areEqual(mesh->allCells().size(), mesh->ownCells().size(), "La taille du groupe All et own pour les mailles diffère en séquentiel.");
+    vc.areEqual(mesh->allFaces().size(), mesh->ownFaces().size(), "La taille du groupe All et own pour les faces diffère en séquentiel.");
+    vc.areEqual(mesh->allEdges().size(), mesh->ownEdges().size(), "La taille du groupe All et own pour les arêtes diffère en séquentiel.");
+    vc.areEqual(mesh->allNodes().size(), mesh->ownNodes().size(), "La taille du groupe All et own pour les nœuds diffère en séquentiel.");
   }
-  // Cell group
+  // Groupe de maille
   String group_name = "my_cell_group";
   _buildGroup(mesh->cellFamily(), group_name);
-  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_cell_group has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Le groupe my_cell_group n'a pas été créé"));
   PartialVariableCellInt32 partial_cell_var({ mesh, "partial_cell_variable", mesh->cellFamily()->name(), group_name });
   partial_cell_var.fill(1);
   _checkVariable(partial_cell_var, partial_cell_var.itemGroup());
-  // Node group
+  // Groupe de nœud
   group_name = "my_node_group";
   _buildGroup(mesh->nodeFamily(), group_name);
-  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_node_group has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Le groupe my_node_group n'a pas été créé"));
   PartialVariableNodeInt32 partial_node_var({ mesh, "partial_node_variable", mesh->nodeFamily()->name(), group_name });
   partial_node_var.fill(1);
   _checkVariable(partial_node_var, partial_node_var.itemGroup());
-  // Face group
+  // Groupe de face
   group_name = "my_face_group";
   _buildGroup(mesh->faceFamily(), group_name);
-  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_face_group has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Le groupe my_face_group n'a pas été créé"));
   PartialVariableFaceInt32 partial_face_var({ mesh, "partial_face_variable", mesh->faceFamily()->name(), group_name });
   partial_face_var.fill(1);
   _checkVariable(partial_face_var, partial_face_var.itemGroup());
-  // Edge group
+  // Groupe d'arête
   group_name = "my_edge_group";
   _buildGroup(mesh->edgeFamily(), group_name);
-  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Group my_edge_group has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()), ("Le groupe my_edge_group n'a pas été créé"));
   PartialVariableEdgeInt32 partial_edge_var({ mesh, "partial_edge_variable", mesh->edgeFamily()->name(), group_name });
   partial_edge_var.fill(1);
   _checkVariable(partial_edge_var, partial_edge_var.itemGroup());
@@ -395,7 +401,7 @@ _testGroups(IMesh* mesh)
   for (const auto& group_infos : options()->checkGroup()) {
     auto group = mesh->findGroup(group_infos->getName());
     if (group.null())
-      ARCANE_FATAL("Could not find group {0}", group_infos->getName());
+      ARCANE_FATAL("Impossible de trouver le groupe {0}", group_infos->getName());
     ValueChecker vc{ A_FUNCINFO };
     auto group_size = 0;
     if (parallelMng()->isParallel()) {
@@ -404,15 +410,18 @@ _testGroups(IMesh* mesh)
     else {
       group_size = group.size();
     }
-    vc.areEqual(group_size, group_infos->getSize(), "check group size");
+    vc.areEqual(group_size, group_infos->getSize(), "vérification de la taille du groupe");
   }
   ValueChecker vc{ A_FUNCINFO };
   auto nb_internal_group = 19;
   if (subDomain()->parallelMng()->isParallel()) {
     nb_internal_group = 27;
   }
-  auto nb_group = nb_internal_group + options()->nbMeshGroup;
-  vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
+  if (options()->nbMeshGroup.isPresent())
+  {
+    auto nb_group = nb_internal_group + options()->nbMeshGroup[0];
+    vc.areEqual(nb_group, mesh->groups().count(), "vérification du nombre de groupes dans le maillage");
+  }
 
   for (const auto& boundary_face_group_name : options()->getCheckBoundaryFaceGroup()) {
     _checkBoundaryFaceGroup(mesh, boundary_face_group_name);
@@ -444,10 +453,10 @@ _testDimensions(IMesh* mesh)
     nb_node = parallelMng()->reduce(Parallel::ReduceSum, mesh->ownNodes().size());
   }
   ValueChecker vc(A_FUNCINFO);
-  vc.areEqual(nb_cell, mesh_size[0]->getNbCells(), "check number of cells");
-  vc.areEqual(nb_face, mesh_size[0]->getNbFaces(), "check number of faces");
-  vc.areEqual(nb_edge, mesh_size[0]->getNbEdges(), "check number of edges");
-  vc.areEqual(nb_node, mesh_size[0]->getNbNodes(), "check number of nodes");
+  vc.areEqual(nb_cell, mesh_size[0]->getNbCells(), "vérification du nombre de mailles");
+  vc.areEqual(nb_face, mesh_size[0]->getNbFaces(), "vérification du nombre de faces");
+  vc.areEqual(nb_edge, mesh_size[0]->getNbEdges(), "vérification du nombre d'arêtes");
+  vc.areEqual(nb_node, mesh_size[0]->getNbNodes(), "vérification du nombre de nœuds");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -462,8 +471,8 @@ _testCoordinates(Arcane::IMesh* mesh)
       auto node_coords_ref = options()->meshCoordinates[0].coords();
       ValueChecker vc{ A_FUNCINFO };
       ENUMERATE_NODE (inode, allNodes()) {
-        vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()], "check coords values");
-        debug(Trace::High) << " node coords  " << node_coords[inode];
+        vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()], "vérification des valeurs des coordonnées");
+        debug(Trace::High) << " coordonnées des nœuds  " << node_coords[inode];
       }
     }
   }
@@ -477,30 +486,30 @@ _testMeshUtilities(Arcane::IMesh* mesh)
 {
   auto* mesh_utilities = mesh->utilities();
   ARCANE_CHECK_POINTER(mesh_utilities);
-  // Test change owner from cells
-  // wip test in sequential: virtually change all cell owners to 1 and check all items have 1 as owner
+  // Tester le changement de propriétaire à partir des mailles
+  // test en séquentiel : changer virtuellement tous les propriétaires de mailles à 1 et vérifier que tous les éléments ont 1 comme propriétaire
   auto& cell_owners = mesh->cellFamily()->itemsNewOwner();
   auto& face_owners = mesh->faceFamily()->itemsNewOwner();
   auto& edge_owners = mesh->edgeFamily()->itemsNewOwner();
   auto& node_owners = mesh->nodeFamily()->itemsNewOwner();
-  ENUMERATE_(Cell,icell,allCells()) {
+  ENUMERATE_ (Cell, icell, allCells()) {
     cell_owners[icell] = 1;
-    info() << "Cell uid " << icell->uniqueId() << " cell_owner[icell] "  << cell_owners[icell];
-    info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();
+    info() << "UID de la maille " << icell->uniqueId() << " cell_owner[icell] " << cell_owners[icell];
+    info() << "La maille UID " << icell->uniqueId() << " a le propriétaire " << icell->owner();
   }
   mesh_utilities->changeOwnersFromCells();
   bool has_error = false;
-  ENUMERATE_ (Face,iface,allFaces()) {
+  ENUMERATE_ (Face, iface, allFaces()) {
     has_error |= face_owners[iface] != 1;
   }
-  ENUMERATE_ (Node,inode,allNodes()) {
+  ENUMERATE_ (Node, inode, allNodes()) {
     has_error |= node_owners[inode] != 1;
   }
-  ENUMERATE_ (Edge,iedge,allEdges()) {
+  ENUMERATE_ (Edge, iedge, allEdges()) {
     has_error |= edge_owners[iedge] != 1;
   }
   if (has_error) {
-    ARCANE_FATAL("changeOwnerFromCells does not work with PolyhedralMesh");
+    ARCANE_FATAL("changeOwnerFromCells ne fonctionne pas avec PolyhedralMesh");
   }
 }
 
@@ -512,7 +521,7 @@ _testMeshModifier(Arcane::IMesh* mesh)
 {
   auto* mesh_modifier = mesh->modifier();
   ARCANE_CHECK_POINTER(mesh_modifier);
-  // Following methods not yet implemented. Do nothing in sequential and crash in parallel
+  // Les méthodes suivantes ne sont pas encore implémentées. Ne rien faire en séquentiel et planter en parallèle
   mesh_modifier->addExtraGhostCellsBuilder(nullptr);
   mesh_modifier->removeExtraGhostCellsBuilder(nullptr);
   mesh_modifier->endUpdate(false, false);
@@ -524,10 +533,10 @@ _testMeshModifier(Arcane::IMesh* mesh)
 void MeshPolyhedralTestModule::
 _testConnectivity(IMesh* mesh)
 {
-  info() << "Testing connectivity";
-  Connectivity connectivity{mesh->connectivity()};
-  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_Default),"PolyhedralMesh must have standard connectivity");
-  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_EdgeConnectivity),"PolyhedralMesh must have Edge Connectivity");
+  info() << "Test de connectivité";
+  Connectivity connectivity{ mesh->connectivity() };
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_Default), "PolyhedralMesh doit avoir une connectivité standard");
+  ARCANE_FATAL_IF(!connectivity.hasConnectivity(Connectivity::eConnectivityType::CT_EdgeConnectivity), "PolyhedralMesh doit avoir une connectivité d'arête");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -544,7 +553,7 @@ _buildGroup(IItemFamily* family, String const& group_name)
       item_lids.add(iitem.localId());
   }
   group.addItems(item_lids);
-  info() << itemKindName(family->itemKind()) << " group size " << group.size();
+  info() << "Taille du groupe " << itemKindName(family->itemKind()) << " : " << group.size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -567,11 +576,11 @@ _checkVariableWithRefValue(VariableRefType variable, Arcane::ItemGroup item_grou
   typename VariableRefType::DataType variable_sum = 0.;
   using ItemType = typename VariableRefType::ItemType;
   ENUMERATE_ (ItemType, iitem, item_group) {
-    debug(Trace::High) << variable.name() << " at item " << iitem.localId() << " " << variable[iitem];
+    debug(Trace::High) << variable.name() << " à l'élément " << iitem.localId() << " " << variable[iitem];
     variable_sum += variable[iitem];
   }
   if (variable_sum != ref_sum && !parallelMng()->isParallel()) {
-    fatal() << "Error on variable " << variable.name();
+    fatal() << "Erreur sur la variable " << variable.name();
   }
 }
 
@@ -589,12 +598,12 @@ _checkArrayVariable(VariableArrayRefType variable_ref, ItemGroup item_group)
     for (auto value : variable_ref[iitem]) {
       variable_sum += value;
     }
-    debug(Trace::High) << variable_ref.name() << " at item " << iitem.localId() << variable_ref[iitem];
+    debug(Trace::High) << variable_ref.name() << " à l'élément " << iitem.localId() << variable_ref[iitem];
   }
   ValueChecker vc{ A_FUNCINFO };
   std::vector<int> ref_sum(array_size);
   std::iota(ref_sum.begin(), ref_sum.end(), 1.);
-  vc.areEqual(variable_sum, item_group.size() * std::accumulate(ref_sum.begin(), ref_sum.end(), 0.), "check array variable values");
+  vc.areEqual(variable_sum, item_group.size() * std::accumulate(ref_sum.begin(), ref_sum.end(), 0.), "vérification des valeurs de la variable en tableau");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -605,16 +614,16 @@ _checkBoundaryFaceGroup(IMesh* mesh, const String& boundary_face_group_name) con
 {
   auto boundary_face_group = mesh->findGroup(boundary_face_group_name);
   if (boundary_face_group.null())
-    ARCANE_FATAL("Cannot find boundary face group {0}", boundary_face_group_name);
+    ARCANE_FATAL("Impossible de trouver le groupe de faces de frontière {0}", boundary_face_group_name);
   bool are_face_boundaries = true;
   ENUMERATE_FACE (iface, boundary_face_group) {
     are_face_boundaries = are_face_boundaries && iface->isSubDomainBoundary();
     if (!iface->isSubDomainBoundary()) {
-      debug(Trace::High) << String::format("Face {0} with nodes {1} is not boundary", iface->uniqueId(), iface->nodes());
+      debug(Trace::High) << String::format("La face {0} avec les nœuds {1} n'est pas une frontière", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_boundaries)
-    ARCANE_FATAL("Boundary face group {0} contains face(s) that are not on the subdomain boundary", boundary_face_group_name);
+    ARCANE_FATAL("Le groupe de faces de frontière {0} contient une ou plusieurs faces qui ne sont pas sur la frontière du sous-domaine", boundary_face_group_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -625,16 +634,16 @@ _checkInternalFaceGroup(IMesh* mesh, const String& internal_face_group_name) con
 {
   auto internal_face_group = mesh->findGroup(internal_face_group_name);
   if (internal_face_group.null())
-    ARCANE_FATAL("Cannot find internal face group {0}", internal_face_group_name);
+    ARCANE_FATAL("Impossible de trouver le groupe de faces internes {0}", internal_face_group_name);
   bool are_face_internals = true;
   ENUMERATE_FACE (iface, internal_face_group) {
     are_face_internals = are_face_internals && !iface->isSubDomainBoundary();
     if (iface->isSubDomainBoundary()) {
-      debug(Trace::High) << String::format("Face {0} with nodes {1} is not an internal face", iface->uniqueId(), iface->nodes());
+      debug(Trace::High) << String::format("La face {0} avec les nœuds {1} n'est pas une face interne", iface->uniqueId(), iface->nodes());
     }
   }
   if (!are_face_internals)
-    ARCANE_FATAL("Internal face group {0} contains face(s) that are on the subdomain boundary", internal_face_group_name);
+    ARCANE_FATAL("Le groupe de faces internes {0} contient une ou plusieurs faces qui sont sur la frontière du sous-domaine", internal_face_group_name);
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -673,11 +682,11 @@ _checkFlags(IMesh* mesh) const
     }
   }
   if (!are_flags_ok)
-    ARCANE_FATAL("Face flags are incorrect");
+    ARCANE_FATAL("Les drapeaux de la face sont incorrects");
   if (has_internal_faces)
-    info() << "Mesh has internal faces";
+    info() << "Le maillage contient des faces internes";
   else
-    info() << "Mesh has no internal face";
+    info() << "Le maillage ne contient aucune face interne";
 }
 
 /*---------------------------------------------------------------------------*/

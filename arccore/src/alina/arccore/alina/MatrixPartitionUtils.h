@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* MatrixPartitionUtils.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Utils for matrix repartitioning.                                          */
+/* Utilitaires pour la repartition des matrices.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_MATRIXPARTITIONUTILS_H
 #define ARCCORE_ALINA_MATRIXPARTITIONUTILS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -255,9 +255,9 @@ mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& p
 
   for (Idx p : part)
     ++loc_part_cnt[p];
-
-  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, mpi_datatype<ptrdiff_t>(), MPI_SUM, comm);
-  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, mpi_datatype<ptrdiff_t>(), MPI_SUM, comm);
+  MPI_Datatype ptr_datatype = MPI_LONG_LONG; //mpi_datatype<ptrdiff_t>();
+  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, ptr_datatype, MPI_SUM, comm);
+  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, ptr_datatype, MPI_SUM, comm);
 
   glo_part_beg[0] = 0;
   std::partial_sum(glo_part_cnt.begin(), glo_part_cnt.end(), glo_part_beg.begin() + 1);

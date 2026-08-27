@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Gestion des références sur un objet externe.
@@ -45,15 +46,13 @@ class ARCCORE_BASE_EXPORT ExternalRef
 {
  private:
 
-  struct Handle
+  struct ExternalHandle
   {
-    Handle()
-    : handle(nullptr)
-    {}
-    Handle(void* h)
+    ExternalHandle() = default;
+    explicit ExternalHandle(void* h)
     : handle(h)
     {}
-    ~Handle();
+    ~ExternalHandle();
     void addReference() { ++m_nb_ref; }
     void removeReference()
     {
@@ -61,7 +60,7 @@ class ARCCORE_BASE_EXPORT ExternalRef
       if (v == 1)
         delete this;
     }
-    void* handle;
+    void* handle = nullptr;
     std::atomic<int> m_nb_ref = 0;
   };
 
@@ -73,14 +72,14 @@ class ARCCORE_BASE_EXPORT ExternalRef
 
   ExternalRef() = default;
   ExternalRef(void* handle)
-  : m_handle(new Handle(handle))
+  : m_handle(new ExternalHandle(handle))
   {}
 
  public:
 
   bool isValid() const
   {
-    Handle* p = m_handle.get();
+    ExternalHandle* p = m_handle.get();
     if (!p)
       return false;
     return _internalHandle() != nullptr;
@@ -89,13 +88,13 @@ class ARCCORE_BASE_EXPORT ExternalRef
 
  private:
 
-  Arccore::ReferenceCounter<Handle> m_handle;
+  Arccore::ReferenceCounter<ExternalHandle> m_handle;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

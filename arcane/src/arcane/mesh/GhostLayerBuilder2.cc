@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ class GhostLayerBuilder2
 /*---------------------------------------------------------------------------*/
 
 GhostLayerBuilder2::
-GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version)
+GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version)
 : TraceAccessor(mesh_builder->mesh()->traceMng())
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
@@ -107,7 +107,7 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
     m_use_only_minimal_cell_uid = (v == 2 || vv == 3);
   }
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_GHOSTLAYER_VERBOSE", true)) {
-    m_is_verbose = (v.value()!=0);
+    m_is_verbose = (v.value() != 0);
   }
 }
 
@@ -115,7 +115,7 @@ GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
-_printItem(ItemInternal* ii,std::ostream& o)
+_printItem(ItemInternal* ii, std::ostream& o)
 {
   o << ItemPrinter(ii);
 }
@@ -207,32 +207,33 @@ class GhostLayerBuilder2::BoundaryNodeInfo
 class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 {
  public:
-  static bool compareLess(const BoundaryNodeInfo& k1,const BoundaryNodeInfo& k2)
+
+  static bool compareLess(const BoundaryNodeInfo& k1, const BoundaryNodeInfo& k2)
   {
     Int64 k1_node_uid = k1.node_uid;
     Int64 k2_node_uid = k2.node_uid;
-    if (k1_node_uid<k2_node_uid)
+    if (k1_node_uid < k2_node_uid)
       return true;
-    if (k1_node_uid>k2_node_uid)
+    if (k1_node_uid > k2_node_uid)
       return false;
 
     Int64 k1_cell_uid = k1.cell_uid;
     Int64 k2_cell_uid = k2.cell_uid;
-    if (k1_cell_uid<k2_cell_uid)
+    if (k1_cell_uid < k2_cell_uid)
       return true;
-    if (k1_cell_uid>k2_cell_uid)
+    if (k1_cell_uid > k2_cell_uid)
       return false;
 
-    return (k1.cell_owner<k2.cell_owner);
+    return (k1.cell_owner < k2.cell_owner);
   }
 
-  static Parallel::Request send(IParallelMng* pm,Int32 rank,ConstArrayView<BoundaryNodeInfo> values)
+  static Parallel::Request send(IParallelMng* pm, Int32 rank, ConstArrayView<BoundaryNodeInfo> values)
   {
     auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
     return pm->send(buf_view, rank, false);
   }
 
-  static Parallel::Request recv(IParallelMng* pm,Int32 rank,ArrayView<BoundaryNodeInfo> values)
+  static Parallel::Request recv(IParallelMng* pm, Int32 rank, ArrayView<BoundaryNodeInfo> values)
   {
     auto buf_view = BoundaryNodeInfo::asBasicBuffer(values);
     return pm->recv(buf_view, rank, false);
@@ -254,7 +255,7 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 
   static bool isValid(const BoundaryNodeInfo& bni)
   {
-    return bni.node_uid!=INT64_MAX;
+    return bni.node_uid != INT64_MAX;
   }
 };
 
@@ -264,12 +265,14 @@ class GhostLayerBuilder2::BoundaryNodeBitonicSortTraits
 class GhostLayerBuilder2::BoundaryNodeToSendInfo
 {
  public:
+
   Integer m_index;
   Integer m_nb_cell;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Ajoute les couches de mailles fantomes.
  *
@@ -285,12 +288,12 @@ class GhostLayerBuilder2::BoundaryNodeToSendInfo
  * pas optimum en terme de communication mais permet de traiter tous les cas,
  * notamment le cas ou il faut traverser plusieurs sous-domaines pour
  * ajouter des couches de mailles fantômes.
- * 
+ *
  * \todo: faire les optimisations spécifiées dans les commentaires
  * dans cette fonction.
  * \todo: faire en sorte qu'on ne travaille que avec la connectivité
  * maille/noeud.
- * 
+ *
  */
 void GhostLayerBuilder2::
 addGhostLayers()
@@ -464,7 +467,8 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
 void GhostLayerBuilder2::
 _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 {
-  info() << "Processing ghost layer " << current_layer;
+  info() << "Processing ghost layer " << current_layer
+         << " node_layer_size=" << node_layer.size();
 
   SharedArray<BoundaryNodeInfo> boundary_node_list;
   //boundary_node_list.reserve(boundary_nodes_uid_count);
@@ -492,8 +496,10 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   cells_map.eachItem([&](Cell cell) {
     // Ne traite pas les mailles qui ne m'appartiennent pas
-    if (m_version >= 4 && cell.owner() != my_rank)
-      return;
+    // FIXME: (juillet 2026) désactiver temporairement cette vérification car elle ne fonctionne pas
+    // lorsque nous avons 2 ou plus de couches fantômes.
+    //if (m_version >= 4 && cell.owner() != my_rank)
+    //return;
     Int64 cell_uid = cell.uniqueId();
     for (Node node : cell.nodes()) {
       Int32 node_lid = node.localId();

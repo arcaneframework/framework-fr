@@ -1,5 +1,4 @@
-
-set(SOURCES
+﻿set(SOURCES
   ArccoreGlobal.h
   ArccoreGlobal.cc
   APReal.h
@@ -7,6 +6,7 @@ set(SOURCES
   ArrayIterator.h
   ArrayRange.h
   ArrayViewCommon.h
+  ArrayViewDumper.h
   ArrayView.h
   ArrayView.cc
   Array2View.h
@@ -48,6 +48,7 @@ set(SOURCES
   Float16.h
   Float128.h
   FloatConversion.h
+  FloatInfo.h
   FixedArray.h
   ForLoopRunInfo.h
   ForLoopRanges.h
@@ -56,6 +57,8 @@ set(SOURCES
   GenericRegisterer.h
   GenericRegisterer.cc
   GlibDynamicLibraryLoader.cc
+  HPReal.cc
+  HPReal.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
@@ -66,6 +69,7 @@ set(SOURCES
   IObservable.h
   IRangeFunctor.h
   RangeFunctor.h
+  MathBase.h
   MDDim.h
   MDIndex.h
   MDSpan.h
@@ -77,6 +81,8 @@ set(SOURCES
   NotImplementedException.h
   NotImplementedException.cc
   NumericTraits.h
+  NumVector.h
+  NumMatrix.h
   Observer.h
   Observer.cc
   Observable.h
@@ -86,6 +92,19 @@ set(SOURCES
   PlatformUtils.cc
   Profiling.h
   Profiling.cc
+  Real2.h
+  Real2.cc
+  Real2x2.h
+  Real2x2.cc
+  Real3.h
+  Real3.cc
+  Real3x3.h
+  Real3x3.cc
+  MathNumeric.h
+  MathReal2.h
+  MathReal3.h
+  MathReal2x2.h
+  MathReal3x3.h
   ReferenceCounter.h
   ReferenceCounterImpl.h
   Ref.h
@@ -108,6 +127,7 @@ set(SOURCES
   TraceInfo.h
   TimeoutException.h
   TimeoutException.cc
+  TypeEqual.h
   ValueFiller.h
 
   IFunctor.h

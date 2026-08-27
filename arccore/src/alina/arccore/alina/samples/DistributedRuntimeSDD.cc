@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -25,7 +25,7 @@
 #include <stdexcept>
 
 #if defined(SOLVER_BACKEND_CUDA)
-// This seems not defined with CUDA
+// Cela ne semble pas défini avec CUDA
 namespace boost::math
 {
 class rounding_error
@@ -39,7 +39,6 @@ class rounding_error
 
 #include <boost/scope_exit.hpp>
 #include <memory>
-#include <boost/program_options.hpp>
 
 #include <boost/multi_array.hpp>
 #if defined(SOLVER_BACKEND_CUDA)
@@ -64,6 +63,9 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/DistributedSubDomainDeflation.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
+
 #include "AlinaSamplesCommon.h"
 
 using namespace Arcane;
@@ -158,7 +160,7 @@ struct bilinear_deflation
   : nv(0)
   , chunk(chunk)
   {
-    // See which neighbors we have.
+    // Voir quels voisins nous avons.
     int neib[2][2] = {
       { lo[0] > 0 || lo[1] > 0, hi[0] + 1 < n || lo[1] > 0 },
       { lo[0] > 0 || hi[1] + 1 < n, hi[0] + 1 < n || hi[1] + 1 < n }
@@ -170,7 +172,7 @@ struct bilinear_deflation
           ++nv;
 
     if (nv == 0) {
-      // Single MPI process?
+      // Processus MPI unique ?
       nv = 1;
       v.resize(chunk, 1);
       return;
@@ -230,7 +232,7 @@ struct mba_deflation
   : chunk(chunk)
   , nv(1)
   {
-    // See which neighbors we have.
+    // Voir quels voisins nous avons.
     int neib[2][2] = {
       { lo[0] > 0 || lo[1] > 0, hi[0] + 1 < n || lo[1] > 0 },
       { lo[0] > 0 || hi[1] + 1 < n, hi[0] + 1 < n || hi[1] + 1 < n }
@@ -316,7 +318,7 @@ struct harmonic_deflation
   : nv(0)
   , chunk(chunk)
   {
-    // See which neighbors we have.
+    // Voir quels voisins nous avons.
     int neib[2][2] = {
       { lo[0] > 0 || lo[1] > 0, hi[0] + 1 < n || lo[1] > 0 },
       { lo[0] > 0 || hi[1] + 1 < n, hi[0] + 1 < n || hi[1] + 1 < n }
@@ -328,7 +330,7 @@ struct harmonic_deflation
           ++nv;
 
     if (nv == 0) {
-      // Single MPI process?
+      // Processus MPI unique ?
       nv = 1;
       v.resize(chunk, 1);
       return;
@@ -463,7 +465,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
 
-  // Read configuration from command line
+  // Lire la configuration à partir de la ligne de commande
   ptrdiff_t n = 1024;
   std::string deflation_type = "bilinear";
 
@@ -478,7 +480,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   std::string parameter_file;
   std::string out_file;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(
@@ -487,10 +489,10 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   "laplace2d, recirc2d")(
   "symbc",
   po::value<bool>(&symm_dirichlet)->default_value(symm_dirichlet),
-  "Use symmetric Dirichlet conditions in laplace2d")(
+  "Utiliser des conditions de Dirichlet symétriques dans laplace2d")(
   "size,n",
   po::value<ptrdiff_t>(&n)->default_value(n),
-  "domain size")(
+  "taille du domaine")(
   "coarsening,c",
   po::value<Alina::eCoarserningType>(&coarsening)->default_value(coarsening),
   "ruge_stuben, aggregation, smoothed_aggregation, smoothed_aggr_emin")(
@@ -512,22 +514,22 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   "constant, partitioned, linear, bilinear, mba, harmonic")(
   "subparts",
   po::value<int>()->default_value(16),
-  "number of partitions for partitioned deflation")(
+  "nombre de partitions pour la déflation partitionnée")(
   "params,P",
   po::value<std::string>(&parameter_file),
-  "parameter file in json format")(
+  "fichier de paramètres au format json")(
   "prm,p",
   po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")(
   "just-relax,0",
   po::bool_switch(&just_relax),
-  "Do not create AMG hierarchy, use relaxation as preconditioner")(
+  "Ne pas créer la hiérarchie AMG, utiliser la relaxation comme préconditionneur")(
   "out,o",
   po::value<std::string>(&out_file),
-  "out file");
+  "fichier de sortie");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -564,8 +566,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ptrdiff_t chunk = part.size(world.rank);
 
   std::vector<ptrdiff_t> domain(world.size + 1);
-  MPI_Allgather(&chunk, 1, Alina::mpi_datatype<ptrdiff_t>(),
-                &domain[1], 1, Alina::mpi_datatype<ptrdiff_t>(), world);
+  ConstArrayView<ptrdiff_t> send_buf(1, &chunk);
+  ArrayView<ptrdiff_t> receive_buf(world.size, &domain[1]);
+  mpAllGather(world.m_message_passing_mng.get(), send_buf, receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   lo = part.domain(world.rank).min_corner();
@@ -748,8 +751,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   prof.toc("solve");
 
   if (world.rank == 0) {
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl
+    std::cout << "Itérations : " << r.nbIteration() << std::endl
+              << "Erreur :      " << r.residual() << std::endl
               << prof << std::endl;
   }
   return 0;

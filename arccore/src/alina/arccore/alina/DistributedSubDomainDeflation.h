@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* DistributedSubDomainDeflation.h                             (C) 2000-2026 */
 /*                                                                           */
-/* Distributed solver based on subdomain deflation.                          */
+/* Solveur distribué basé sur la déflation de sous-domaines.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_DISTRIBUTEDSUBDOMAINDEFLATION_H
 #define ARCCORE_ALINA_DISTRIBUTEDSUBDOMAINDEFLATION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -45,14 +45,14 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Pointwise constant deflation vectors.
+/// Vecteurs de déflation constants ponctuels.
 struct constant_deflation
 {
   const int block_size;
   /*!
-   * \brief Constructor.
+   * \brief Constructeur.
    *
-   * \param block_size Number of degrees of freedom per grid point
+   * \param block_size Nombre de degrés de liberté par point de grille
    */
   constant_deflation(int block_size = 1)
   : block_size(block_size)
@@ -119,7 +119,7 @@ sdd_projected_matrix<SDD, Matrix> make_sdd_projected_matrix(const SDD& S, const 
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Distributed solver based on subdomain deflation.
+ * \brief Solveur distribué basé sur la déflation de sous-domaines.
  *
  * \sa \cite Frank2001
  */
@@ -139,10 +139,10 @@ class DistributedSubDomainDeflation
     typename IterativeSolver::params isolver;
     typename DirectSolver::params dsolver;
 
-    // Number of deflation vectors.
+    // Nombre de vecteurs de déflation.
     Int32 num_def_vec = 0;
 
-    // Value of deflation vector at the given row and column.
+    // Valeur du vecteur de déflation à la ligne et à la colonne données.
     std::function<double(ptrdiff_t, unsigned)> def_vec;
 
     params() {}
@@ -219,9 +219,15 @@ class DistributedSubDomainDeflation
     ARCCORE_ALINA_TIC("setup deflation");
     using build_matrix = CSRMatrix<value_type, col_type, ptr_type>;
 
-    // Lets see how many deflation vectors are there.
+    // Voyons combien il y a de vecteurs de déflation.
     std::vector<ptrdiff_t> dv_size(comm.size);
-    MPI_Allgather(&ndv, 1, mpi_datatype<ptrdiff_t>(), &dv_size[0], 1, mpi_datatype<ptrdiff_t>(), comm);
+
+    {
+      ConstArrayView<ptrdiff_t> send_buf(1, &ndv);
+      ArrayView<ptrdiff_t> receive_buf(comm.size, &dv_size[0]);
+
+      mpAllGather(comm.m_message_passing_mng.get(), send_buf, receive_buf);
+    }
 
     std::partial_sum(dv_size.begin(), dv_size.end(), dv_start.begin() + 1);
     nz = dv_start.back();
@@ -238,7 +244,7 @@ class DistributedSubDomainDeflation
 
     const CommunicationPattern<backend_type>& Acp = A->cpat();
 
-    // Fill deflation vectors.
+    // Remplit les vecteurs de déflation.
     ARCCORE_ALINA_TIC("copy deflation vectors");
     {
       std::vector<value_type> z(nrows);
@@ -256,8 +262,8 @@ class DistributedSubDomainDeflation
     az_loc->set_size(nrows, ndv, true);
     az_loc->set_nonzeros(nrows * dv_size[comm.rank]);
     az_rem->set_size(nrows, 0, true);
-    // 1. Build local part of AZ matrix.
-    // 2. Count remote nonzeros
+    // 1. Construit la partie locale de la matrice AZ.
+    // 2. Compte les non-zéros distants
     arccoreParallelFor(0, nrows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       std::vector<ptrdiff_t> marker(Acp.recv.nbr.size(), -1);
 
@@ -292,7 +298,7 @@ class DistributedSubDomainDeflation
     az_rem->set_nonzeros(az_rem->scan_row_sizes());
     ARCCORE_ALINA_TOC("first pass");
 
-    // Create local preconditioner.
+    // Crée le préconditionneur local.
     ARCCORE_ALINA_TIC("local preconditioner");
     P = std::make_shared<LocalPrecond>(*a_loc, prm.local, bprm);
     ARCCORE_ALINA_TOC("local preconditioner");
@@ -301,8 +307,8 @@ class DistributedSubDomainDeflation
     A->move_to_backend(bprm);
 
     ARCCORE_ALINA_TIC("remote(A*Z)");
-    /* Construct remote part of AZ */
-    // Exchange deflation vectors
+    /* Construit la partie distante de AZ */
+    // Échange les vecteurs de déflation
     std::vector<ptrdiff_t> zrecv_ptr(Acp.recv.nbr.size() + 1, 0);
     std::vector<ptrdiff_t> zcol_ptr;
     zcol_ptr.reserve(Acp.recv.count() + 1);
@@ -351,7 +357,7 @@ class DistributedSubDomainDeflation
           ptrdiff_t c = a.col();
           value_type v = a.value();
 
-          // Domain the column belongs to
+          // Domaine auquel appartient la colonne
           ptrdiff_t d = Acp.recv.nbr[std::upper_bound(Acp.recv.ptr.begin(), Acp.recv.ptr.end(), c) -
                                      Acp.recv.ptr.begin() - 1];
 
@@ -372,11 +378,11 @@ class DistributedSubDomainDeflation
     });
     ARCCORE_ALINA_TOC("remote(A*Z)");
 
-    /* Build solver for the deflated matrix E. */
+    /* Construit le solveur pour la matrice déflée E. */
     ARCCORE_ALINA_TIC("assemble E");
 
-    // Count nonzeros in E.
-    std::vector<int> nbrs; // processes we are talking to
+    // Compte les non-zéros dans E.
+    std::vector<int> nbrs; // processus avec lesquels nous communiquons
     nbrs.reserve(1 + Acp.send.nbr.size() + Acp.recv.nbr.size());
     std::set_union(
     Acp.send.nbr.begin(), Acp.send.nbr.end(),
@@ -397,7 +403,7 @@ class DistributedSubDomainDeflation
     E.setNbNonZero(E.ptr[ndv]);
     E.set_nonzeros(E.ptr[ndv]);
 
-    // Build local strip of E.
+    // Construit la bande locale de E.
     int nthreads = ConcurrencyBase::maxAllowedThread();
     multi_array<value_type, 3> erow(nthreads, ndv, nz);
     std::fill_n(erow.data(), erow.size(), 0);

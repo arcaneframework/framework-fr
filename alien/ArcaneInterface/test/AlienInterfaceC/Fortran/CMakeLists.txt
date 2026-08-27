@@ -1,6 +1,6 @@
-enable_language(Fortran)
+﻿enable_language(Fortran)
 
-find_package(MPI REQUIRED Fortran) # Add Fortran here
+find_package(MPI REQUIRED Fortran) # Ajoute Fortran ici
 
 createExecutable(alien_interface_fortran.exe)
 
@@ -57,7 +57,6 @@ addSources(alien_interface_fortran_param.exe
            )
 
 linkLibraries(alien_interface_fortran_param.exe
-        mpifort
         Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref
@@ -96,6 +95,10 @@ if (TARGET mpifort)
     linkLibraries(alien_interface_fortran_param.exe mpifort)
 endif ()
 
+if (TARGET ifort)
+  linkLibraries(alien_interface_fortran_param.exe ifort)
+endif ()
+
 linkLibraries(alien_interface_fortran_param.exe MPI::MPI_Fortran)
 
 commit(alien_interface_fortran_param.exe)
@@ -132,4 +135,3 @@ alien_test( BENCH interface.fortran.param
             PROCS 4
             COMMAND alien_interface_fortran_param.exe
             WORKING_DIRECTORY ${ALIEN_ARCANE_INTERFACE_DIR}/test/AlienInterfaceC/Fortran)
-            

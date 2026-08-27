@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneSubDomain.cc                                      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation autonome d'un sous-domaine.                                */
+/* Implémentation autonome d'un sous-domaine.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,16 +39,16 @@ class StandaloneSubDomain::Impl
   Impl() = default;
   ~Impl()
   {
-    arcaneCallFunctionAndCatchException([&]{ dumpStats(); });
+    arcaneCallFunctionAndCatchException([&] { dumpStats(); });
     StandaloneSubDomain::_notifyRemoveStandaloneSubDomain();
   }
 
-  void init(const String& case_file_name)
+  void init(const String& case_file_name, Span<const std::byte> file_content)
   {
     int r = m_simple_exec.initialize();
     if (r != 0)
       ARCANE_FATAL("Error during initialization r={0}", r);
-    m_sub_domain = m_simple_exec.createSubDomain(case_file_name);
+    m_sub_domain = m_simple_exec.createSubDomain(case_file_name, file_content);
     m_trace_mng = makeRef(m_sub_domain->traceMng());
   }
 
@@ -116,10 +116,10 @@ subDomain()
 /*---------------------------------------------------------------------------*/
 
 void StandaloneSubDomain::
-_initUniqueInstance(const String& case_file_name)
+_initUniqueInstance(const String& case_file_name, Span<const std::byte> file_content)
 {
   m_p = makeRef(new Impl());
-  m_p->init(case_file_name);
+  m_p->init(case_file_name, file_content);
 }
 
 /*---------------------------------------------------------------------------*/

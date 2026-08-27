@@ -43,7 +43,7 @@ class HostSpecificMemoryCopyList
 
   HostSpecificMemoryCopyList()
   {
-    using impl::ExtentValue;
+    using Impl::ExtentValue;
     //! Ajoute des implémentations spécifiques pour les tailles courantes
     addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
     addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
@@ -93,7 +93,7 @@ ISpecificMemoryCopyList* GlobalMemoryCopyList::
 getDefault(const RunQueue* queue)
 {
   if (queue && !default_global_copy_list)
-    ARCCORE_FATAL("No instance of copier is available for RunQueue");
+    ARCCORE_FATAL("Aucune instance de copieur n'est disponible pour RunQueue");
   if (default_global_copy_list && queue)
     return default_global_copy_list;
   return &global_host_copy_list;
@@ -102,7 +102,7 @@ getDefault(const RunQueue* queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

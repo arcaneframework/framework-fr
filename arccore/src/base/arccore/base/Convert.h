@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.h                                                   (C) 2000-2025 */
+/* Convert.h                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -16,45 +16,11 @@
 
 #include "arccore/base/StringView.h"
 
+#ifndef ARCCORE_COMPILING_FRAMEWORK
+// Ce fichier d'en-tête n'est pas nécessaire et sera supprimé en juillet 2027
 #include <iostream>
+#endif
 #include <optional>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Convert::Impl
-{
-/*!
- * \brief Encapsule un std::istream pour un StringView.
- *
- * Actuellement (C++20) std::istringstream utilise en
- * entrée un std::string ce qui nécessite une instance de ce type
- * et donc une allocation potentielle. Cette classe sert à éviter
- * cela en utilisant directement la mémoire pointée par l'instance
- * de StringView passé dans le constructeur. Cette dernière doit
- * rester valide durant toute l'ulisation de cette classe.
- */
-class ARCCORE_BASE_EXPORT StringViewInputStream
-: private std::streambuf
-{
- public:
-
-  explicit StringViewInputStream(StringView v);
-
- public:
-
-  std::istream& stream() { return m_stream; }
-
- private:
-
-  StringView m_view;
-  std::istream m_stream;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Convert::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,7 +30,8 @@ namespace Arcane::Convert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c double
+
+//! Convertit un \c Real en \c double
 inline double
 toDouble(Real r)
 {
@@ -77,7 +44,8 @@ toDouble(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Integer
+
+//! Convertit un \c Real en \c Integer
 inline Integer
 toInteger(Real r)
 {
@@ -86,17 +54,18 @@ toInteger(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Int64
+
+//! Convertit un \c Real en \c Int64
 inline Int64
 toInt64(Real r)
 {
   return static_cast<Int64>(toDouble(r));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Int32
+//! Convertit un \c Real en \c Int32
 inline Int32
 toInt32(Real r)
 {
@@ -106,45 +75,49 @@ toInt32(Real r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Converti un \c Real en \c Integer
+//! Convertit un \c Real en \c Integer
 inline bool
 toBool(Real r)
 {
   return static_cast<bool>(toDouble(r));
 }
 
-//! Converti \c r en un \c Real
+//! Convertit \c r en \c Real
 inline Real
 toReal(Real r)
 {
   return r;
 }
-//! Converti \c r en un \c Real
+
+//! Convertit \c r en \c Real
 inline Real
 toReal(int r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Convertit \c r en \c Real
 inline Real
 toReal(unsigned int r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Convertit \c r en \c Real
 inline Real
 toReal(long r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Convertit \c r en \c Real
 inline Real
 toReal(unsigned long r)
 {
   return static_cast<Real>(r);
 }
 
-//! Converti \c r en un \c Real
+//! Convertit \c r en \c Real
 inline Real
 toReal(long long r)
 {
@@ -154,7 +127,8 @@ toReal(long long r)
   return static_cast<Real>(r);
 #endif
 }
-//! Converti \c r en un \c Real
+
+//! Convertit \c r en \c Real
 inline Real
 toReal(unsigned long long r)
 {
@@ -181,11 +155,11 @@ class ScalarType
 {
  public:
 
-  //! Convertit \a s en le type \a T
+  //! Convertit \a s au type \a T
   ARCCORE_BASE_EXPORT static std::optional<T> tryParse(StringView s);
 
   /*!
-   * \brief Convertit \a s en le type \a T.
+   * \brief Convertit \a s au type \a T.
    *
    * Si \a s.empty() est vrai, alors retourne \a default_value.
    */
@@ -218,10 +192,9 @@ template <> class Type<Real> : public ScalarType<Real>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::Convert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

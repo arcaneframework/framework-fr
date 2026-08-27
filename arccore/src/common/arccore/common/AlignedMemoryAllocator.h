@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,12 +27,13 @@ namespace Arcane
 
 namespace Impl
 {
-  extern "C++" ARCCORE_COMMON_EXPORT size_t
-  adjustMemoryCapacity(size_t wanted_capacity, size_t element_size);
+  extern "C++" ARCCORE_COMMON_EXPORT std::size_t
+  adjustMemoryCapacity(std::size_t wanted_capacity, std::size_t element_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Allocateur mémoire avec alignement mémoire spécifique.
  *
@@ -92,7 +93,7 @@ class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
  protected:
 
   explicit AlignedMemoryAllocator(Int32 alignment)
-  : m_alignment(static_cast<size_t>(alignment))
+  : m_alignment(static_cast<std::size_t>(alignment))
   {}
 
  public:
@@ -102,21 +103,20 @@ class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override;
   void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) override;
   Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const override;
-  size_t guaranteedAlignment(MemoryAllocationArgs) const override { return m_alignment; }
+  std::size_t guaranteedAlignment(MemoryAllocationArgs) const override { return m_alignment; }
   eMemoryResource memoryResource() const override { return eMemoryResource::Host; }
 
  private:
 
-  size_t m_alignment;
+  std::size_t m_alignment;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReader.cc                                              (C) 2000-2024 */
+/* BasicReader.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /* Lecture simple pour les protections/reprises.                             */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,8 @@
 #include "arcane/core/SerializeBuffer.h"
 
 #include "arcane/std/internal/ParallelDataReader.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,9 +86,9 @@ initialize()
     data_compressor_name = jv_arcane_db.child("DataCompressor").value();
     hash_algorithm_name = jv_arcane_db.child("HashAlgorithm").value();
     comparison_hash_algorithm_name = jv_arcane_db.child("ComparisonHashAlgorithm").value();
-    info() << "**--** Begin read using database version=" << m_version
+    info() << "**--** Début de la lecture en utilisant la version de la base de données=" << m_version
            << " nb_part=" << m_nb_written_part
-           << " compressor=" << data_compressor_name
+           << " compresseur=" << data_compressor_name
            << " hash_algorithm=" << hash_algorithm_name
            << " comparison_hash_algorithm=" << comparison_hash_algorithm_name;
   }
@@ -136,8 +138,8 @@ initialize()
 void BasicReader::
 _directReadVal(VariableMetaData* varmd, IData* data)
 {
-  info(4) << "DIRECT READ VAL v=" << varmd->fullName();
-    
+  info(4) << "LECTURE DIRECT VAL v=" << varmd->fullName();
+
   bool is_item_variable = !varmd->itemFamilyName().null();
   Int32 nb_rank_to_read = m_nb_rank_to_read;
   // S'il s'agit d'une variable qui n'est pas sur le maillage,
@@ -158,9 +160,9 @@ _directReadVal(VariableMetaData* varmd, IData* data)
       allocated_data.add(new_data);
     }
     String vname = varmd->fullName();
-    info(4) << " TRY TO READ var_full_name=" << vname;
+    info(4) << " ESSAI DE LECTURE var_full_name=" << vname;
     m_global_readers[i]->readData(vname, written_data[i]);
-    if (i==0 && m_comparison_hash_algorithm.get() )
+    if (i == 0 && m_comparison_hash_algorithm.get())
       info(5) << "COMPARISON_HASH =" << m_global_readers[i]->comparisonHashValue(vname);
   }
 
@@ -199,7 +201,7 @@ _directReadVal(VariableMetaData* varmd, IData* data)
         full_written_data->serialize(&sbuf, nullptr);
     }
     if (data != full_written_data) {
-      info(5) << "PARALLEL READ";
+      info(5) << "LECTURE PARALLÈLE";
       parallel_data_reader->getSortedValues(full_written_data, data);
     }
   }
@@ -247,7 +249,7 @@ _getReader(VariableMetaData* varmd)
     Int64Array& full_written_unique_ids = reader->writtenUniqueIds();
     for (Integer i = 0; i < nb_to_read; ++i)
       full_written_unique_ids.addRange(written_unique_ids[i]);
-    info(5) << "FULL UID SIZE=" << full_written_unique_ids.size();
+    info(5) << "TAILLE TOTALE DES UID=" << full_written_unique_ids.size();
     if (m_want_parallel)
       reader->sort();
   }
@@ -257,6 +259,7 @@ _getReader(VariableMetaData* varmd)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Remplit l'argument avec des couples (nom_de_variable,valeur du hash).
  *
@@ -266,14 +269,14 @@ void BasicReader::
 fillComparisonHash(std::map<String, String>& comparison_hash_map)
 {
   comparison_hash_map.clear();
-  if (m_nb_rank_to_read==0)
+  if (m_nb_rank_to_read == 0)
     return;
-  if (m_parallel_mng->commRank()!=m_parallel_mng->masterIORank())
+  if (m_parallel_mng->commRank() != m_parallel_mng->masterIORank())
     return;
   const VariableDataInfoMap& var_map = m_global_readers[0]->variablesDataInfoMap();
-  for( auto v : var_map){
+  for (auto v : var_map) {
     VariableDataInfo* vd = v.second.get();
-    comparison_hash_map.try_emplace(vd->fullName(),vd->comparisonHashValue());
+    comparison_hash_map.try_emplace(vd->fullName(), vd->comparisonHashValue());
   }
 }
 
@@ -283,9 +286,9 @@ fillComparisonHash(std::map<String, String>& comparison_hash_map)
 void BasicReader::
 read(IVariable* var, IData* data)
 {
-  info(4) << "MASTER READ var=" << var->fullName() << " data=" << data;
+  info(4) << "LECTURE MAÎTRE var=" << var->fullName() << " data=" << data;
   if (var->isPartial()) {
-    info() << "** WARNING: partial variable not implemented in BasicReaderWriter";
+    info() << "** AVERTISSEMENT: variable partielle non implémentée dans BasicReaderWriter";
     return;
   }
   Ref<VariableMetaData> vmd(var->createMetaDataRef());
@@ -300,9 +303,9 @@ read(const VariableDataReadInfo& infos)
 {
   VariableMetaData* vmd = infos.variableMetaData();
   IData* data = infos.data();
-  info(4) << "MASTER2 READ var=" << vmd->fullName() << " data=" << data;
+  info(4) << "LECTURE MAÎTRE2 var=" << vmd->fullName() << " data=" << data;
   if (vmd->isPartial()) {
-    info() << "** WARNING: partial variable not implemented in BasicReaderWriter";
+    info() << "** AVERTISSEMENT: variable partielle non implémentée dans BasicReaderWriter";
     return;
   }
   _directReadVal(vmd, data);
@@ -333,14 +336,14 @@ fillMetaData(ByteArray& bytes)
   if (m_version >= 3) {
     Int64 meta_data_size = 0;
     String key_name = "Global:CheckpointMetadata";
-    info(4) << "Reading checkpoint metadata from database";
+    info(4) << "Lecture des métadonnées du point de contrôle depuis la base de données";
     m_forced_rank_to_read_text_reader->getExtents(key_name, Int64ArrayView(1, &meta_data_size));
     bytes.resize(meta_data_size);
     m_forced_rank_to_read_text_reader->read(key_name, asWritableBytes(bytes.span()));
   }
   else {
     String filename = _getMetaDataFileName(rank);
-    info(4) << "Reading checkpoint metadata file=" << filename;
+    info(4) << "Lecture du fichier de métadonnées du point de contrôle=" << filename;
     platform::readAllFile(filename, false, bytes);
   }
 }
@@ -376,7 +379,7 @@ _setRanksToRead()
     first_to_read = nb_part_per_rank * my_rank;
     nb_to_read = nb_part_per_rank;
     info(4) << "NB_PART_PER_RANK = " << nb_part_per_rank
-            << " REMAINING=" << remaining_nb_part;
+            << " RESTANT=" << remaining_nb_part;
     if (my_rank >= remaining_nb_part) {
       first_to_read += remaining_nb_part;
     }
@@ -440,10 +443,10 @@ void BasicReader::
 beginRead(const DataReaderInfo& infos)
 {
   ARCANE_UNUSED(infos);
-  info(4) << "** ** BEGIN READ";
+  info(4) << "** ** DÉBUT DE LA LECTURE";
 
   _setRanksToRead();
-  info(4) << "RanksToRead: FIRST TO READ =" << m_first_rank_to_read
+  info(4) << "RangsÀLire: PREMIER À LIRE =" << m_first_rank_to_read
           << " nb=" << m_nb_rank_to_read << " version=" << m_version;
   m_global_readers.resize(m_nb_rank_to_read);
   for (Integer i = 0; i < m_nb_rank_to_read; ++i)

@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version Mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -19,8 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/CoarseningRuntime.h"
@@ -30,8 +28,9 @@
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
-
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -42,7 +41,7 @@ int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;
@@ -50,42 +49,42 @@ int main(int argc, char* argv[])
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
+  desc.add_options()("help,h", "Affiche cette aide.")("prm-file,P",
                                                   po::value<string>(),
-                                                  "Parameter file in json format. ")(
+                                                  "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples:\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")("matrix,A",
                                     po::value<string>()->required(),
-                                    "System matrix in the MatrixMarket format.")(
+                                    "Matrice du système au format MatrixMarket.")(
   "rhs,f",
   po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
+  "Le vecteur RHS au format MatrixMarket. "
+  "S'il est omis, un vecteur de uns est utilisé par défaut. "
+  "Ne doit être fourni qu'avec une matrice de système. ")(
   "defvec,D",
   po::value<string>(),
-  "The near null-space vectors in the MatrixMarket format. ")(
+  "Les vecteurs de l'espace nul proche au format MatrixMarket. ")(
   "coords,C",
   po::value<string>(),
-  "Coordinate matrix where number of rows corresponds to the number of grid nodes "
-  "and the number of columns corresponds to the problem dimensionality (2 or 3). "
-  "Will be used to construct near null-space vectors as rigid body modes. ")(
+  "Matrice de coordonnées où le nombre de lignes correspond au nombre de nœuds de grille "
+  "et le nombre de colonnes correspond à la dimensionnalité du problème (2 ou 3). "
+  "Sera utilisée pour construire des vecteurs de l'espace nul proche en tant que modes de corps rigide. ")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsqu'il est spécifié, traite les fichiers d'entrée comme binaires au lieu de MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "single-level,1",
   po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
+  "Lorsqu'il est spécifié, la hiérarchie AMG n'est pas construite. "
+  "Au lieu de cela, le problème est résolu en utilisant un lisseur de niveau unique comme préconditionneur. ")(
   "output,o",
   po::value<string>(),
-  "Output file. Will be saved in the MatrixMarket format. "
-  "When omitted, the solution is not saved. ");
+  "Fichier de sortie. Sera enregistré au format MatrixMarket. "
+  "S'il est omis, la solution n'est pas enregistrée. ");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -118,7 +117,7 @@ int main(int argc, char* argv[])
   }
 
   if (!vm.count("defvec") && !vm.count("coords")) {
-    std::cerr << "Either defvec or coords should be given" << std::endl;
+    std::cerr << "Soit defvec soit coords doit être fourni" << std::endl;
     return 1;
   }
 
@@ -138,7 +137,7 @@ int main(int argc, char* argv[])
     else {
       ptrdiff_t cols;
       std::tie(rows, cols) = io::mm_reader(Afile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice de système non carrée");
     }
 
     if (vm.count("rhs")) {
@@ -153,7 +152,7 @@ int main(int argc, char* argv[])
         std::tie(n, m) = io::mm_reader(bfile)(rhs);
       }
 
-      precondition(n == rows && m == 1, "The RHS vector has wrong size");
+      precondition(n == rows && m == 1, "Le vecteur RHS a une taille incorrecte");
     }
     else {
       rhs.resize(rows, 1.0);
@@ -172,7 +171,7 @@ int main(int argc, char* argv[])
         std::tie(m, nv) = io::mm_reader(nfile)(N);
       }
 
-      precondition(m == rows, "Deflation vectors have wrong size");
+      precondition(m == rows, "Les vecteurs de déflation ont une taille incorrecte");
 
       z.resize(N.size());
       for (ptrdiff_t i = 0; i < rows; ++i)
@@ -192,7 +191,7 @@ int main(int argc, char* argv[])
         std::tie(m, ndim) = io::mm_reader(cfile)(coo);
       }
 
-      precondition(m * ndim == rows && (ndim == 2 || ndim == 3), "Coordinate matrix has wrong size");
+      precondition(m * ndim == rows && (ndim == 2 || ndim == 3), "La matrice de coordonnées a une taille incorrecte");
 
       nv = Alina::rigid_body_modes(ndim, coo, z, /*transpose = */ true);
     }
@@ -229,8 +228,8 @@ int main(int argc, char* argv[])
   std::vector<double> r(rows);
   Alina::backend::residual(rhs, A, x, r);
 
-  std::cout << "Iterations: " << result.nbIteration() << std::endl
-            << "Error:      " << result.residual() << std::endl
-            << "True error: " << sqrt(Alina::backend::inner_product(r, r)) / sqrt(Alina::backend::inner_product(rhs, rhs))
+  std::cout << "Itérations: " << result.nbIteration() << std::endl
+            << "Erreur:      " << result.residual() << std::endl
+            << "Erreur réelle: " << sqrt(Alina::backend::inner_product(r, r)) / sqrt(Alina::backend::inner_product(rhs, rhs))
             << prof << std::endl;
 }

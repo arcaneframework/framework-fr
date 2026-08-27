@@ -11,9 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
-
-// These files are not used but we need to include them to export symbols
+// Ces fichiers ne sont pas utilisés, mais nous devons les inclure pour exporter les symboles
 #include "arccore/alina/SolverBase.h"
 
 /*---------------------------------------------------------------------------*/

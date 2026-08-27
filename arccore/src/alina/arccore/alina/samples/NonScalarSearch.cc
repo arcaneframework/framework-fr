@@ -7,19 +7,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include <iostream>
-#include <string>
-
-#include <boost/program_options.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/RelaxationRuntime.h"
@@ -30,8 +25,12 @@
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
-
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
+
+#include <iostream>
+#include <string>
 
 using namespace Arcane;
 
@@ -42,7 +41,7 @@ int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;
@@ -50,38 +49,38 @@ int main(int argc, char* argv[])
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
+  desc.add_options()("help,h", "Affiche cette aide.")("prm-file,P",
                                                   po::value<string>(),
-                                                  "Parameter file in json format. ")(
+                                                  "Fichier de paramètres au format json. ")(
   "prm,p",
   po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples:\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300")("matrix,A",
                                     po::value<string>()->required(),
-                                    "System matrix in the MatrixMarket format.")(
+                                    "Matrice du système au format MatrixMarket.")(
   "rhs,f",
   po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
+  "Le vecteur du membre de droite (RHS) au format MatrixMarket. "
+  "Lorsqu'il est omis, un vecteur de uns est utilisé par défaut. "
+  "Ne doit être fourni qu'avec une matrice de système. ")(
   "scale,s",
   po::bool_switch()->default_value(false),
-  "Scale the matrix so that the diagonal is unit. ")(
+  "Mettre à l'échelle la matrice de sorte que la diagonale soit unitaire. ")(
   "null,N",
   po::value<string>(),
-  "Starting null-vectors in the MatrixMarket format. ")(
+  "Vecteurs nuls de départ au format MatrixMarket. ")(
   "numvec,n",
   po::value<int>()->default_value(3),
-  "The number of near nullspace vectors to search for. ")(
+  "Le nombre de vecteurs proches de l'espace nul à rechercher. ")(
   "binary,B",
   po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
+  "Lorsqu'il est spécifié, traiter les fichiers d'entrée comme binaires au lieu de MatrixMarket. "
+  "Il est supposé que les fichiers ont été convertis au format binaire avec l'utilitaire mm2bin. ")(
   "output,o",
   po::value<string>(),
-  "Output the computed nullspace to the MatrixMarket file.");
+  "Sortir l'espace nul calculé dans le fichier MatrixMarket.");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
     else {
       ptrdiff_t cols;
       std::tie(rows, cols) = io::mm_reader(Afile)(ptr, col, val);
-      precondition(rows == cols, "Non-square system matrix");
+      precondition(rows == cols, "Matrice de système non carrée");
     }
 
     if (vm.count("rhs")) {
@@ -145,7 +144,7 @@ int main(int argc, char* argv[])
         std::tie(n, m) = io::mm_reader(bfile)(rhs);
       }
 
-      precondition(n == rows && m == 1, "The RHS vector has wrong size");
+      precondition(n == rows && m == 1, "Le vecteur RHS a la mauvaise taille");
     }
     else {
       rhs.resize(rows, 1.0);
@@ -164,7 +163,7 @@ int main(int argc, char* argv[])
         std::tie(m, nv) = io::mm_reader(nfile)(null);
       }
 
-      precondition(m == rows, "Near null-space vectors have wrong size");
+      precondition(m == rows, "Les vecteurs proches de l'espace nul ont la mauvaise taille");
 
       for (ptrdiff_t i = 0; i < nv; ++i) {
         Z.emplace_back(rows);
@@ -236,7 +235,7 @@ int main(int argc, char* argv[])
 
     std::cout << std::endl
               << "-------------------------" << std::endl
-              << "-- Searching for vector " << k << std::endl
+              << "-- Recherche du vecteur " << k << std::endl
               << "-------------------------" << std::endl
               << S << std::endl;
 
@@ -247,8 +246,8 @@ int main(int argc, char* argv[])
     Alina::SolverResult r = S(zero, x);
     prof.toc("solve");
 
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl;
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl;
 
     // Orthonormalize the new vector
     for (const auto& z : Z) {
@@ -286,7 +285,7 @@ int main(int argc, char* argv[])
 
     std::cout << std::endl
               << "-------------------------" << std::endl
-              << "-- Solving the system " << std::endl
+              << "-- Résolution du système " << std::endl
               << "-------------------------" << std::endl
               << S << std::endl;
 
@@ -296,8 +295,8 @@ int main(int argc, char* argv[])
     Alina::SolverResult r = S(rhs, x);
     prof.toc("solve");
 
-    std::cout << "Iterations: " << r.nbIteration() << std::endl
-              << "Error:      " << r.residual() << std::endl;
+    std::cout << "Itérations: " << r.nbIteration() << std::endl
+              << "Erreur:      " << r.residual() << std::endl;
   }
 
   if (vm.count("output")) {

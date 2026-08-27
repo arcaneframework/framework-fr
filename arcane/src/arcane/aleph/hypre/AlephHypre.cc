@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,49 +61,49 @@ namespace Arcane
  */
 namespace
 {
-inline void
-check(const char* hypre_func, HYPRE_Int error_code)
-{
-  if (error_code == 0)
-    return;
-  char buf[8192];
-  HYPRE_DescribeError(error_code, buf);
-  cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-       << "\nHYPRE ERROR in function "
-       << hypre_func
-       << "\nError_code=" << error_code
-       << "\nMessage=" << buf
-       << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-       << "\n"
-       << std::flush;
-  throw Exception("HYPRE Check", hypre_func);
-}
+  inline void
+  check(const char* hypre_func, HYPRE_Int error_code)
+  {
+    if (error_code == 0)
+      return;
+    char buf[8192];
+    HYPRE_DescribeError(error_code, buf);
+    std::cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              << "\nHYPRE ERROR in function "
+              << hypre_func
+              << "\nError_code=" << error_code
+              << "\nMessage=" << buf
+              << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              << "\n"
+              << std::flush;
+    throw Exception("HYPRE Check", hypre_func);
+  }
 
-template <typename T>
-inline T*
-_allocHypre(Integer size)
-{
-  size_t s = sizeof(T) * size;
-  return reinterpret_cast<T*>(hypre_TAlloc(char, s, HYPRE_MEMORY_HOST));
-}
+  template <typename T>
+  inline T*
+  _allocHypre(Integer size)
+  {
+    size_t s = sizeof(T) * size;
+    return reinterpret_cast<T*>(hypre_TAlloc(char, s, HYPRE_MEMORY_HOST));
+  }
 
-template <typename T>
-inline T*
-_callocHypre(Integer size)
-{
-  size_t s = sizeof(T) * size;
-  return reinterpret_cast<T*>(hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST));
-}
+  template <typename T>
+  inline T*
+  _callocHypre(Integer size)
+  {
+    size_t s = sizeof(T) * size;
+    return reinterpret_cast<T*>(hypre_CTAlloc(char, s, HYPRE_MEMORY_HOST));
+  }
 
-inline void
-hypreCheck(const char* hypre_func, HYPRE_Int error_code)
-{
-  check(hypre_func, error_code);
-  HYPRE_Int r = HYPRE_GetError();
-  if (r != 0)
-    cout << "HYPRE GET ERROR r=" << r
-         << " error_code=" << error_code << " func=" << hypre_func << '\n';
-}
+  inline void
+  hypreCheck(const char* hypre_func, HYPRE_Int error_code)
+  {
+    check(hypre_func, error_code);
+    HYPRE_Int r = HYPRE_GetError();
+    if (r != 0)
+      std::cout << "HYPRE GET ERROR r=" << r
+                << " error_code=" << error_code << " func=" << hypre_func << '\n';
+  }
 
 } // namespace
 
@@ -114,6 +114,7 @@ class AlephVectorHypre
 : public IAlephVector
 {
  public:
+
   AlephVectorHypre(ITraceMng* tm, AlephKernel* kernel, Integer index)
   : IAlephVector(tm, kernel, index)
   , jSize(0)
@@ -131,13 +132,12 @@ class AlephVectorHypre
  public:
 
   /******************************************************************************
-   * The Create() routine creates an empty vector object that lives on the comm communicator. This is
-   * a collective call, with each process passing its own index extents, jLower and jupper. The names
-   * of these extent parameters begin with a j because we typically think of matrix-vector multiplies
-   * as the fundamental operation involving both matrices and vectors. For matrix-vector multiplies,
-   * the vector partitioning should match the column partitioning of the matrix (which also uses the j
-   * notation). For linear system solves, these extents will typically match the row partitioning of the
-   * matrix as well.
+   * La routine Create() crée un objet vecteur vide qui vit sur le communicateur de communication. Il s'agit
+   * d'un appel collectif, chaque processus passant ses propres étendues d'index, jLower et jupper. Les noms
+   * de ces paramètres d'étendue commencent par un j car nous considérons généralement les multiplications matrice-vecteur
+   * comme l'opération fondamentale impliquant à la fois les matrices et les vecteurs. Pour les multiplications matrice-vecteur,
+   * le partitionnement du vecteur doit correspondre au partitionnement des colonnes de la matrice (qui utilise également la
+   * notation j). Pour la résolution de systèmes linéaires, ces étendues correspondront généralement également au partitionnement des lignes de la matrice.
    *****************************************************************************/
   void AlephVectorCreate(void)
   {
@@ -233,6 +233,7 @@ class AlephVectorHypre
   }
 
  public:
+
   HYPRE_IJVector m_hypre_ijvector = nullptr;
   HYPRE_ParVector m_hypre_parvector = nullptr;
   HYPRE_Int jSize;
@@ -247,6 +248,7 @@ class AlephMatrixHypre
 : public IAlephMatrix
 {
  public:
+
   /******************************************************************************
  AlephMatrixHypre
   *****************************************************************************/
@@ -265,16 +267,17 @@ class AlephMatrixHypre
   }
 
  public:
+
   /******************************************************************************
-   * Each submatrix Ap is "owned" by a single process and its first and last row numbers are
-   * given by the global indices ilower and iupper in the Create() call below.
+   * Chaque sous-matrice Ap est « possédée » par un seul processus et ses numéros de ligne de début et de fin sont
+   * donnés par les indices globaux ilower et iupper dans l'appel Create() ci-dessous.
    *******************************************************************************
-   * The Create() routine creates an empty matrix object that lives on the comm communicator. This
-   * is a collective call (i.e., must be called on all processes from a common synchronization point),
-   * with each process passing its own row extents, ilower and iupper. The row partitioning must be
-   * contiguous, i.e., iupper for process i must equal ilower-1 for process i+1. Note that this allows
-   * matrices to have 0- or 1-based indexing. The parameters jlower and jupper define a column
-   * partitioning, and should match ilower and iupper when solving square linear systems.
+   * La routine Create() crée un objet matrice vide qui vit sur le communicateur de communication. Il s'agit
+   * d'un appel collectif (c'est-à-dire qu'il doit être appelé sur tous les processus à partir d'un point de synchronisation commun),
+   * chaque processus passant ses propres étendues de lignes, ilower et iupper. Le partitionnement des lignes doit être
+   * contigu, c'est-à-dire que iupper pour le processus i doit être égal à ilower-1 pour le processus i+1. Notez que cela permet
+   * aux matrices d'avoir un indexage basé sur 0 ou 1. Les paramètres jlower et jupper définissent un partitionnement des colonnes,
+   * et doivent correspondre à ilower et iupper lors de la résolution de systèmes linéaires carrés.
    *****************************************************************************/
   void AlephMatrixCreate(void)
   {
@@ -562,14 +565,14 @@ class AlephMatrixHypre
   }
 
   /******************************************************************************
- *****************************************************************************/
+   *****************************************************************************/
   void writeToFile(const String filename)
   {
     HYPRE_IJMatrixPrint(m_hypre_ijmatrix, filename.localstr());
   }
 
   /******************************************************************************
- *****************************************************************************/
+   *****************************************************************************/
   void initSolverPCG(const AlephParams* solver_param, HYPRE_Solver& solver)
   {
     const String func_name = "SolverMatrixHypre::initSolverPCG";
@@ -609,7 +612,7 @@ class AlephMatrixHypre
     int output_level = solver_param->getOutputLevel();
 
     HYPRE_ParCSRGMRESCreate(MPI_COMM_SUB, &solver);
-    const int krylov_dim = 20; // dimension Krylov space for GMRES
+    const int krylov_dim = 20; // dimension de l'espace de Krylov pour GMRES
     HYPRE_ParCSRGMRESSetKDim(solver, krylov_dim);
     HYPRE_ParCSRGMRESSetMaxIter(solver, max_it);
     HYPRE_ParCSRGMRESSetTol(solver, epsilon);
@@ -643,7 +646,7 @@ class AlephMatrixHypre
                                   precond);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu pour preconditionnement 'Diagonal'");
+      throw ArgumentException(func_name, "solveur inconnu pour le préconditionneur 'Diagonal'");
     }
   }
 
@@ -656,7 +659,7 @@ class AlephMatrixHypre
     const String func_name = "SolverMatrixHypre::setILUPreconditioner";
     switch (solver_method) {
     case TypesSolver::PCG:
-      throw ArgumentException(func_name, "solveur PCG indisponible avec le preconditionnement 'ILU'");
+      throw ArgumentException(func_name, "solveur PCG indisponible avec le préconditionneur 'ILU'");
       break;
     case TypesSolver::BiCGStab:
       HYPRE_ParCSRPilutCreate(MPI_COMM_SUB, &precond);
@@ -674,7 +677,7 @@ class AlephMatrixHypre
                                   precond);
       break;
     default:
-      throw ArgumentException(func_name, "solveur inconnu pour preconditionnement ILU\n");
+      throw ArgumentException(func_name, "solveur inconnu pour le préconditionneur ILU\n");
     }
   }
 
@@ -689,16 +692,16 @@ class AlephMatrixHypre
     double alpha = solver_param->alpha();
     int gamma = solver_param->gamma();
     if (alpha < 0.0)
-      alpha = 0.1; // valeur par defaut pour le parametre de tolerance
+      alpha = 0.1; // valeur par défaut pour le paramètre de tolérance
     if (gamma == -1)
-      gamma = 1; // valeur par defaut pour le parametre de remplissage
+      gamma = 1; // valeur par défaut pour le paramètre de remplissage
     HYPRE_ParCSRParaSailsSetParams(precond, alpha, gamma);
     switch (solver_method) {
     case TypesSolver::PCG:
       HYPRE_ParCSRPCGSetPrecond(solver, HYPRE_ParCSRParaSailsSolve, HYPRE_ParCSRParaSailsSetup, precond);
       break;
     case TypesSolver::BiCGStab:
-      throw ArgumentException("AlephMatrixHypre::setSpaiStatPreconditioner", "solveur 'BiCGStab' invalide pour preconditionnement 'SPAIstat'");
+      throw ArgumentException("AlephMatrixHypre::setSpaiStatPreconditioner", "solveur 'BiCGStab' invalide pour préconditionnement 'SPAIstat'");
       break;
     case TypesSolver::GMRES:
       // matrice non symétrique
@@ -706,7 +709,7 @@ class AlephMatrixHypre
       HYPRE_ParCSRGMRESSetPrecond(solver, HYPRE_ParaSailsSolve, HYPRE_ParaSailsSetup, precond);
       break;
     default:
-      throw ArgumentException("AlephMatrixHypre::setSpaiStatPreconditioner", "solveur inconnu pour preconditionnement 'SPAIstat'\n");
+      throw ArgumentException("AlephMatrixHypre::setSpaiStatPreconditioner", "solveur inconnu pour le préconditionneur 'SPAIstat'\n");
       break;
     }
   }
@@ -718,31 +721,31 @@ class AlephMatrixHypre
                             const AlephParams* solver_param,
                             HYPRE_Solver& precond)
   {
-    // defaults for BoomerAMG from hypre example -- lc
-    // TODO : options and defaults values must be completed
-    double trunc_factor = 0.1; // set AMG interpolation truncation factor = val
-    int cycle_type = solver_param->getAmgCycle(); // set AMG cycles (1=V, 2=W, etc.)
+    // valeurs par défaut pour BoomerAMG à partir de l'exemple hypre -- lc
+    // TODO : les options et les valeurs par défaut doivent être complétées
+    double trunc_factor = 0.1; // définir le facteur de troncature d'interpolation AMG = val
+    int cycle_type = solver_param->getAmgCycle(); // définir les cycles AMG (1=V, 2=W, etc.)
     int coarsen_type = solver_param->amgCoarseningMethod();
-    // Ruge coarsening (local) if <val> == 1
-    int relax_default = 3; // relaxation type <val> :
-    //        0=Weighted Jacobi
-    //        1=Gauss-Seidel (very slow!)
-    //        3=Hybrid Jacobi/Gauss-Seidel
-    int num_sweep = 1; // Use <val> sweeps on each level (here 1)
-    int hybrid = 1; // no switch in coarsening if -1
-    int measure_type = 1; // use globale measures
-    double max_row_sum = 1.0; // set AMG maximum row sum threshold for dependency weakening
+    // Raffinement Ruge (local) si <val> == 1
+    int relax_default = 3; // type de relaxation <val> :
+    //        0=Jacobi pondéré
+    //        1=Gauss-Seidel (très lent!)
+    //        3=Jacobi/Gauss-Seidel hybride
+    int num_sweep = 1; // Utilise <val> balayages à chaque niveau (ici 1)
+    int hybrid = 1; // pas de changement dans le raffinement si -1
+    int measure_type = 1; // utilise des mesures globales
+    double max_row_sum = 1.0; // définis le seuil de somme de ligne maximale AMG pour l'affaiblissement des dépendances
 
-    int max_levels = 50; // 25;  // maximum number of AMG levels
+    int max_levels = 50; // 25;  // nombre maximum de niveaux AMG
     const int gamma = solver_param->gamma();
     if (gamma != -1)
-      max_levels = gamma; // utilisation de la valeur du jeu de donnees
+      max_levels = gamma; // utilise la valeur du jeu de données
 
-    double strong_threshold = 0.1; // 0.25; // set AMG threshold Theta = val
+    double strong_threshold = 0.1; // 0.25; // définis le seuil AMG Theta = val
     const double alpha = solver_param->alpha();
     if (alpha > 0.0)
-      strong_threshold = alpha; // utilisation de la valeur du jeu de donnees
-    // news
+      strong_threshold = alpha; // utilise la valeur du jeu de données
+    // nouveauté
     Integer output_level = solver_param->getOutputLevel();
 
     HYPRE_Int* num_grid_sweeps = _allocHypre<HYPRE_Int>(4);
@@ -754,7 +757,7 @@ class AlephMatrixHypre
       relax_weight[i] = 1.0;
 
     if (coarsen_type == 5) {
-      /* fine grid */
+      /* grille fine */
       num_grid_sweeps[0] = 3;
       grid_relax_type[0] = relax_default;
       grid_relax_points[0] = _allocHypre<HYPRE_Int>(3);
@@ -762,7 +765,7 @@ class AlephMatrixHypre
       grid_relax_points[0][1] = -1;
       grid_relax_points[0][2] = 1;
 
-      /* down cycle */
+      /* cycle descendant */
       num_grid_sweeps[1] = 4;
       grid_relax_type[1] = relax_default;
       grid_relax_points[1] = _callocHypre<HYPRE_Int>(4);
@@ -771,7 +774,7 @@ class AlephMatrixHypre
       grid_relax_points[1][2] = -2;
       grid_relax_points[1][3] = -2;
 
-      /* up cycle */
+      /* cycle ascendant */
       num_grid_sweeps[2] = 4;
       grid_relax_type[2] = relax_default;
       grid_relax_points[2] = _allocHypre<HYPRE_Int>(4);
@@ -781,7 +784,7 @@ class AlephMatrixHypre
       grid_relax_points[2][3] = -1;
     }
     else {
-      /* fine grid */
+      /* grille fine */
       num_grid_sweeps[0] = 2 * num_sweep;
       grid_relax_type[0] = relax_default;
       grid_relax_points[0] = _allocHypre<HYPRE_Int>(2 * num_sweep);
@@ -790,7 +793,7 @@ class AlephMatrixHypre
         grid_relax_points[0][i + 1] = 1;
       }
 
-      /* down cycle */
+      /* cycle descendant */
       num_grid_sweeps[1] = 2 * num_sweep;
       grid_relax_type[1] = relax_default;
       grid_relax_points[1] = _allocHypre<HYPRE_Int>(2 * num_sweep);
@@ -799,7 +802,7 @@ class AlephMatrixHypre
         grid_relax_points[1][i + 1] = 1;
       }
 
-      /* up cycle */
+      /* cycle ascendant */
       num_grid_sweeps[2] = 2 * num_sweep;
       grid_relax_type[2] = relax_default;
       grid_relax_points[2] = _allocHypre<HYPRE_Int>(2 * num_sweep);
@@ -809,13 +812,13 @@ class AlephMatrixHypre
       }
     }
 
-    /* coarsest grid */
+    /* grille la plus grossière */
     num_grid_sweeps[3] = 1;
     grid_relax_type[3] = 9;
     grid_relax_points[3] = _allocHypre<HYPRE_Int>(1);
     grid_relax_points[3][0] = 0;
 
-    // end of default seting
+    // fin des paramètres par défaut
 
     HYPRE_BoomerAMGCreate(&precond);
     HYPRE_BoomerAMGSetPrintLevel(precond, output_level);
@@ -853,7 +856,7 @@ class AlephMatrixHypre
                                   precond);
       break;
     default:
-      throw ArgumentException("AlephMatrixHypre::setAMGPreconditioner", "solveur inconnu pour preconditionnement 'AMG'\n");
+      throw ArgumentException("AlephMatrixHypre::setAMGPreconditioner", "solveur inconnu pour préconditionnement 'AMG'\n");
     }
   }
 
@@ -951,14 +954,15 @@ class HypreAlephFactoryImpl
 , public IAlephFactoryImpl
 {
  public:
+
   HypreAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
   ~HypreAlephFactoryImpl()
   {
-    for ( auto* v : m_IAlephVectors )
+    for (auto* v : m_IAlephVectors)
       delete v;
-    for ( auto* v : m_IAlephMatrixs )
+    for (auto* v : m_IAlephMatrixs)
       delete v;
   }
 
@@ -966,16 +970,16 @@ class HypreAlephFactoryImpl
 
   void initialize() override
   {
-    // NOTE: A partir de la 2.29, on peut utiliser
+    // NOTE : À partir de 2.29, nous pouvons utiliser
     // HYPRE_Initialize() et tester si l'initialisation
-    // a déjà été faite via HYPRE_Initialized().
+    // a déjà été effectuée via HYPRE_Initialized().
 #if HYPRE_RELEASE_NUMBER >= 22900
-    if (!HYPRE_Initialized()){
-      info() << "Initializing HYPRE";
+    if (!HYPRE_Initialized()) {
+      info() << "Initialisation de HYPRE";
       HYPRE_Initialize();
     }
 #elif HYPRE_RELEASE_NUMBER >= 22700
-    info() << "Initializing HYPRE";
+    info() << "Initialisation de HYPRE";
     HYPRE_Init();
 #endif
 
@@ -1016,6 +1020,7 @@ class HypreAlephFactoryImpl
   }
 
  private:
+
   UniqueArray<IAlephVector*> m_IAlephVectors;
   UniqueArray<IAlephMatrix*> m_IAlephMatrixs;
 };
@@ -1023,12 +1028,12 @@ class HypreAlephFactoryImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_APPLICATION_FACTORY(HypreAlephFactoryImpl,IAlephFactoryImpl,HypreAlephFactory);
+ARCANE_REGISTER_APPLICATION_FACTORY(HypreAlephFactoryImpl, IAlephFactoryImpl, HypreAlephFactory);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

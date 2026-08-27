@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.h                                                (C) 2000-2025 */
+/* JSONReader.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Lecteur au format JSON.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -50,9 +50,7 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
  public:
 
-  JSONValue()
-  : m_p(nullptr)
-  {}
+  JSONValue() = default;
 
  public:
 
@@ -78,8 +76,10 @@ class ARCCORE_COMMON_EXPORT JSONValue
   Real valueAsReal() const;
   //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
   Int64 valueAsInt64() const;
-  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
+  //! Valeur sous forme de Int32. Retourn 0 si 'null()' est vrai.
   Int32 valueAsInt32() const;
+  //! Valeur sous forme de UInt64. Retourn 0 si 'null()' est vrai.
+  UInt64 valueAsUInt64() const;
   //! Valeur sous forme de booléen. Retourn false si 'null()' est vrai.
   bool valueAsBool() const;
   JSONValueList valueAsArray() const;
@@ -99,17 +99,29 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
   bool isArray() const;
   bool isObject() const;
+  //! Vrai si la valeur est de type 'null'
+  bool isNull() const;
+  //! Vrai si la valeur est un booléen
+  bool isBool() const;
+  //! Vrai si la valeur est une chaîne de caractères
+  bool isString() const;
+  //! Vrai si la valeur est un nombre
+  bool isNumber() const;
+  //! Vrai si la valeur est un entier dans la plage 'Int64'
+  bool isInt64() const;
+  //! Vrai si la valeur est un entier dans la plage 'UInt64'
+  bool isUint64() const;
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Représente une paire (clé,valeur) de JSON.
+ * \brief Représente une paire (clé, valeur) de JSON.
  *
  * Les instances de cette classe ne sont valides que tant que le document
  * associé existe.
@@ -129,9 +141,7 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
  public:
 
-  JSONKeyValue()
-  : m_p(nullptr)
-  {}
+  JSONKeyValue() = default;
 
  public:
 
@@ -146,11 +156,12 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Liste de (clé,valeur) d'un document JSON.
  *
@@ -184,6 +195,7 @@ class ARCCORE_COMMON_EXPORT JSONKeyValueList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Liste de valeurs d'un document JSON.
  *
@@ -217,6 +229,7 @@ class ARCCORE_COMMON_EXPORT JSONValueList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Gestion d'un document JSON.
@@ -247,7 +260,7 @@ class ARCCORE_COMMON_EXPORT JSONDocument
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

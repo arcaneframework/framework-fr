@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvé à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -19,7 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
@@ -34,6 +33,8 @@
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");

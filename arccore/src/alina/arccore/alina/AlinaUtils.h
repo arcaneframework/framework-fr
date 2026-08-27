@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlinaUtils.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Various utilities.                                                        */
+/* Diverses utilitaires.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_ALINAUTILS_H
@@ -15,8 +15,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail effectué sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -47,7 +47,8 @@ namespace Arcane::Alina
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Result of a solving.
+
+//! Résultat d'une solution.
 class ARCCORE_ALINA_EXPORT SolverResult
 {
  public:
@@ -85,7 +86,7 @@ class ARCCORE_ALINA_EXPORT SolverResult
 namespace detail
 {
   class PropertyWrapper;
-  //! Class to handle empty parameters list
+  //! Classe pour gérer une liste de paramètres vide
   class ARCCORE_ALINA_EXPORT empty_params
   {
    public:
@@ -100,21 +101,24 @@ namespace detail
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// Class to wrap 'boost::property_tree::ptree' to ease removing it
+/*!
+ * \brief Classe pour stocker les paramètres sous forme d'arbre hiérarchique clé/valeur.
+ *
+ *
+ * Elle enveloppe l'implémentation interne 'detail::PropertyTreeImpl'
+ * (\see 'AlinaPropertyTree.h').
+ */
 class ARCCORE_ALINA_EXPORT PropertyTree
 {
  public:
 
   friend detail::empty_params;
   friend detail::PropertyWrapper;
-  //using BoostPTree = boost::property_tree::ptree;
 
  public:
 
   PropertyTree();
   PropertyTree(const PropertyTree& rhs);
-  //explicit PropertyTree(const BoostPTree& x);
   ~PropertyTree();
 
  public:
@@ -141,7 +145,7 @@ class ARCCORE_ALINA_EXPORT PropertyTree
     DataType enum_value;
     istr >> enum_value;
     if (istr.bad())
-      ARCANE_FATAL("Can not convert '{0}' to enumeration", s);
+      ARCCORE_FATAL("Can not convert '{0}' to enumeration", s);
     return enum_value;
   }
 
@@ -167,14 +171,14 @@ class ARCCORE_ALINA_EXPORT PropertyTree
     put(path, ostr.str());
   }
 
-  // Put parameter in form "key=value" into a boost::property_tree::ptree
+  // Put parameter in form "key=value" into the property tree
   void putKeyValue(const std::string& param);
 
   PropertyTree get_child_empty(const std::string& path) const;
   bool erase(const char* name);
   size_t count(const char* name) const;
 
-  // NOTE: Does not seems to be used.
+  // NOTE : Ne semble pas être utilisé.
   void _addChild(const std::string& path, const char* name, const PropertyTree& obj);
 
  public:
@@ -201,16 +205,16 @@ class ARCCORE_ALINA_EXPORT PropertyTree
 #include "arccore/alina/ScopedStreamModifier.h"
 
 /*!
- * \brief Performance measurement macros.
+ * \brief Macros de mesure de performance.
  *
- * If ARCCORE_ALINA_PROFILING macro is defined at compilation, then ARCCORE_ALINA_TIC(name) and
- * ARCCORE_ALINA_TOC(name) macros correspond to prof.tic(name) and prof.toc(name).
- * Arcane::Alina::prof should be an instance of Arcane::Alina::profiler defined in a user
- * code similar to:
+ * Si la macro ARCCORE_ALINA_PROFILING est définie lors de la compilation, alors les macros ARCCORE_ALINA_TIC(name) et
+ * ARCCORE_ALINA_TOC(name) correspondent à prof.tic(name) et prof.toc(name).
+ * Arcane::Alina::prof doit être une instance de Arcane::Alina::profiler définie dans un code utilisateur
+ * similaire à :
  * \code
  * namespace Arcane::Alina { profiler prof; }
  * \endcode
- * If ARCCORE_ALINA_PROFILING is undefined, then ARCCORE_ALINA_TIC and ARCCORE_ALINA_TOC are noop macros.
+ * Si ARCCORE_ALINA_PROFILING n'est pas défini, alors ARCCORE_ALINA_TIC et ARCCORE_ALINA_TOC sont des macros noop.
  */
 #ifdef ARCCORE_ALINA_PROFILING
 #if !defined(ARCCORE_ALINA_TIC) || !defined(ARCCORE_ALINA_TOC)
@@ -241,7 +245,7 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/// Throws \p message if \p condition is not true.
+/// Lance le message \p si la condition \p n'est pas vraie.
 template <class Condition, class Message>
 void precondition(const Condition& condition, const Message& message)
 {
@@ -279,7 +283,7 @@ namespace detail
     obj.get(ap, std::string(path) + name + ".");
   }
 
-  // NOTE GG: This methods is not used in the tests.
+  // NOTE GG: Cette méthode n'est pas utilisée dans les tests.
   template <>
   inline void params_export_child(PropertyTree& ap,
                                   const std::string& path, const char* name,
@@ -296,7 +300,7 @@ namespace detail
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Missing parameter action
+// Action de paramètre manquante
 #ifndef ARCCORE_ALINA_PARAM_MISSING
 #define ARCCORE_ALINA_PARAM_MISSING(name) (void)0
 #endif
@@ -304,7 +308,7 @@ namespace detail
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// N-dimensional dense matrix
+// Matrice dense N-dimensionnelle
 template <class T, int N>
 class multi_array
 {
@@ -478,7 +482,7 @@ namespace detail
   };
 
   /*!
-   * \brief  Sort row of CRS matrix by columns.
+   * \brief Trie une ligne de la matrice CRS par colonnes.
    */
   template <typename Col, typename Val>
   void sort_row(Col* col, Val* val, int n)
@@ -514,8 +518,8 @@ namespace error
 namespace std
 {
 
-// Read pointers from input streams.
-// This allows to exchange pointers through boost::property_tree::ptree.
+// Lit les pointeurs à partir des flux d'entrée.
+// Cela permet d'échanger des pointeurs via l'arbre de propriétés.
 template <class T>
 inline istream& operator>>(istream& is, T*& ptr)
 {

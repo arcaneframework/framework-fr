@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SmallArray.h                                                (C) 2000-2025 */
+/* SmallArray.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Tableau 1D de données avec buffer pré-alloué.                             */
 /*---------------------------------------------------------------------------*/
@@ -89,6 +89,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  *
@@ -117,59 +118,59 @@ class SmallArray final
 
  public:
 
-  //! Créé un tableau vide
+  //! Crée un tableau vide
   SmallArray()
   : m_stack_allocator(m_stack_buffer, MemorySize)
   {
     this->_initFromAllocator(MemoryAllocationOptions(&m_stack_allocator), nb_element_in_buf, m_stack_buffer);
   }
 
-  //! Créé un tableau de \a size éléments contenant la valeur \a value.
+  //! Crée un tableau de \a size éléments contenant la valeur \a value.
   SmallArray(Int64 req_size, ConstReferenceType value)
   : SmallArray()
   {
     this->_resize(req_size, value);
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Crée un tableau de \a asize éléments contenant la valeur par défaut du type T()
   explicit SmallArray(Int64 asize)
   : SmallArray()
   {
     this->_resize(asize);
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Crée un tableau de \a asize éléments contenant la valeur par défaut du type T()
   explicit SmallArray(Int32 asize)
   : SmallArray((Int64)asize)
   {
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Crée un tableau de \a asize éléments contenant la valeur par défaut du type T()
   explicit SmallArray(size_t asize)
   : SmallArray((Int64)asize)
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Crée un tableau en copiant les valeurs de la vue \a aview.
   SmallArray(const ConstArrayView<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Crée un tableau en copiant les valeurs de la vue \a aview.
   SmallArray(const Span<const T>& aview)
   : SmallArray()
   {
     this->_initFromSpan(aview);
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Crée un tableau en copiant les valeurs de la vue \a aview.
   SmallArray(const ArrayView<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Crée un tableau en copiant les valeurs de la vue \a aview.
   SmallArray(const Span<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
@@ -181,7 +182,7 @@ class SmallArray final
     this->_initFromInitializerList(alist);
   }
 
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! Crée un tableau en copiant les valeurs \a rhs.
   SmallArray(const Array<T>& rhs)
   : SmallArray(rhs.constSpan())
   {
@@ -236,7 +237,7 @@ class SmallArray final
  private:
 
   char m_stack_buffer[MemorySize];
-  Impl::StackMemoryAllocator m_stack_allocator;
+  Arcane::Impl::StackMemoryAllocator m_stack_allocator;
 };
 
 /*---------------------------------------------------------------------------*/

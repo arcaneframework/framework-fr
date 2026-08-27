@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
- * which can be found at https://github.com/ddemidov/amgcl.
+ * Ce fichier est basé sur le travail sur la bibliothèque AMGCL (version mars 2026)
+ * qui peut être trouvée à https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>
  * SPDX-License-Identifier: MIT
@@ -28,7 +28,6 @@
 #include <numeric>
 #include <cmath>
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/scope_exit.hpp>
 
@@ -57,6 +56,8 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/Profiler.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 using namespace Arcane;
 using namespace Arcane::Alina;
 
@@ -73,7 +74,7 @@ read_problem(const Alina::mpi_communicator& world,
              std::vector<double>& val,
              std::vector<double>& rhs)
 {
-  // Read partition
+  // Lit la partition
   ptrdiff_t n, m;
   std::vector<ptrdiff_t> domain(world.size + 1, 0);
   std::vector<int> part;
@@ -89,7 +90,7 @@ read_problem(const Alina::mpi_communicator& world,
   ptrdiff_t chunk_end = domain[world.rank + 1];
   ptrdiff_t chunk = chunk_end - chunk_beg;
 
-  // Reorder unknowns
+  // Réordonne les inconnues
   std::vector<ptrdiff_t> order(n);
   for (ptrdiff_t i = 0; i < n; ++i)
     order[i] = domain[part[i]]++;
@@ -97,7 +98,7 @@ read_problem(const Alina::mpi_communicator& world,
   std::rotate(domain.begin(), domain.end() - 1, domain.end());
   domain[0] = 0;
 
-  // Read matrix chunk
+  // Lit le bloc de la matrice
   {
     using namespace Arcane::Alina::IO;
 
@@ -122,7 +123,7 @@ read_problem(const Alina::mpi_communicator& world,
     size_t val_beg = col_beg + sizeof(col[0]) * gptr.back();
     size_t rhs_beg = 2 * sizeof(ptrdiff_t);
 
-    // Count local nonzeros
+    // Compte les non-zéros locaux
     for (ptrdiff_t i = 0; i < n; ++i)
       if (part[i] == world.rank)
         ptr.push_back(gptr[i + 1] - gptr[i]);
@@ -136,7 +137,7 @@ read_problem(const Alina::mpi_communicator& world,
     rhs.clear();
     rhs.reserve(chunk);
 
-    // Read local matrix and rhs stripes
+    // Lit les bandes de la matrice et du membre de droite
     for (ptrdiff_t i = 0; i < n; ++i) {
       if (part[i] != world.rank)
         continue;
@@ -193,32 +194,32 @@ int main(int argc, char* argv[])
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
 
-  // Read configuration from command line
-  namespace po = boost::program_options;
+  // Lit la configuration depuis la ligne de commande
+  namespace po = Arcane::ProgramOptions;
   using std::string;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(
   "matrix,A",
   po::value<string>()->required(),
-  "The system matrix in binary format")(
+  "La matrice du système au format binaire")(
   "rhs,f",
   po::value<string>(),
-  "The right-hand side in binary format")(
+  "Le membre de droite au format binaire")(
   "part,s",
   po::value<string>()->required(),
-  "Partitioning of the problem in MatrixMarket format")(
+  "Partitionnement du problème au format MatrixMarket")(
   "pmask,m",
   po::value<string>(),
-  "The pressure mask in binary format. Or, if the parameter has "
-  "the form '%n:m', then each (n+i*m)-th variable is treated as pressure.")(
+  "Le masque de pression au format binaire. Ou, si le paramètre a "
+  "la forme '%n:m', alors chaque variable (n+i*m)-ième est traitée comme une pression.")(
   "params,P",
   po::value<string>(),
-  "parameter file in json format")(
+  "fichier de paramètres au format json")(
   "prm,p",
   po::value<std::vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
+  "Paramètres spécifiés sous forme de paires nom=valeur. "
+  "Peut être fourni plusieurs fois. Exemples :\n"
   "  -p solver.tol=1e-3\n"
   "  -p precond.coarse_enough=300");
 

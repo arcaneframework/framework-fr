@@ -23,6 +23,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/CStringUtils.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/Item.h"
@@ -63,9 +64,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  \brief Ecriture au format Ensight7.
- 
+
  L'écriture est faite au format \a case de Ensight et en ASCII.
 
  Il y a deux mécanismes de sauvegardes suivant qu'on utilise l'aspect
@@ -80,7 +82,7 @@ namespace Arcane
 
  Dans les deux cas, #m_base_directory contient le chemin et le répertoire où
  seront sauvegardées les variables.
- 
+
  Le format \a case utilise un fichier pour décrire le cas
  (.case), un fichier pour décrire la géométrie (.geo) et un fichier par variable.
  Dans le cas d'une sauvegarde temporelle, il y a une géométrie et un fichier
@@ -194,7 +196,8 @@ class DumpWEnsight7
       ARCANE_ASSERT(m_general_item_types, ("Cannot question an empty GroupPartInfo"));
       return (*(m_general_item_types))[item];
     }
-    EnsightPart* getTypeInfo(int type) {
+    EnsightPart* getTypeInfo(int type)
+    {
       auto ensight_part_element = m_parts_map.find(type);
       if (ensight_part_element != m_parts_map.end())
         return ensight_part_element->second;
@@ -212,9 +215,10 @@ class DumpWEnsight7
     //! Variable pour stocker les types des items généraux (non typés)
     std::unique_ptr<VariableItemInt32> m_general_item_types = nullptr;
     using TypeId = int;
-    std::unordered_map<TypeId, EnsightPart*> m_parts_map;// used to handle large number of extra types
+    std::unordered_map<TypeId, EnsightPart*> m_parts_map; // utilisé pour gérer un grand nombre de types supplémentaires
 
    private:
+
     void _initPartMap()
     {
       for (auto& ensight_part : m_parts) {
@@ -244,13 +248,13 @@ class DumpWEnsight7
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nsided"));
         }
       }
-      // Add polygons handled in general polyhedral mesh: no types defined
+      // Ajout des polygones gérés dans le maillage polyédrique général : aucun type défini
       Int32 type_id = ItemTypeMng::nbBasicItemType();
       if (item_type_mng->hasGeneralCells(m_group.mesh())) {
         if (!m_is_polygonal_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
             ItemWithNodes item = iitem->toItemWithNodes();
-            if (item.nbNode() == item.itemBase().nbEdge()) { // polygon found
+            if (item.nbNode() == item.itemBase().nbEdge()) { // polygone trouvé
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nsided"));
             }
@@ -313,7 +317,7 @@ class DumpWEnsight7
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nfaced"));
         }
       }
-      // Add polyhedra handled in general polyhedral mesh: no types defined
+      // Ajout des polyèdres gérés dans le maillage polyédrique général : aucun type défini
       if (item_type_mng->hasGeneralCells(m_group.mesh())) {
         if (!m_is_polyhedral_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
@@ -322,7 +326,7 @@ class DumpWEnsight7
               (*(m_general_item_types))[item] = IT_Vertex;
             else if (item.nbNode() == 2)
               (*(m_general_item_types))[item] = IT_Line2;
-            else if (item.nbNode() != item.itemBase().nbEdge()) { // polyhedron found
+            else if (item.nbNode() != item.itemBase().nbEdge()) { // polyèdre trouvé
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
             }
@@ -330,7 +334,7 @@ class DumpWEnsight7
           m_is_polyhedral_type_registration_done = true;
         }
       }
-      // if extra types are used, init a EnsightPart map to optimize GroupPartInfo fill
+      // Si des types supplémentaires sont utilisés, initialiser une carte EnsightPart pour optimiser le remplissage de GroupPartInfo
       if (ItemTypeMng::nbBuiltInItemType() < ItemTypeMng::nbBasicItemType() || item_type_mng->hasGeneralCells(m_group.mesh())) {
         _initPartMap();
       }
@@ -352,11 +356,11 @@ class DumpWEnsight7
 
   /*!
    * \brief Fonctor pour écrire une variable.
- 
+
    Il s'agit de la classe de base des fonctor permettant de sauver une
    variable sur les éléments d'un groupe donné. Les classes dérivées doivent
    définir l'opérateur() avec comme unique paramètre l'identifiant de l'élément.
- 
+
    Par exemple, si on a un groupe de mailles contenant 3 mailles d'id 2, 5 et 9,
    le fonctor sera appelé trois fois avec chacun de ses indices.
 
@@ -406,7 +410,7 @@ class DumpWEnsight7
 
   /*!
    * \brief Functor pour écrire une variable de type <tt>Real</tt>
-   */
+  */
   template <typename FromType>
   class WriteDouble
   : public WriteBase
@@ -451,8 +455,8 @@ class DumpWEnsight7
   };
 
   /*!
-   * \brief Functor pour écrire une variable de type <tt>Real</tt>
-   */
+   * \brief Functeur pour écrire une variable de type <tt>Real</tt>
+  */
   template <typename FromType>
   class WriteArrayDouble
   : public WriteBase
@@ -506,7 +510,7 @@ class DumpWEnsight7
 
   /*!
    * \brief Functor pour écrire une variable de type <tt>Real3</tt>
-   */
+  */
   class WriteReal3
   : public WriteBase
   {
@@ -611,7 +615,6 @@ class DumpWEnsight7
 
     ConstArray2View<Real3> m_ptr;
     const Integer m_idim2;
-
    public:
 
     void begin() override
@@ -711,7 +714,7 @@ class DumpWEnsight7
 
   void beginWrite() override;
   void endWrite() override;
-  void setMetaData(const String&) override{};
+  void setMetaData(const String&) override {};
 
   bool isParallelOutput() const { return m_is_parallel_output; }
   bool isMasterProcessor() const { return m_is_master; }
@@ -778,13 +781,13 @@ class DumpWEnsight7
                             WriteBase& from_func);
   bool _isSameKindOfGroup(const ItemGroup& group, eItemKind item_kind);
 
-  //! Template for writing variable as a real variable
+  //! Template pour écrire une variable comme variable réelle
   template <typename T>
   void _writeRealValT(IVariable& v, ConstArrayView<T> a);
-  //! Template for writing array variable as a array real variable
+  //! Template pour écrire une variable tableau comme variable réelle de tableau
   template <typename T>
   void _writeRealValT(IVariable& v, ConstArray2View<T> a);
-  //! Template for writing array variable as a array real variable
+  //! Template pour écrire une variable tableau comme variable réelle de tableau
   template <typename T>
   void _writeRealValT(IVariable& v, ConstMultiArray2View<T> a);
 };
@@ -869,24 +872,25 @@ DumpWEnsight7::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Récupère un groupe d'un type donné et ses informations.
  *
  * \relates DumpWEnsight7
-
- Le paramètre template est soit un DumpWEnsight7::CellGroup,
- soit un DumpWEnsight7::FaceGroup.
-
- Tout d'abord, parcours la liste des groupes (\a list_group) et récupère
- ceux du type T::GroupType. Ajoute ces groupes à la liste \a grp_list et
- leur donne un numéro \a partid. A noter que \a partid est passé par
- référence et est incrémenté dans cette fonction. Cet identifiant correspond
- au numéro de partie (part) dans ensight.
-
- Ensuite, détermine pour chacun de ses groupes le nombre d'éléments de
- chaque sous type Ensight. Par exemple, pour un groupe de mailles, détermine
- le nombre de \e hexa8, le nombre de \e pyramid5, ...
-*/
+ *
+ * Le paramètre template est soit un DumpWEnsight7::CellGroup,
+ * soit un DumpWEnsight7::FaceGroup.
+ *
+ * Tout d'abord, parcours la liste des groupes (\a list_group) et récupère
+ * ceux du type T::GroupType. Ajoute ces groupes à la liste \a grp_list et
+ * leur donne un numéro \a partid. A noter que \a partid est passé par
+ * référence et est incrémenté dans cette fonction. Cet identifiant correspond
+ * au numéro de partie (part) dans ensight.
+ *
+ * Ensuite, détermine pour chacun de ses groupes le nombre d'éléments de
+ * chaque sous type Ensight. Par exemple, pour un groupe de mailles, détermine
+ * le nombre de \e hexa8, le nombre de \e pyramid5, ...
+ */
 void DumpWEnsight7::
 _computeGroupParts(ItemGroupList list_group, Integer& partid)
 {
@@ -905,14 +909,14 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     ++partid;
 
     GroupPartInfo& current_grp = *gpi;
-    // Il faut maintenant déterminer combien d'éléments de chaque type
-    // ensight (tria3, hexa8, ...) on a dans le groupe.
-    // two versions: if extra item types are added switch to an optimized version
-    // (a large amount of types may be added, equal to the number of elements)
-    if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // no extra type
+    // Maintenant, nous devons déterminer combien d'éléments de chaque type
+    // ensight (tria3, hexa8, ...) se trouvent dans le groupe.
+    // deux versions : si des types d'éléments supplémentaires sont ajoutés, passer à une version optimisée
+    // (une grande quantité de types peut être ajoutée, égale au nombre d'éléments)
+    if (ItemTypeMng::nbBuiltInItemType() == ItemTypeMng::nbBasicItemType()) // pas de type supplémentaire
     {
-      debug(Trace::High) << "Using standard group part building algo";
-      if (!grp.mesh()->itemTypeMng()->hasGeneralCells(grp.mesh())) {// classical types
+      debug(Trace::High) << "Utilisation de l'algorithme standard de construction de groupe de parties";
+      if (!grp.mesh()->itemTypeMng()->hasGeneralCells(grp.mesh())) { // types classiques
         for (Integer z = 0; z < current_grp.nbType(); ++z) {
           EnsightPart& type_info = current_grp.typeInfo(z);
           Array<Item>& items = type_info.items();
@@ -924,11 +928,10 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
               ++nb_of_type;
           }
           items.resize(nb_of_type);
-          debug(Trace::High) << "Group " << grp.name() << " has "
-                             << nb_of_type << " items of type " << type_info.name();
+          debug(Trace::High) << "Le groupe " << grp.name() << " contient "
+                             << nb_of_type << " éléments de type " << type_info.name();
           Integer index = 0;
-          ENUMERATE_ITEM (iz, grp)
-          {
+          ENUMERATE_ITEM (iz, grp) {
             Item mi = *iz;
             if (mi.type() == type_to_seek) {
               ItemWithNodes e = mi.toItemWithNodes();
@@ -938,32 +941,32 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
           }
         }
       }
-      else {// polyhedral mesh items
+      else { // éléments de maillage polyédrique
         ENUMERATE_ITEM (i2, grp) {
           const Item& item = *i2;
           auto item_type = current_grp.generalItemTypeId(item);
           EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
           if (!ensight_part)
-            continue ;
+            continue;
           ItemWithNodes item_wn = item.toItemWithNodes();
           ensight_part->items().add(item_wn);
         }
       }
     }
-    else // extra types are added (may have as many types as items...)
-    // Propose an optimized version when many types exist (use of .format file)
+    else // des types supplémentaires sont ajoutés (peuvent avoir autant de types que d'éléments...)
+    // Proposer une version optimisée lorsque de nombreux types existent (utilisation de fichier .format)
     {
-      debug(Trace::High) << "Using extra type group part building algo";
-      // work only on face and cell groups
+      debug(Trace::High) << "Utilisation de l'algorithme de construction de groupe de parties avec types supplémentaires";
+      // travaille uniquement sur les groupes de faces et de mailles
       auto item_kind = grp.itemKind();
       if (item_kind == IK_Cell || item_kind == IK_Face) {
         ENUMERATE_ITEM (item, grp) {
           auto item_type = item->type();
           EnsightPart* ensight_part = current_grp.getTypeInfo(item_type);
           if (!ensight_part)
-            continue ;
+            continue;
           ItemWithNodes item_wn = item->toItemWithNodes();
-          ensight_part->items().add(item_wn); // few elements are added
+          ensight_part->items().add(item_wn); // quelques éléments sont ajoutés
         }
       }
     }
@@ -974,7 +977,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Sauvegarde la connectivité des éléments d'un groupe.
- 
+
  \relates DumpWEnsight7
 
  Sauve la connectivité des éléments du groupe \a ensight_grp. la difficulté
@@ -985,7 +988,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
  autant de fois qu'il y a de types ensight possible (4 pour les mailles,
  2 pour les faces) et à chaque passe on ne sauve que les éléments qui sont
  du bon type. C'est un peu fastidieux mais cela évite d'avoir à gérer une
- liste pour chaque sous-type.
+liste pour chaque sous-type.
 
  \param ofile flot de sortie
  \param nodes_index indice de chaque noeud dans le tableau des coordonnées
@@ -1049,15 +1052,15 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
           for (Integer z = 0; z < nb_sub_part; ++z)
             writeFileInt(ofile, nb_face);
         }
-        else { // mesh has general items
-          // All items do not have the same face number
+        else { // le maillage a des éléments généraux
+          // Tous les éléments n'ont pas le même nombre de faces
           for (Item mi : items) {
             writeFileInt(ofile, mi.toCell().nbFace());
           }
         }
       }
       // 2. Sauve pour chaque elément, le nombre de noeuds de chacune
-      //    de ces faces
+      // de ces faces
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
         for (Item mi : items) {
           const ItemTypeInfo* item_info = mi.typeInfo();
@@ -1066,7 +1069,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
             writeFileInt(ofile, item_info->localFace(z).nbNode());
         }
       }
-      else { // mesh has general items
+      else { // le maillage a des éléments généraux
         for (Item mi : items) {
           Cell cell = mi.toCell();
           for (Face face : cell.faces()) {
@@ -1098,7 +1101,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
           }
         }
       }
-      else { // mesh has general items
+      else { // le maillage a des éléments généraux
         for (Item item : items) {
           Cell cell = item.toCell();
           Integer nb_face = cell.nbFace();
@@ -1154,7 +1157,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
           writeFileArray(ofile, array_id);
         }
       }
-      else { // no reindex
+      else { // pas de reindex
         for (Item mi : items) {
           ItemWithNodes e = mi.toItemWithNodes();
           for (Integer j = 0; j < nb_node; ++j) {
@@ -1193,7 +1196,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
  \param ofile        flot de sortie
  \param ensight_grp  groupe
  \param from_func    fonctor
-*/
+ */
 void DumpWEnsight7::
 _saveVariableOnGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
                      WriteBase& from_func)
@@ -1409,15 +1412,15 @@ class DumpWEnsight7OutFile
         UniqueArray<int> len_array(1);
         UniqueArray<Byte> str_array;
         for (Integer i = 1; i < nb_proc; ++i) {
-          m_dw.debug(Trace::High) << "Waiting for length of processor " << i;
+          m_dw.debug(Trace::High) << "En attente de la longueur du processeur " << i;
           parallel_mng->recv(len_array, i);
           Integer len = len_array[0];
-          m_dw.debug(Trace::High) << "Length of processor " << i << " : " << len;
+          m_dw.debug(Trace::High) << "Longueur du processeur " << i << " : " << len;
           if (len != 0) {
             str_array.resize(len);
-            m_dw.debug(Trace::High) << "Waiting for receving geom of processor " << i;
+            m_dw.debug(Trace::High) << "En attente de la réception de la géométrie du processeur " << i;
             parallel_mng->recv(str_array, i);
-            m_dw.debug(Trace::High) << "Receving geom of processor " << i;
+            m_dw.debug(Trace::High) << "Réception de la géométrie du processeur " << i;
             m_filestream->write((const char*)str_array.data(), str_array.size());
           }
         }
@@ -1439,17 +1442,17 @@ class DumpWEnsight7OutFile
           for (ConstIterT<std::string> i(str); i(); ++i, ++index)
             bytes[index] = *i;
         }
-        m_dw.debug(Trace::High) << "Not a master. " << m_filename << " size = " << len;
+        m_dw.debug(Trace::High) << "Pas un maître. Taille de " << m_filename << " = " << len;
         //Integer len = m_strstream->tellp();
         //Integer len = str.length();
         len_array[0] = len;
-        m_dw.debug(Trace::High) << "Sending length for processor 0";
+        m_dw.debug(Trace::High) << "Envoi de la longueur pour le processeur 0";
         parallel_mng->send(len_array, 0);
         if (len != 0) {
           //UniqueArray<char> str_array(len);
           //std::string s = m_strstream->str();
           //platform::stdMemcpy(str_array.begin(),s.c_str(),s.length());
-          m_dw.debug(Trace::High) << "Sending data for processor 0";
+          m_dw.debug(Trace::High) << "Envoi des données pour le processeur 0";
           parallel_mng->send(bytes, 0); //str.c_str())__array,0);
           //parallel_mng->send(str_array,0);
         }
@@ -1536,8 +1539,8 @@ beginWrite()
     }
 
     m_total_nb_element = total_nb_element;
-    debug() << "Total nb element " << m_total_nb_element << " and group " << m_total_nb_group;
-    debug() << "Add nodes        " << mesh->nbNode();
+    debug() << "Nombre total d'éléments " << m_total_nb_element << " et de groupes " << m_total_nb_group;
+    debug() << "Ajout de nœuds        " << mesh->nbNode();
   }
 
   // Sauvegarde la géométrie au format Ensight7 gold
@@ -1651,7 +1654,7 @@ endWrite()
     IVariable* node_uid_var = node_uids.variable();
     m_save_variables.add(node_uid_var);
     node_uid_var->setUsed(true);
-    _writeRealValT<Real>(*node_uid_var, node_uids2); // work around bug for node variables
+    _writeRealValT<Real>(*node_uid_var, node_uids2); // contournement de bug pour les variables de nœuds
   }
 
   String buf = m_base_directory.file("ensight.case");
@@ -1664,7 +1667,7 @@ endWrite()
     if (!m_case_file)
       warning() << "Unable to write to file: <" << buf << "> error: " << m_case_file.rdstate();
 
-    debug() << "** Exporting data to " << m_base_directory.path();
+    debug() << "** Exportation des données vers " << m_base_directory.path();
     m_case_file << "FORMAT\ntype: ensight gold\n";
 
     m_case_file << "\nGEOMETRY\n";
@@ -1726,6 +1729,7 @@ endWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vérifie la validité de la variable à sauvegarder
  *
@@ -1757,12 +1761,13 @@ _isValidVariable(IVariable& v) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Construit le nom de fichier pour un nom de variable ou de maillage.
  *
  Construit le nom de fichier dans lequel sera sauvegardé une variable ou
  un maillage de nom \a name. Le nom du fichier est retourné dans \a filename.
- 
+
  Le numéro de la protection est insérée à la fin du fichier sous la forme d'un nombre
  formaté avec #m_max_prots_digit \a caractères. Par exemple, pour 'Pression'
  à l'itération 4 avec #m_max_prot_digit égal à 6, on obtiendra le
@@ -1827,7 +1832,7 @@ _isSameKindOfGroup(const ItemGroup& group, eItemKind item_kind)
  'bloc000004'.
 
  le numéro du bloc est insérée sous la forme d'un nombre
- formaté avec #m_max_prots_digit \a caractères. 
+ formaté avec #m_max_prots_digit \a caractères.
 */
 void DumpWEnsight7::
 _buildPartDirectory()
@@ -1917,6 +1922,7 @@ _fileOuttype() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables scalaires.
  */
@@ -2012,6 +2018,7 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables tableau de dimension constante (par ligne) de scalaires
  */
@@ -2108,6 +2115,7 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables tableau de dimension non constante (par ligne) scalaires.
  */
@@ -2126,6 +2134,7 @@ _writeRealValT(IVariable& v, ConstMultiArray2View<T> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables vectorielles.
  */
@@ -2213,6 +2222,7 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables tableau de vecteurs
  */
@@ -2306,6 +2316,7 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Sauvegarde des variables tableau de vecteurs
  */
@@ -2323,6 +2334,7 @@ writeVal(IVariable& v, ConstMultiArray2View<Real3> ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Post-traitement au format Ensight7.
  */
@@ -2379,6 +2391,7 @@ notifyEndWrite()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Post-traitement au format Ensight7.
  */

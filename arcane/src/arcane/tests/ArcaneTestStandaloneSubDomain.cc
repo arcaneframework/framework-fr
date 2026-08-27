@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneTestStandaloneArcaneSubDomain.cc                      (C) 2000-2025 */
+/* ArcaneTestStandaloneArcaneSubDomain.cc                      (C) 2000-2026 */
 /*                                                                           */
 /* Test de ArcaneLauncher::createStandaloneSubDomain().                      */
 /*---------------------------------------------------------------------------*/
@@ -25,15 +25,9 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/DeviceMemoryInfo.h"
 
-#if defined(ARCANE_HAS_ACCELERATOR_API)
 #include "arcane/utils/NumArray.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-#endif
-
-#include "arcane/utils/Exception.h"
-
-#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,7 +39,6 @@ using namespace Arcane;
 
 namespace
 {
-#if defined(ARCANE_HAS_ACCELERATOR_API)
 void _testSum(IAcceleratorMng* acc_mng)
 {
   // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
@@ -83,7 +76,6 @@ void _testSum(IAcceleratorMng* acc_mng)
   std::cout << "DeviceMemoryInfo: free_mem=" << dmi.freeMemory()
             << " total=" << dmi.totalMemory() << "\n";
 }
-#endif
 
 int _testStandaloneSubDomainLauncher1(const CommandLineArguments& cmd_line_args)
 {
@@ -127,13 +119,9 @@ int _testStandaloneSubDomainLauncher2(const CommandLineArguments& cmd_line_args)
                      " </meshes>"
                      "</case>";
   std::cout << "TEST2: StandaloneSubDomain\n";
-  String case_file_name = "subdomain_generated.arc";
-  {
-    std::ofstream ofile(case_file_name.localstr());
-    ofile << case_file;
-  }
+  String case_file_name = "unnamed.arc";
   ArcaneLauncher::init(cmd_line_args);
-  auto launcher{ ArcaneLauncher::createStandaloneSubDomain(case_file_name) };
+  auto launcher{ ArcaneLauncher::createStandaloneSubDomain(case_file_name,asBytes(case_file)) };
   ISubDomain* sd = launcher.subDomain();
   ITraceMng* tm = launcher.traceMng();
   IAcceleratorMng* acc_mng = sd->acceleratorMng();
@@ -147,17 +135,14 @@ int _testStandaloneSubDomainLauncher2(const CommandLineArguments& cmd_line_args)
     tm->error() << String::format("Bad number of cells n={0} expected={1}", nb_cell, expected_nb_cell);
     return 1;
   }
-#if defined(ARCANE_HAS_ACCELERATOR_API)
   _testSum(acc_mng);
-#endif
   return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-int
-_testStandaloneSubDomainLauncher3()
+int _testStandaloneSubDomainLauncher3()
 {
   std::cout << "TEST3: StandaloneSubDomain\n";
   ArcaneLauncher::init(CommandLineArguments{});
@@ -179,8 +164,7 @@ _testStandaloneSubDomainLauncher3()
 }
 
 // Teste l'utilisation de plusieurs StandaloneSubDomain à la fois.
-int
-_testStandaloneSubDomainLauncher4()
+int _testStandaloneSubDomainLauncher4()
 {
   std::cout << "TEST4: StandaloneSubDomain\n";
   ArcaneLauncher::init(CommandLineArguments{});
@@ -196,7 +180,7 @@ _testStandaloneSubDomainLauncher4()
     tm->info() << "SubDomain1: NB_CELL=" << nb_cell;
     Int32 expected_nb_cell = 196;
     if (nb_cell != expected_nb_cell) {
-      tm->error() << String::format("SubDomain1: Bad number of cells for SubDomain n={0} expected={1}", nb_cell, expected_nb_cell);
+      tm->error() << String::format("SubDomain1: Mauvais nombre de mailles pour SubDomain n={0} attendu={1}", nb_cell, expected_nb_cell);
       return 1;
     }
   }
@@ -212,7 +196,7 @@ _testStandaloneSubDomainLauncher4()
     tm->info() << "SubDomain2: NB_CELL=" << nb_cell;
     Int32 expected_nb_cell = 236;
     if (nb_cell != expected_nb_cell) {
-      tm->error() << String::format("SubDomain2: Bad number of cells n={0} expected={1}", nb_cell, expected_nb_cell);
+      tm->error() << String::format("SubDomain2: Mauvais nombre de mailles n={0} attendu={1}", nb_cell, expected_nb_cell);
       return 1;
     }
   }

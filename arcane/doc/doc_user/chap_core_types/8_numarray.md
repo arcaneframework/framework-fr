@@ -1,4 +1,4 @@
-# Utilisation de la classe NumArray {#arcanedoc_core_types_numarray}
+﻿# Utilisation de la classe NumArray {#arcanedoc_core_types_numarray}
 
 [TOC]
 
@@ -91,13 +91,14 @@ Par exemple :
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsIndexation
 
+
 ____
 
 <div class="section_buttons">
 <span class="back_section_button">
 \ref arcanedoc_core_types_array_usage
 </span>
-<!-- <span class="next_section_button">
-\ref arcanedoc_core_types_axl_caseoptions
-</span> -->
-</div>
+<span class="next_section_button">
+\ref arcanedoc_core_types_array_views
+</span>
+</div

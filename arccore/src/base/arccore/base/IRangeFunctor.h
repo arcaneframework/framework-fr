@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRangeFunctor.h                                             (C) 2000-2025 */
+/* IRangeFunctor.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Interface d'un fonctor sur un interval d'itération.                       */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Interface d'un fonctor sur un interval d'itération.
  * \ingroup Core

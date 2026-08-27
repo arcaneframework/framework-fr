@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Process.cc                                                  (C) 2000-2025 */
+/* Process.cc                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Gestion des processus.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/FixedArray.h"
+
+#include <iostream>
 
 /*
  * NOTE: pour l'instant cette classe n'est implémentée que pour Linux
@@ -120,12 +122,12 @@ execute(ProcessExecArgs& args)
     int status = 0;
     pid_t child_pid = 0;
     do {
-      child_pid = ::waitpid(cpid, &status, 0); /* Wait for child */
+      child_pid = ::waitpid(cpid, &status, 0); /* Attendre l'enfant */
     } while (child_pid == -1 && errno == EINTR);
 
     if (WIFEXITED(status)) {
       args.m_exit_code = WEXITSTATUS(status);
-      //printf("exited, status=%d\n", WEXITSTATUS(status));
+      //printf("terminé, statut=%d\n", WEXITSTATUS(status));
     }
     else
       exec_status = ProcessExecArgs::ExecStatus::AbnormalExit;

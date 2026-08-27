@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::StringViewInputStream::
+Impl::StringViewInputStream::
 StringViewInputStream(StringView v)
 : m_view(v)
 , m_stream(this)
@@ -65,7 +65,7 @@ StringViewInputStream(StringView v)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(double& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -92,8 +92,8 @@ builtInGetValue(Float16& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Float128& v, StringView s)
 {
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Float128.
-  // On utilise donc un 'long double'.
+  // Pour l'instant (12/2024), il n'existe pas de fonctions natives pour lire un Float128.
+  // Nous utilisons donc un 'long double'.
   // TODO: à implémenter correctement
   long double z = 0.0;
   bool r = builtInGetValue(z, s);
@@ -113,13 +113,13 @@ builtInGetValue(float& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(int& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -161,7 +161,7 @@ builtInGetValue(unsigned short& v, StringView s)
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(long long& v, StringView s)
 {
-  return Convert::Impl::StringViewToIntegral::getValue(v,s);
+  return Convert::Impl::StringViewToIntegral::getValue(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -182,13 +182,13 @@ builtInGetValue(Real2& v, StringView s)
     p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValue(v.y, s);
     return (p == (-1) || (p != s.size()));
   }
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3& v, StringView s)
 {
-  if (Convert::Impl::ConvertPolicy::isUseSameConvertForAllReal()){
+  if (Convert::Impl::ConvertPolicy::isUseSameConvertForAllReal()) {
     s = Convert::Impl::_removeLeadingSpaces(s);
     v = {};
     const bool is_verbose = Convert::Impl::ConvertPolicy::verbosity() > 0;
@@ -209,27 +209,27 @@ builtInGetValue(Real3& v, StringView s)
     p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValue(v.z, s);
     return (p == (-1) || (p != s.size()));
   }
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real2x2& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3x3& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Int128& v, StringView s)
 {
-  // Pour l'instant (12/2024), il n'y a pas de fonctions natives pour lire un Int128.
-  // On utilise donc un 'Int64' en attendant.
-  // TODO: il existe des exemples sur internet. A implémenter correctement
+  // Pour l'instant (12/2024), il n'existe pas de fonctions natives pour lire un Int128.
+  // Nous utilisons donc un 'Int64' pour l'instant.
+  // TODO: il existe des exemples sur Internet. À implémenter correctement
   long long v2 = 0;
   const char* ptr = _stringViewData(s);
   char* ptr2 = 0;
@@ -288,9 +288,9 @@ namespace
 {
   bool _builtInGetBoolArrayValue(BoolArray& v, StringView s)
   {
-    // Le type 'bool' est un peu spécial car il doit pouvoir lire les
-    // valeurs comme 'true' ou 'false'.
-    // On le lit donc comme un 'StringUniqueArray', puis on converti en bool
+    // Le type 'bool' est un peu spécial car il doit être capable de lire
+    // des valeurs comme 'true' ou 'false'.
+    // Nous le lisons donc comme un 'StringUniqueArray', puis le convertissons en bool
     //cout << "** GET BOOL ARRAY V=" << s << '\n';
     //return builtInGetArrayValue(v,s);
 
@@ -311,14 +311,14 @@ namespace
   {
     std::string s2;
     String read_val = String();
-    impl::StringViewInputStream svis(s);
+    Impl::StringViewInputStream svis(s);
     std::istream& sbuf = svis.stream();
     while (!sbuf.eof()) {
       sbuf >> s2;
       //cout << " ** CHECK READ v='" << s2 << "' '" << sv << "'\n";
-      if (sbuf.bad()) // non-recoverable error
+      if (sbuf.bad()) // erreur non récupérable
         return true;
-      if (sbuf.fail()) // recoverable error : this means good conversion
+      if (sbuf.fail()) // erreur récupérable : cela signifie une bonne conversion
         return false;
       read_val = StringView(s2.c_str());
       v.add(read_val);

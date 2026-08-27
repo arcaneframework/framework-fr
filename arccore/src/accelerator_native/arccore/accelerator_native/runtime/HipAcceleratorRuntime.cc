@@ -35,6 +35,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 #ifdef ARCCORE_HAS_ROCTX
 #include <roctx.h>
@@ -413,7 +414,6 @@ class HipRunQueueEvent
 
   hipEvent_t m_hip_event;
 };
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -653,7 +653,7 @@ fillDevices(bool is_verbose)
     int has_managed_memory = 0;
     ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
 
-    // Le format des versions dans HIP est:
+    // Le format des versions dans HIP est :
     // HIP_VERSION  =  (HIP_VERSION_MAJOR * 10000000 + HIP_VERSION_MINOR * 100000 + HIP_VERSION_PATCH)
 
     int runtime_version = 0;
@@ -803,7 +803,7 @@ void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
   mrm->setAllocator(mem, allocator);
   mrm->setMemoryPool(mem, allocator->memoryPool());
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

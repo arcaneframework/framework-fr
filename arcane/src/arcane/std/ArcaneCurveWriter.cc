@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCurveWriter.cc                                        (C) 2000-2024 */
+/* ArcaneCurveWriter.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Ecriture des courbes au format Arcane.                                    */
 /*---------------------------------------------------------------------------*/
@@ -15,13 +15,15 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/ITimeHistoryCurveWriter2.h"
-#include "arcane/BasicService.h"
-#include "arcane/FactoryService.h"
-#include "arcane/IApplication.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/XmlNode.h"
+#include "arcane/core/ITimeHistoryCurveWriter2.h"
+#include "arcane/core/BasicService.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/XmlNode.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +107,7 @@ Impl(IApplication* app, ITraceMng* tm, const String& path)
   info() << "Begin write curves full_path=" << full_path;
   m_stream.open(full_path.localstr(), std::ios::trunc);
   if (!m_stream)
-    warning() << "Can not open file '" << full_path << "' for writing curves";
+    warning() << "Impossible d'ouvrir le fichier '" << full_path << "' pour écrire les courbes";
   m_curves_doc = app->ressourceMng()->createXmlDocument();
   XmlNode doc = m_curves_doc->documentNode();
   m_root_element = XmlElement(doc, "curves");
@@ -126,7 +128,7 @@ beginWrite(const TimeHistoryCurveWriterInfo& infos)
   if (!m_output_path.empty())
     m_output_path = path;
 
-  info() << A_FUNCNAME << "Begin write curves path=" << path;
+  info() << A_FUNCNAME << "Début de l'écriture des courbes chemin=" << path;
   m_p = new Impl(subDomain()->application(), traceMng(), path);
 
   _writeHeader();
@@ -189,9 +191,9 @@ endWrite()
     _write(Int32ConstArrayView(2, write_info));
   }
   else
-    ARCANE_FATAL("Invalid version {0} (valid values are '1' or '2')", m_version);
+    ARCANE_FATAL("Version invalide {0} (valeurs valides sont '1' ou '2')", m_version);
 
-  info(4) << "End writing curves";
+  info(4) << "Fin de l'écriture des courbes";
 
   // Libère le pointeur
   m_p = 0;
@@ -203,7 +205,7 @@ endWrite()
 void ArcaneCurveWriter::
 writeCurve(const TimeHistoryCurveInfo& infos)
 {
-  //info() << "Writing curve name=" << infos.m_name;
+  //info() << "Écriture du nom de courbe=" << infos.m_name;
   Int64 values_offset = _write(infos.values());
 
   Int32ConstArrayView iterations(infos.iterations());
